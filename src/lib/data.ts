@@ -97,15 +97,14 @@ const initializeDefaultData = async (db: any) => {
 export const getPortfolioData = async (): Promise<PortfolioData> => {
     const db = await getDb();
     
-    // Check if the main content document exists. If not, assume DB is empty and initialize.
     let mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
-    if (!mainDataDoc) {
+    let projectsExist = (await db.collection(PROJECT_COLLECTION_NAME).countDocuments()) > 0;
+
+    if (!mainDataDoc || !projectsExist) {
         await initializeDefaultData(db);
-        // After initialization attempt, try fetching the main document again.
         mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
     }
     
-    // Fetch all data pieces from their respective collections.
     const profileSettingsDoc = await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).findOne({ docId: DOC_ID });
     
     const projectsFromDb = await db.collection(PROJECT_COLLECTION_NAME).find({}).toArray();
@@ -114,11 +113,9 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
     const certificatesFromDb = await db.collection(CERTIFICATES_COLLECTION_NAME).find({}).toArray();
     const toolsFromDb = await db.collection(TOOLS_COLLECTION_NAME).find({}).toArray();
 
-    // Remove MongoDB's internal _id from documents before combining.
     const { _id: mainId, docId: mainDocId, ...mainData } = mainDataDoc || {};
     const { _id: profileId, docId: profileDocId, ...profileSettings } = profileSettingsDoc || {};
 
-    // Assemble the final PortfolioData object, providing defaults if any data is missing.
     return {
         name: mainData.name || defaultMainData.name,
         title: mainData.title || defaultMainData.title,
@@ -139,34 +136,29 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         const db = await getDb();
         const { projects, skills, education, certificates, tools, cvUrl, profilePictureUrl, ...mainData } = data;
 
-        // Update the 'content' collection
         await db.collection(CONTENT_COLLECTION_NAME).updateOne(
             { docId: DOC_ID },
             { $set: mainData },
             { upsert: true }
         );
 
-        // Update the 'profile_settings' collection
         await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).updateOne(
             { docId: DOC_ID },
             { $set: { cvUrl, profilePictureUrl } },
             { upsert: true }
         );
 
-        // A helper function to update collections of items
         const updateCollection = async (collectionName: string, items: any[]) => {
             const collection = db.collection(collectionName);
             await collection.deleteMany({});
             if (items && items.length > 0) {
-                // Ensure no _id fields from form state are passed to MongoDB
-                const itemsToInsert = items.map(({ _id, ...item }) => item);
+                const itemsToInsert = items.map(({ _id, id, ...item }) => item);
                 if (itemsToInsert.length > 0) {
                     await collection.insertMany(itemsToInsert);
                 }
             }
         };
         
-        // A helper function for collections where items are simple strings
         const updateSimpleCollection = async (collectionName: string, items: string[]) => {
             const collection = db.collection(collectionName);
             await collection.deleteMany({});
@@ -176,7 +168,6 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
             }
         };
 
-        // Update all item-based collections
         await updateCollection(PROJECT_COLLECTION_NAME, projects);
         await updateSimpleCollection(SKILLS_COLLECTION_NAME, skills);
         await updateCollection(EDUCATION_COLLECTION_NAME, education);
