@@ -1,5 +1,3 @@
-import { Target, Briefcase, Leaf, Users, Handshake } from "lucide-react";
-
 export const portfolioData = {
   name: "Wahyu Pratomo",
   title: "Social Media Specialist | Digital Marketing",
@@ -63,13 +61,14 @@ export const portfolioData = {
       tags: ["Branding", "Storytelling", "Visuals"],
     },
   ],
-  certificates: [
+  education: [
     {
-      name: 'Mahasiswa Tingkat Akhir',
-      issuer: 'Sekolah Tinggi Teknologi Indonesia',
-      date: '2020 - 2025',
-      url: '#'
+      degree: 'Mahasiswa Tingkat Akhir',
+      school: 'Sekolah Tinggi Teknologi Indonesia',
+      period: '2020 - 2025',
     },
+  ],
+  certificates: [
     {
       name: 'Lulusan Bootcamp Digital Marketing',
       issuer: 'Harisenin.com',
