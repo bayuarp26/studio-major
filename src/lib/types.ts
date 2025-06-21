@@ -37,4 +37,5 @@ export interface PortfolioData {
   projects: Project[];
   education: EducationItem[];
   certificates: Certificate[];
+  tools: string[];
 }

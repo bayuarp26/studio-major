@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles } from 'lucide-react';
+import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 
@@ -55,6 +55,7 @@ const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
   skills: z.array(z.string()).min(1, 'At least one skill is required'),
+  tools: z.array(z.string()).min(1, 'At least one tool is required'),
   projects: z.array(projectSchema),
   education: z.array(educationSchema),
   certificates: z.array(certificateSchema),
@@ -80,11 +81,13 @@ export default function AdminForm() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [newSkill, setNewSkill] = useState('');
+  const [newTool, setNewTool] = useState('');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       skills: [],
+      tools: [],
       projects: [],
       education: [],
       certificates: [],
@@ -105,6 +108,7 @@ export default function AdminForm() {
           email: data.contact.email.replace('mailto:', ''),
           linkedin: data.contact.linkedin || '',
           skills: data.skills || [],
+          tools: data.tools || [],
           projects: data.projects.map(p => ({ ...p, tags: p.tags.join(', ') })) || [],
           education: data.education || [],
           certificates: data.certificates || [],
@@ -145,6 +149,7 @@ export default function AdminForm() {
           linkedin: data.linkedin || '',
       },
       skills: data.skills,
+      tools: data.tools,
       projects: data.projects.map(p => ({ 
         ...p, 
         imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
@@ -257,6 +262,22 @@ export default function AdminForm() {
   const handleRemoveSkill = (indexToRemove: number) => {
     const currentSkills = form.getValues('skills');
     form.setValue('skills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true });
+  };
+
+  const handleAddTool = () => {
+    const trimmedTool = newTool.trim();
+    if (trimmedTool) {
+      const currentTools = form.getValues('tools') || [];
+      if (!currentTools.map(t => t.toLowerCase()).includes(trimmedTool.toLowerCase())) {
+        form.setValue('tools', [...currentTools, trimmedTool], { shouldValidate: true });
+      }
+      setNewTool('');
+    }
+  };
+
+  const handleRemoveTool = (indexToRemove: number) => {
+    const currentTools = form.getValues('tools');
+    form.setValue('tools', currentTools.filter((_, index) => index !== indexToRemove), { shouldValidate: true });
   };
 
   if (isLoading) {
@@ -399,6 +420,38 @@ export default function AdminForm() {
                                 {skill}
                                 <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
                                   <span className="sr-only">Hapus {skill}</span><Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <FormMessage className="mt-2" />
+                  </FormItem>
+              )}/>
+
+              <FormField control={form.control} name="tools" render={({ field }) => (
+                  <FormItem>
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><CardTitle>Kelola Tools</CardTitle></div>
+                        <CardDescription>Tambah atau hapus tools yang ditampilkan di halaman utama.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Label htmlFor="new-tool">Nama Tool Baru</Label>
+                        <div className="flex gap-2 mt-2 mb-4">
+                          <Input id="new-tool" placeholder="Contoh: Figma" value={newTool} onChange={(e) => setNewTool(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTool(); } }}/>
+                          <Button type="button" onClick={handleAddTool} disabled={!newTool.trim()}><PlusCircle className="mr-2 h-4 w-4" />Tambah</Button>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Daftar Tools Saat Ini:</Label>
+                          <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
+                            {field.value?.map((tool, index) => (
+                              <Badge key={index} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                {tool}
+                                <button type="button" onClick={() => handleRemoveTool(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                  <span className="sr-only">Hapus {tool}</span><Trash2 className="h-3.5 w-3.5" />
                                 </button>
                               </Badge>
                             ))}

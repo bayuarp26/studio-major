@@ -32,7 +32,7 @@ export default async function Home() {
         <Skills skills={portfolioData.skills} />
         <Projects projects={portfolioData.projects} />
         <Certificates certificates={portfolioData.certificates} />
-        <Tools />
+        <Tools tools={portfolioData.tools} />
         <Contact contact={portfolioData.contact} />
       </main>
       <Footer />

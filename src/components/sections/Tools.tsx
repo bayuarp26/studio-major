@@ -1,16 +1,14 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 
-const tools = [
-  "Social Blade",
-  "Canva",
-  "Google Analytics",
-  "Meta Business Suite",
-  "Instagram Insights",
-  "Figma"
-];
+interface ToolsProps {
+  tools: string[];
+}
 
-export default function Tools() {
+export default function Tools({ tools }: ToolsProps) {
+  if (!tools || tools.length === 0) return null;
+
   return (
     <section id="tools" className="bg-background py-24 sm:py-32">
       <div className="container">

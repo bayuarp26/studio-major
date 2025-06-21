@@ -1,6 +1,7 @@
 
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
 
 const DB_NAME = 'portfolioDB';
 const CONTENT_COLLECTION_NAME = 'content';
@@ -9,6 +10,7 @@ const PROJECT_COLLECTION_NAME = 'projects';
 const SKILLS_COLLECTION_NAME = 'skills';
 const EDUCATION_COLLECTION_NAME = 'education';
 const CERTIFICATES_COLLECTION_NAME = 'certificates';
+const TOOLS_COLLECTION_NAME = 'tools';
 const DOC_ID = 'main';
 
 const defaultMainData = {
@@ -34,6 +36,14 @@ const defaultEducation: EducationItem[] = [
 const defaultCertificates: Certificate[] = [
     { name: "Google Analytics for Beginners", issuer: "Google", date: "Jan 2023", url: "#" }
 ];
+const defaultTools: string[] = [
+  "Social Blade",
+  "Canva",
+  "Google Analytics",
+  "Meta Business Suite",
+  "Instagram Insights",
+  "Figma"
+];
 
 
 const defaultPortfolioData: PortfolioData = {
@@ -43,6 +53,7 @@ const defaultPortfolioData: PortfolioData = {
     projects: defaultProjects,
     education: defaultEducation,
     certificates: defaultCertificates,
+    tools: defaultTools,
 };
 
 const getDb = async () => {
@@ -59,6 +70,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const skillsCollection = db.collection(SKILLS_COLLECTION_NAME);
         const educationCollection = db.collection(EDUCATION_COLLECTION_NAME);
         const certificatesCollection = db.collection(CERTIFICATES_COLLECTION_NAME);
+        const toolsCollection = db.collection(TOOLS_COLLECTION_NAME);
         
         let mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
         let profileSettingsDoc = await profileSettingsCollection.findOne({ docId: DOC_ID });
@@ -73,6 +85,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             if (defaultSkills.length > 0) await skillsCollection.insertMany(defaultSkills.map(name => ({ name })));
             if (defaultEducation.length > 0) await educationCollection.insertMany(defaultEducation);
             if (defaultCertificates.length > 0) await certificatesCollection.insertMany(defaultCertificates);
+            if (defaultTools.length > 0) await toolsCollection.insertMany(defaultTools.map(name => ({ name })));
             
             mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
             profileSettingsDoc = await profileSettingsCollection.findOne({ docId: DOC_ID });
@@ -108,8 +121,11 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const certificatesFromDb = await certificatesCollection.find({}).toArray();
         const certificates = certificatesFromDb.map(c => { const { _id, ...certData } = c; return certData as Certificate; });
 
+        const toolsFromDb = await toolsCollection.find({}).toArray();
+        const tools = toolsFromDb.map(t => t.name as string);
 
-        return { ...combinedData, projects, skills, education, certificates };
+
+        return { ...combinedData, projects, skills, education, certificates, tools };
     } catch (error) {
         console.error('Error fetching data from MongoDB:', error);
         return defaultPortfolioData;
@@ -125,8 +141,9 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         const skillsCollection = db.collection(SKILLS_COLLECTION_NAME);
         const educationCollection = db.collection(EDUCATION_COLLECTION_NAME);
         const certificatesCollection = db.collection(CERTIFICATES_COLLECTION_NAME);
+        const toolsCollection = db.collection(TOOLS_COLLECTION_NAME);
         
-        const { projects, skills, education, certificates, cvUrl, profilePictureUrl, ...mainData } = data;
+        const { projects, skills, education, certificates, tools, cvUrl, profilePictureUrl, ...mainData } = data;
 
         await contentCollection.updateOne(
             { docId: DOC_ID },
@@ -137,6 +154,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                     skills: "",
                     education: "",
                     certificates: "",
+                    tools: "",
                     cvUrl: "",
                     profilePictureUrl: ""
                 }
@@ -171,6 +189,13 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         if (certificates && certificates.length > 0) {
             await certificatesCollection.insertMany(certificates);
         }
+
+        await toolsCollection.deleteMany({});
+        if (tools && tools.length > 0) {
+            await toolsCollection.insertMany(tools.map(name => ({ name })));
+        }
+
+        revalidatePath('/');
 
     } catch (error) {
         console.error('Error updating data in MongoDB:', error);
