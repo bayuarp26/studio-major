@@ -1,7 +1,6 @@
 
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
-import { revalidatePath } from 'next/cache';
 
 const DB_NAME = 'portfolioDB';
 const CONTENT_COLLECTION_NAME = 'content';
@@ -194,8 +193,6 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         if (tools && tools.length > 0) {
             await toolsCollection.insertMany(tools.map(name => ({ name })));
         }
-
-        revalidatePath('/');
 
     } catch (error) {
         console.error('Error updating data in MongoDB:', error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,9 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, name }: MobileNavProps) {
   const [open, setOpen] = useState(false);
-  const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1)), 'contact'];
+  const allSectionIds = useMemo(() => 
+    ['hero', ...navLinks.map(link => link.href.substring(1)), 'tools', 'contact']
+  , [navLinks]);
   const activeSection = useActiveSection(allSectionIds);
 
   return (
