@@ -12,7 +12,7 @@ import { Eye, EyeOff, Lock } from 'lucide-react';
 export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function LoginForm() {
 
     // Simulate API call
     setTimeout(() => {
-      if (email === 'admin@example.com' && password === 'password') {
+      if (username === '085156453246' && password === 'wahyu-58321') {
         toast({
           title: 'Login Successful',
           description: 'Redirecting to admin dashboard...',
@@ -34,7 +34,7 @@ export default function LoginForm() {
         toast({
           variant: 'destructive',
           title: 'Login Failed',
-          description: 'Invalid email or password.',
+          description: 'Invalid username or password.',
         });
         setIsLoading(false);
       }
@@ -53,13 +53,13 @@ export default function LoginForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              placeholder="085156453246"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
@@ -69,7 +69,7 @@ export default function LoginForm() {
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="password"
+                placeholder="wahyu-58321"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
