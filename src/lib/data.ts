@@ -5,29 +5,51 @@ import type { PortfolioData } from '@/lib/types';
 
 const dataFilePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
 
+const defaultPortfolioData: PortfolioData = {
+    name: "Wahyu Pratomo",
+    title: "Digital Marketing Specialist & SEO Analyst",
+    about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
+    cvUrl: "#",
+    profilePictureUrl: "https://placehold.co/400x400.png",
+    contact: {
+        email: "mailto:wahyu.pratomo@example.com",
+        linkedin: "https://linkedin.com/in/wahyu-pratomo"
+    },
+    skills: ["SEO Analysis", "Content Strategy", "Social Media Marketing", "Google Analytics", "Campaign Management"],
+    projects: [],
+    education: [],
+    certificates: []
+};
+
 // Helper to read from the JSON file
 const readDataFromFile = (): PortfolioData => {
     try {
         const fileContent = fs.readFileSync(dataFilePath, 'utf-8');
-        return JSON.parse(fileContent);
-    } catch (error) {
-        console.warn("Warning: Could not read data file 'portfolio-data.json'. A new file will be created on save. Using default data for now.");
-        // Fallback to a default structure if the file doesn't exist or is invalid
+        // Handle empty file case
+        if (!fileContent) {
+            return defaultPortfolioData;
+        }
+        const fileData = JSON.parse(fileContent);
+        
+        // Merge file data with default data to ensure all keys are present
         return {
-            name: "Wahyu Pratomo",
-            title: "Digital Marketing Specialist & SEO Analyst",
-            about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
-            cvUrl: "#",
-            profilePictureUrl: "https://placehold.co/400x400.png",
+            ...defaultPortfolioData,
+            ...fileData,
             contact: {
-                email: "mailto:wahyu.pratomo@example.com",
-                linkedin: "https://linkedin.com/in/wahyu-pratomo"
+                ...defaultPortfolioData.contact,
+                ...(fileData.contact || {}),
             },
-            skills: ["SEO Analysis", "Content Strategy", "Social Media Marketing", "Google Analytics", "Campaign Management"],
-            projects: [],
-            education: [],
-            certificates: []
+            // ensure arrays are not undefined
+            skills: fileData.skills || defaultPortfolioData.skills,
+            projects: fileData.projects || defaultPortfolioData.projects,
+            education: fileData.education || defaultPortfolioData.education,
+            certificates: fileData.certificates || defaultPortfolioData.certificates,
         };
+
+    } catch (error) {
+        console.warn("Warning: Could not read or parse data file 'portfolio-data.json'. Using default data.");
+        // Fallback to a default structure if the file doesn't exist or is invalid
+        return defaultPortfolioData;
     }
 };
 
