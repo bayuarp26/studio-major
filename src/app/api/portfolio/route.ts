@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getPortfolioData, updatePortfolioData } from '@/lib/data';
 import type { PortfolioData } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
 
 // GET handler to fetch current portfolio data
 export async function GET() {
@@ -26,6 +27,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'Invalid data provided' }, { status: 400 });
     }
     await updatePortfolioData(newData);
+
+    // Invalidate the cache for the home page to reflect changes
+    revalidatePath('/');
+
     return NextResponse.json({ message: 'Data updated successfully' });
   } catch (error) {
      if (error instanceof Error) {

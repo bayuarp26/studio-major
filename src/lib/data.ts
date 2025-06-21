@@ -154,7 +154,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
 
         await projectsCollection.deleteMany({});
         if (projects && projects.length > 0) {
-            await projectsCollection.insertMany(projects.map(({...p}) => p));
+            await projectsCollection.insertMany(projects);
         }
 
         await skillsCollection.deleteMany({});
@@ -164,12 +164,12 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
 
         await educationCollection.deleteMany({});
         if (education && education.length > 0) {
-            await educationCollection.insertMany(education.map(({...e}) => e));
+            await educationCollection.insertMany(education);
         }
 
         await certificatesCollection.deleteMany({});
         if (certificates && certificates.length > 0) {
-            await certificatesCollection.insertMany(certificates.map(({...c}) => c));
+            await certificatesCollection.insertMany(certificates);
         }
 
     } catch (error) {
