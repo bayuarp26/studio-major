@@ -1,39 +1,35 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Award, ExternalLink } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { GraduationCap } from "lucide-react";
 import { portfolioData } from "@/lib/data";
 
-export default function Certificates() {
+export default function Education() {
   return (
-    <section id="certificates" className="bg-secondary/50 py-24 sm:py-32">
+    <section id="education" className="bg-secondary/30 py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            Certificates
+            Pendidikan & Pelatihan
           </h2>
           <p className="mt-4 text-lg text-foreground/70">
-            My commitment to continuous learning and professional development.
+            Perjalanan akademis dan profesional saya dalam menimba ilmu.
           </p>
         </div>
-        <div className="mt-16 space-y-8">
+        <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">
           {portfolioData.certificates.map((cert) => (
-            <Card key={cert.name} className="transition-shadow duration-300 hover:shadow-lg">
-              <div className="flex flex-col items-center justify-between gap-4 p-6 sm:flex-row">
-                <div className="flex items-center gap-4">
-                  <Award className="h-8 w-8 text-primary" />
-                  <div>
-                    <h3 className="text-lg font-semibold">{cert.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {cert.issuer} - {cert.date}
-                    </p>
-                  </div>
+            <Card key={cert.name} className="p-6 transition-shadow duration-300 hover:shadow-lg bg-card/50">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
+                    <GraduationCap className="h-6 w-6" />
                 </div>
-                <Button asChild variant="outline" style={{borderColor: 'hsl(var(--accent))', color: 'hsl(var(--accent))'}}>
-                  <Link href={cert.url} target="_blank" rel="noopener noreferrer">
-                    View Certificate <ExternalLink className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                <div>
+                  <h3 className="text-lg font-semibold">{cert.name}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {cert.issuer}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-primary">
+                    {cert.date}
+                  </p>
+                </div>
               </div>
             </Card>
           ))}
