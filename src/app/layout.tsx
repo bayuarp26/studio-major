@@ -3,13 +3,16 @@ import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { portfolioData } from "@/lib/data";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata: Metadata = {
-  title: "Portofolio Wahyu",
-  description: "Social Media Specialist | Digital Marketing",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: `Portofolio ${portfolioData.name}`,
+    description: portfolioData.title,
+  };
+}
 
 export default function RootLayout({
   children,

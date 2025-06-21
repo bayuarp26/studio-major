@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Mail, Linkedin } from "lucide-react";
-import { portfolioData } from "@/lib/data";
 
-export default function Contact() {
+interface ContactInfo {
+  email: string;
+  linkedin?: string;
+}
+
+interface ContactProps {
+  contact: ContactInfo;
+}
+
+export default function Contact({ contact }: ContactProps) {
   return (
     <section id="contact" className="py-24 sm:py-32">
       <div className="container text-center">
@@ -15,14 +23,14 @@ export default function Contact() {
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-x-6">
           <Button asChild size="lg">
-            <a href={portfolioData.contact.email}>
+            <a href={contact.email}>
               <Mail className="mr-2 h-5 w-5" />
               Kirim Email
             </a>
           </Button>
-          {portfolioData.contact.linkedin && (
+          {contact.linkedin && (
             <Button asChild size="lg" variant="outline">
-              <Link href={portfolioData.contact.linkedin} target="_blank" rel="noopener noreferrer">
+              <Link href={contact.linkedin} target="_blank" rel="noopener noreferrer">
                 <Linkedin className="mr-2 h-5 w-5" />
                 LinkedIn
               </Link>

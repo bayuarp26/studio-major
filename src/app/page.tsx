@@ -7,20 +7,25 @@ import Skills from "@/components/sections/Skills";
 import Projects from "@/components/sections/Projects";
 import Tools from "@/components/sections/Tools";
 import Contact from "@/components/sections/Contact";
+import { portfolioData } from "@/lib/data";
 
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <Header name={portfolioData.name} />
       <main className="flex-grow">
-        <Hero />
-        <About />
-        <Education />
-        <Skills />
-        <Projects />
+        <Hero 
+          name={portfolioData.name}
+          title={portfolioData.title}
+          cvUrl={portfolioData.cvUrl}
+        />
+        <About about={portfolioData.about} />
+        <Education certificates={portfolioData.certificates} />
+        <Skills skills={portfolioData.skills} />
+        <Projects projects={portfolioData.projects} />
         <Tools />
-        <Contact />
+        <Contact contact={portfolioData.contact} />
       </main>
       <Footer />
     </div>

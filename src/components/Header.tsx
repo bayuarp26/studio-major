@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./MobileNav";
-import { portfolioData } from "@/lib/data";
 
 const navLinks = [
   { name: "Tentang", href: "#about" },
@@ -12,8 +11,12 @@ const navLinks = [
   { name: "Proyek", href: "#projects" },
 ];
 
-export default function Header() {
-  const firstName = portfolioData.name.split(" ")[0];
+interface HeaderProps {
+  name: string;
+}
+
+export default function Header({ name }: HeaderProps) {
+  const firstName = name.split(" ")[0];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,7 +40,7 @@ export default function Header() {
             <Link href="#contact">Hubungi Saya</Link>
           </Button>
           <div className="md:hidden">
-            <MobileNav navLinks={navLinks} />
+            <MobileNav navLinks={navLinks} name={name} />
           </div>
         </div>
       </div>

@@ -1,7 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { portfolioData } from "@/lib/data";
+import type { LucideIcon } from "lucide-react";
 
-export default function Skills() {
+interface Skill {
+  name: string;
+  icon: LucideIcon;
+  description: string;
+}
+
+interface SkillsProps {
+  skills: Skill[];
+}
+
+export default function Skills({ skills }: SkillsProps) {
   return (
     <section id="skills" className="bg-secondary/50 py-24 sm:py-32">
       <div className="container">
@@ -14,7 +24,7 @@ export default function Skills() {
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {portfolioData.skills.map((skill) => (
+          {skills.map((skill) => (
             <Card key={skill.name} className="flex flex-col items-center justify-center text-center transition-transform duration-300 hover:scale-105 hover:shadow-lg">
               <CardHeader>
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">

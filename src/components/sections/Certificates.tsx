@@ -1,8 +1,18 @@
 import { Card } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
-import { portfolioData } from "@/lib/data";
 
-export default function Education() {
+interface Certificate {
+  name: string;
+  issuer: string;
+  date: string;
+  url: string;
+}
+
+interface EducationProps {
+  certificates: Certificate[];
+}
+
+export default function Education({ certificates }: EducationProps) {
   return (
     <section id="education" className="bg-secondary/30 py-24 sm:py-32">
       <div className="container">
@@ -15,7 +25,7 @@ export default function Education() {
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">
-          {portfolioData.certificates.map((cert) => (
+          {certificates.map((cert) => (
             <Card key={cert.name} className="p-6 transition-shadow duration-300 hover:shadow-lg bg-card/50">
               <div className="flex items-start gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">

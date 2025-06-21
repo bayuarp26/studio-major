@@ -1,9 +1,22 @@
 import Image from "next/image";
-import { portfolioData } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Asterisk } from "lucide-react";
 
-export default function Projects() {
+interface Project {
+  topTitle: string;
+  handle: string;
+  logoUrl: string;
+  imageHint: string;
+  title: string;
+  description: string;
+  tags: string[];
+}
+
+interface ProjectsProps {
+  projects: Project[];
+}
+
+export default function Projects({ projects }: ProjectsProps) {
   return (
     <section id="projects" className="py-24 sm:py-32 bg-background">
       <div className="container">
@@ -16,7 +29,7 @@ export default function Projects() {
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {portfolioData.projects.map((project, index) => (
+          {projects.map((project, index) => (
             <div key={index} className="flex flex-col overflow-hidden rounded-xl shadow-lg transition-transform duration-300 hover:-translate-y-2">
               <div className="bg-secondary p-8 text-center text-secondary-foreground">
                 <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-foreground">

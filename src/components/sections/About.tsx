@@ -1,6 +1,8 @@
-import { portfolioData } from "@/lib/data";
+interface AboutProps {
+  about: string;
+}
 
-export default function About() {
+export default function About({ about }: AboutProps) {
   return (
     <section id="about" className="py-24 sm:py-32">
       <div className="container">
@@ -9,7 +11,7 @@ export default function About() {
             About Me
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-foreground/70">
-            {portfolioData.about}
+            {about}
           </p>
         </div>
       </div>

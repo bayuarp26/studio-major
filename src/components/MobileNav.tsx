@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import Link, { type LinkProps } from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { portfolioData } from "@/lib/data";
 
 interface MobileNavProps {
   navLinks: { name: string; href: string }[];
+  name: string;
 }
 
-export function MobileNav({ navLinks }: MobileNavProps) {
+export function MobileNav({ navLinks, name }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,7 +26,7 @@ export function MobileNav({ navLinks }: MobileNavProps) {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
              <Link href="/" className="flex items-center" onClick={() => setOpen(false)}>
-              <span className="font-headline text-2xl font-bold text-primary">{portfolioData.name}</span>
+              <span className="font-headline text-2xl font-bold text-primary">{name}</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
                 <X className="h-5 w-5"/>
