@@ -9,7 +9,8 @@ const EDUCATION_COLLECTION_NAME = 'education';
 const CERTIFICATES_COLLECTION_NAME = 'certificates';
 const DOC_ID = 'main';
 
-const defaultPortfolioData: PortfolioData = {
+// Define default data for the main content collection
+const defaultMainData = {
     name: "Wahyu Pratomo",
     title: "Digital Marketing Specialist & SEO Analyst",
     about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
@@ -19,53 +20,64 @@ const defaultPortfolioData: PortfolioData = {
         email: "mailto:wahyu.pratomo@example.com",
         linkedin: "https://linkedin.com/in/wahyu-pratomo"
     },
-    skills: [
-        "Digital Marketing Strategy",
-        "SEO (Search Engine Optimization)",
-        "Content Creation & Marketing",
-        "Social Media Management",
-        "Data Analysis",
-        "Google Ads & Analytics"
-    ],
-    projects: [
-        {
-            title: "Peningkatan SEO Situs E-commerce",
-            imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "seo analytics",
-            description: "Meningkatkan peringkat pencarian organik sebesar 40% dalam 6 bulan.",
-            details: "Melakukan riset kata kunci, mengoptimalkan konten, dan membangun backlink berkualitas tinggi.",
-            tags: ["SEO", "E-commerce", "Content Marketing"]
-        },
-        {
-            title: "Kampanye Iklan Media Sosial",
-            imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "social media",
-            description: "Menghasilkan ROI 300% dari kampanye iklan berbayar di platform Meta.",
-            details: "Menargetkan audiens yang tepat, membuat iklan yang menarik, dan menganalisis metrik kinerja.",
-            tags: ["Social Media", "Advertising", "Meta Ads"]
-        }
-    ],
-    education: [
-        {
-            degree: "Sarjana Komunikasi",
-            school: "Universitas Gadjah Mada",
-            period: "2015 - 2019"
-        }
-    ],
-    certificates: [
-        {
-            name: "Google Analytics Individual Qualification",
-            issuer: "Google",
-            date: "2023",
-            url: "#"
-        },
-        {
-            name: "HubSpot Content Marketing Certification",
-            issuer: "HubSpot Academy",
-            date: "2022",
-            url: "#"
-        }
-    ]
+};
+
+// Define default data for other collections
+const defaultSkills: string[] = [
+    "Digital Marketing Strategy",
+    "SEO (Search Engine Optimization)",
+    "Content Creation & Marketing",
+    "Social Media Management",
+    "Data Analysis",
+    "Google Ads & Analytics"
+];
+const defaultProjects: Project[] = [
+    {
+        title: "Peningkatan SEO Situs E-commerce",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "seo analytics",
+        description: "Meningkatkan peringkat pencarian organik sebesar 40% dalam 6 bulan.",
+        details: "Melakukan riset kata kunci, mengoptimalkan konten, dan membangun backlink berkualitas tinggi.",
+        tags: ["SEO", "E-commerce", "Content Marketing"]
+    },
+    {
+        title: "Kampanye Iklan Media Sosial",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "social media",
+        description: "Menghasilkan ROI 300% dari kampanye iklan berbayar di platform Meta.",
+        details: "Menargetkan audiens yang tepat, membuat iklan yang menarik, dan menganalisis metrik kinerja.",
+        tags: ["Social Media", "Advertising", "Meta Ads"]
+    }
+];
+const defaultEducation: EducationItem[] = [
+    {
+        degree: "Sarjana Komunikasi",
+        school: "Universitas Gadjah Mada",
+        period: "2015 - 2019"
+    }
+];
+const defaultCertificates: Certificate[] = [
+    {
+        name: "Google Analytics Individual Qualification",
+        issuer: "Google",
+        date: "2023",
+        url: "#"
+    },
+    {
+        name: "HubSpot Content Marketing Certification",
+        issuer: "HubSpot Academy",
+        date: "2022",
+        url: "#"
+    }
+];
+
+// Combine all defaults into a single object for cases where the full object is needed (e.g., error fallback)
+const defaultPortfolioData: PortfolioData = {
+    ...defaultMainData,
+    skills: defaultSkills,
+    projects: defaultProjects,
+    education: defaultEducation,
+    certificates: defaultCertificates
 };
 
 const getDb = async () => {
@@ -87,14 +99,13 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         // Initialization logic if database is empty
         if (!mainDataDoc) {
             console.log('No data found in MongoDB. Initializing with default data.');
-            const { projects, skills, education, certificates, ...defaultMainData } = defaultPortfolioData;
             
             await contentCollection.insertOne({ ...defaultMainData, docId: DOC_ID });
             
-            if (projects.length > 0) await projectsCollection.insertMany(projects);
-            if (skills.length > 0) await skillsCollection.insertMany(skills.map(name => ({ name })));
-            if (education.length > 0) await educationCollection.insertMany(education);
-            if (certificates.length > 0) await certificatesCollection.insertMany(certificates);
+            if (defaultProjects.length > 0) await projectsCollection.insertMany(defaultProjects);
+            if (defaultSkills.length > 0) await skillsCollection.insertMany(defaultSkills.map(name => ({ name })));
+            if (defaultEducation.length > 0) await educationCollection.insertMany(defaultEducation);
+            if (defaultCertificates.length > 0) await certificatesCollection.insertMany(defaultCertificates);
             
             mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
         }
@@ -105,13 +116,6 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 
         // Process main data, combining with defaults for safety
         const { _id, docId, ...dbMainData } = mainDataDoc;
-        const { 
-            projects: defaultProjects, 
-            skills: defaultSkills, 
-            education: defaultEducation, 
-            certificates: defaultCertificates, 
-            ...defaultMainData 
-        } = defaultPortfolioData;
 
         const mainData = {
             ...defaultMainData,
