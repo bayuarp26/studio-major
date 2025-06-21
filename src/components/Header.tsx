@@ -14,12 +14,14 @@ const navLinks = [
   { name: "Proyek", href: "#projects" },
 ];
 
+const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1))];
+
 interface HeaderProps {
   name: string;
 }
 
 export default function Header({ name }: HeaderProps) {
-  const activeSection = useActiveSection(navLinks.map(link => link.href.substring(1)));
+  const activeSection = useActiveSection(allSectionIds);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,7 +30,7 @@ export default function Header({ name }: HeaderProps) {
           <span
             className={cn(
               "text-2xl font-bold text-primary transition-all duration-300",
-              activeSection === 'about' ? "opacity-0 -translate-x-2" : "opacity-100 translate-x-0"
+              activeSection === 'hero' || activeSection === 'about' ? "opacity-0 -translate-x-2" : "opacity-100 translate-x-0"
             )}
           >
             {name}
