@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 // --- DATABASE & COLLECTION CONSTANTS ---
 const DB_NAME = 'portfolioDB';
-const USERS_COLLECTION_NAME = 'users';
+const USERS_COLLECTION_NAME = 'profil_settings';
 const CONTENT_COLLECTION_NAME = 'content';
 const PROJECTS_COLLECTION_NAME = 'projects';
 const SKILLS_COLLECTION_NAME = 'skills';
