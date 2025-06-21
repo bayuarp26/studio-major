@@ -56,6 +56,7 @@ const DEFAULT_DATA: PortfolioData = {
 // --- DATABASE CONNECTION & INITIALIZATION ---
 let db: Db;
 let client: MongoClient;
+let initializationPromise: Promise<void> | null = null;
 
 const getDb = async () => {
     if (db) return db;
@@ -107,7 +108,6 @@ const seedDefaultContent = async (db: Db) => {
     }
 };
 
-let initializationPromise: Promise<void> | null = null;
 const ensureDbInitialized = async () => {
     if (!initializationPromise) {
         initializationPromise = (async () => {
@@ -117,7 +117,7 @@ const ensureDbInitialized = async () => {
                 await seedDefaultContent(db);
             } catch (error) {
                 console.error("Critical error during database initialization:", error);
-                initializationPromise = null; // Allow retry on failure
+                initializationPromise = null; 
                 throw error;
             }
         })();
@@ -149,7 +149,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         ]);
 
         if (!mainContent) {
-            console.error("Main content not found after initialization. This should not happen. Returning default data.");
+            console.error("Main content not found after initialization. Returning default data.");
             return DEFAULT_DATA;
         }
         
@@ -178,45 +178,69 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     await ensureDbInitialized();
     const db = await getDb();
     const client = await clientPromise;
+    
+    // --- SERVER-SIDE DATA SANITIZATION ---
+    // This is the definitive fix: we create clean data objects on the server,
+    // ensuring no extraneous properties from the frontend (like react-hook-form's 'id')
+    // are ever passed into the database transaction.
+    
+    const cleanProjects = (data.projects || []).map(p => ({
+        title: p.title,
+        imageUrl: p.imageUrl,
+        imageHint: p.imageHint,
+        description: p.description,
+        details: p.details,
+        tags: p.tags,
+    }));
+
+    const cleanEducation = (data.education || []).map(e => ({
+        degree: e.degree,
+        school: e.school,
+        period: e.period,
+    }));
+
+    const cleanCertificates = (data.certificates || []).map(c => ({
+        name: c.name,
+        issuer: c.issuer,
+        date: c.date,
+        url: c.url,
+    }));
+    
+    const mainContentData = {
+        name: data.name,
+        title: data.title,
+        about: data.about,
+        contact: data.contact,
+        cvUrl: data.cvUrl,
+        profilePictureUrl: data.profilePictureUrl,
+    };
+    
     const session = client.startSession();
 
     try {
         await session.withTransaction(async () => {
-            const { name, title, about, contact, cvUrl, profilePictureUrl, projects, education, certificates, skills, tools } = data;
-
-            // Update the main singleton document
             await db.collection(CONTENT_COLLECTION_NAME).updateOne(
                 { _id: MAIN_DOC_ID },
-                { $set: { name, title, about, contact, cvUrl, profilePictureUrl } },
+                { $set: mainContentData },
                 { upsert: true, session }
             );
 
-            // A robust helper to overwrite a collection's content within a transaction
-            const overwriteCollection = async (collectionName: string, items: any[] = [], isSimpleArray = false) => {
-                const collection = db.collection(collectionName);
+            const overwriteCollection = async (collection: Collection<any>, items: any[], isSimpleArray = false) => {
                 await collection.deleteMany({}, { session });
                 if (items.length > 0) {
                     const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
-                    // Ensure no _id fields are accidentally inserted from previous fetches
-                    const cleanDocuments = documentsToInsert.map(doc => {
-                        const { _id, ...rest } = doc;
-                        return rest;
-                    });
-                    if(cleanDocuments.length > 0) {
-                       await collection.insertMany(cleanDocuments, { session });
-                    }
+                    await collection.insertMany(documentsToInsert, { session });
                 }
             };
             
-            await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
-            await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
-            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
-            await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
-            await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
+            await overwriteCollection(db.collection(PROJECTS_COLLECTION_NAME), cleanProjects);
+            await overwriteCollection(db.collection(EDUCATION_COLLECTION_NAME), cleanEducation);
+            await overwriteCollection(db.collection(CERTIFICATES_COLLECTION_NAME), cleanCertificates);
+            await overwriteCollection(db.collection(SKILLS_COLLECTION_NAME), data.skills || [], true);
+            await overwriteCollection(db.collection(TOOLS_COLLECTION_NAME), data.tools || [], true);
         });
     } catch (error) {
         console.error('Error during MongoDB transaction:', error);
-        // The session will be automatically aborted by the helper on error
         throw new Error('Could not update portfolio data due to a database transaction error.');
     } finally {
         await session.endSession();
