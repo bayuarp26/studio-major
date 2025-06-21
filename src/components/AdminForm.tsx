@@ -163,7 +163,7 @@ export default function AdminForm() {
         imageHint: p.imageHint || '',
         tags: p.tags ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
       })),
-      education: data.education,
+      education: data.education.map(({ degree, school, period }) => ({ degree, school, period })),
       certificates: data.certificates.map(c => ({
         name: c.name,
         issuer: c.issuer,
