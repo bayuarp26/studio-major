@@ -10,11 +10,9 @@ export async function GET() {
     const data = await getPortfolioData();
     return NextResponse.json(data);
   } catch (error) {
-    if (error instanceof Error) {
-        console.error('GET Error:', error.message);
-        return NextResponse.json({ message: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ message: 'An unknown error occurred while reading data' }, { status: 500 });
+    console.error('GET Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ message: `Failed to retrieve data: ${message}` }, { status: 500 });
   }
 }
 
@@ -22,21 +20,21 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const newData: PortfolioData = await request.json();
-    // Basic validation to ensure we're not writing an empty object
-    if (!newData || !newData.name) {
+    
+    if (!newData || typeof newData !== 'object' || !newData.name) {
         return NextResponse.json({ message: 'Invalid data provided' }, { status: 400 });
     }
+
     await updatePortfolioData(newData);
 
-    // Invalidate the cache for the home page to reflect changes
+    // This is the critical step to invalidate the cache.
+    // It tells Next.js to re-fetch the data for the home page on the next visit.
     revalidatePath('/');
 
     return NextResponse.json({ message: 'Data updated successfully' });
   } catch (error) {
-     if (error instanceof Error) {
-        console.error('POST Error:', error.message);
-        return NextResponse.json({ message: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ message: 'An unknown error occurred while writing data' }, { status: 500 });
+     console.error('POST Error:', error);
+     const message = error instanceof Error ? error.message : 'An unknown error occurred';
+     return NextResponse.json({ message: `Failed to update data: ${message}` }, { status: 500 });
   }
 }

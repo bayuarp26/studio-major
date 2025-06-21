@@ -113,7 +113,7 @@ export default function AdminForm() {
           linkedin: data.contact.linkedin || '',
           skills: data.skills || [],
           tools: data.tools || [],
-          projects: data.projects.map(p => ({ ...p, tags: p.tags.join(', ') })) || [],
+          projects: data.projects.map(p => ({ ...p, tags: (p.tags || []).join(', ') })) || [],
           education: data.education || [],
           certificates: data.certificates || [],
         };
@@ -161,7 +161,7 @@ export default function AdminForm() {
         details: p.details,
         imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
         imageHint: p.imageHint || '',
-        tags: p.tags ? p.tags.split(',').map(t => t.trim()) : []
+        tags: p.tags ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
       })),
       education: data.education,
       certificates: data.certificates.map(c => ({
@@ -546,5 +546,3 @@ export default function AdminForm() {
     </>
   );
 }
-
-    
