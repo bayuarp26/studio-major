@@ -27,7 +27,6 @@ const defaultProfileSettings = {
     profilePictureUrl: "https://placehold.co/400x400.png",
 };
 
-const defaultSkills: string[] = ["SEO", "Content Marketing", "Social Media Advertising", "Google Analytics", "Meta Ads"];
 const defaultProjects: Project[] = [
     {
         title: "Kampanye Harisenin.com",
@@ -60,6 +59,15 @@ const defaultEducation: EducationItem[] = [
 const defaultCertificates: Certificate[] = [
     { name: "Google Analytics for Beginners", issuer: "Google", date: "Jan 2023", url: "#" }
 ];
+const defaultSkills: string[] = [
+    "Digital marketing",
+    "Manajemen Proyek",
+    "Ads Desain",
+    "Kolaborasi Tim",
+    "SEO Specialist",
+    "Social Media Specialist",
+    "Content Ads Creation"
+];
 const defaultTools: string[] = [
   "Social Blade", "Canva", "Google Analytics", "Meta Business Suite", "Instagram Insights", "Figma"
 ];
@@ -71,22 +79,36 @@ const getDb = async () => {
 };
 
 const initializeDefaultData = async (db: any) => {
-    console.log('Attempting to initialize default data.');
     try {
-        await db.collection(CONTENT_COLLECTION_NAME).insertOne({ ...defaultMainData, docId: DOC_ID });
-        console.log('Initialization started by this process.');
-        
-        await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).insertOne({ ...defaultProfileSettings, docId: DOC_ID });
-        if (defaultProjects.length > 0) await db.collection(PROJECT_COLLECTION_NAME).insertMany(defaultProjects.map(p => ({...p, tags: p.tags || []})));
+        console.log('Checking and initializing data if necessary.');
+
+        // Use a control document to prevent race conditions during initialization
+        const initCollection = db.collection('_init');
+        const initDoc = await initCollection.findOne({ docId: 'initial_data_seeded' });
+
+        if (initDoc) {
+            console.log('Default data already seeded. Skipping initialization.');
+            return;
+        }
+
+        // Upsert single documents
+        await db.collection(CONTENT_COLLECTION_NAME).updateOne({ docId: DOC_ID }, { $set: defaultMainData }, { upsert: true });
+        await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).updateOne({ docId: DOC_ID }, { $set: defaultProfileSettings }, { upsert: true });
+
+        // Insert array data
+        if (defaultProjects.length > 0) await db.collection(PROJECT_COLLECTION_NAME).insertMany(defaultProjects);
         if (defaultSkills.length > 0) await db.collection(SKILLS_COLLECTION_NAME).insertMany(defaultSkills.map(name => ({ name })));
         if (defaultEducation.length > 0) await db.collection(EDUCATION_COLLECTION_NAME).insertMany(defaultEducation);
         if (defaultCertificates.length > 0) await db.collection(CERTIFICATES_COLLECTION_NAME).insertMany(defaultCertificates);
         if (defaultTools.length > 0) await db.collection(TOOLS_COLLECTION_NAME).insertMany(defaultTools.map(name => ({ name })));
         
+        // Mark initialization as complete
+        await initCollection.insertOne({ docId: 'initial_data_seeded', timestamp: new Date() });
+        
         console.log('Default data initialization complete.');
     } catch (error: any) {
         if (error.code === 11000) { // E11000 is duplicate key error code
-            console.log('Database already being initialized by another process. Skipping.');
+            console.log('Initialization already in progress or completed by another process. Skipping.');
         } else {
             console.error("An unexpected error occurred during data initialization:", error);
             throw error; // Re-throw other errors
@@ -97,14 +119,10 @@ const initializeDefaultData = async (db: any) => {
 export const getPortfolioData = async (): Promise<PortfolioData> => {
     const db = await getDb();
     
-    let mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
-    let projectsExist = (await db.collection(PROJECT_COLLECTION_NAME).countDocuments()) > 0;
-
-    if (!mainDataDoc || !projectsExist) {
-        await initializeDefaultData(db);
-        mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
-    }
+    // This will now reliably set up the database on the first run.
+    await initializeDefaultData(db);
     
+    const mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
     const profileSettingsDoc = await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).findOne({ docId: DOC_ID });
     
     const projectsFromDb = await db.collection(PROJECT_COLLECTION_NAME).find({}).toArray();
@@ -148,14 +166,13 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
             { upsert: true }
         );
 
+        // This "replace all" strategy is simple and effective for this app.
         const updateCollection = async (collectionName: string, items: any[]) => {
             const collection = db.collection(collectionName);
             await collection.deleteMany({});
             if (items && items.length > 0) {
-                const itemsToInsert = items.map(({ _id, id, ...item }) => item);
-                if (itemsToInsert.length > 0) {
-                    await collection.insertMany(itemsToInsert);
-                }
+                // The data from the form is clean and does not have MongoDB's _id
+                await collection.insertMany(items);
             }
         };
         
@@ -163,8 +180,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
             const collection = db.collection(collectionName);
             await collection.deleteMany({});
             if (items && items.length > 0) {
-                const itemsToInsert = items.map(name => ({ name }));
-                await collection.insertMany(itemsToInsert);
+                await collection.insertMany(items.map(name => ({ name })));
             }
         };
 
