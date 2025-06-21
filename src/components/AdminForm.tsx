@@ -154,48 +154,50 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
-    // CRITICAL FIX: Sanitize and structure the data to be sent to the server.
-    // This removes the internal `id` from useFieldArray and ensures a clean payload.
-    const portfolioDataToSave: PortfolioData = {
-      name: data.name,
-      title: data.title,
-      about: data.about,
-      profilePictureUrl: data.profilePictureUrl || 'https://placehold.co/400x400.png',
-      cvUrl: data.cvUrl,
-      contact: {
-          email: `mailto:${data.email}`,
-          linkedin: data.linkedin || '',
-      },
-      skills: data.skills,
-      tools: data.tools,
-      projects: data.projects.map(p => ({
-        title: p.title,
-        imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
-        imageHint: p.imageHint || '',
-        description: p.description,
-        details: p.details,
-        tags: typeof p.tags === 'string' 
-            ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) 
-            : []
-      })),
-      education: data.education.map(e => ({
-        degree: e.degree,
-        school: e.school,
-        period: e.period,
-      })),
-      certificates: data.certificates.map(c => ({
-        name: c.name,
-        issuer: c.issuer,
-        date: c.date,
-        url: c.url || '#',
-      })),
+    
+    // DEFINITIVE FIX: Create a clean payload, manually picking fields.
+    // This is the single source of truth for sanitizing data before sending it to the server.
+    // This prevents react-hook-form's internal 'id' from ever reaching the backend.
+    const cleanPayload: PortfolioData = {
+        name: data.name,
+        title: data.title,
+        about: data.about,
+        profilePictureUrl: data.profilePictureUrl || 'https://placehold.co/400x400.png',
+        cvUrl: data.cvUrl,
+        contact: {
+            email: `mailto:${data.email}`,
+            linkedin: data.linkedin || '',
+        },
+        skills: data.skills,
+        tools: data.tools,
+        projects: (data.projects || []).map(p => ({
+            title: p.title,
+            imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
+            imageHint: p.imageHint || '',
+            description: p.description,
+            details: p.details,
+            tags: typeof p.tags === 'string' 
+                ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) 
+                : []
+        })),
+        education: (data.education || []).map(e => ({
+            degree: e.degree,
+            school: e.school,
+            period: e.period,
+        })),
+        certificates: (data.certificates || []).map(c => ({
+            name: c.name,
+            issuer: c.issuer,
+            date: c.date,
+            url: c.url || '#',
+        })),
     };
     
     try {
       const response = await fetch('/api/portfolio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(portfolioDataToSave),
+        body: JSON.stringify(cleanPayload),
       });
 
       if (!response.ok) {

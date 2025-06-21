@@ -179,41 +179,9 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     const db = await getDb();
     const client = await clientPromise;
     
-    // --- SERVER-SIDE DATA SANITIZATION ---
-    // This is the definitive fix: we create clean data objects on the server,
-    // ensuring no extraneous properties from the frontend (like react-hook-form's 'id')
-    // are ever passed into the database transaction.
-    
-    const cleanProjects = (data.projects || []).map(p => ({
-        title: p.title,
-        imageUrl: p.imageUrl,
-        imageHint: p.imageHint,
-        description: p.description,
-        details: p.details,
-        tags: p.tags,
-    }));
-
-    const cleanEducation = (data.education || []).map(e => ({
-        degree: e.degree,
-        school: e.school,
-        period: e.period,
-    }));
-
-    const cleanCertificates = (data.certificates || []).map(c => ({
-        name: c.name,
-        issuer: c.issuer,
-        date: c.date,
-        url: c.url,
-    }));
-    
-    const mainContentData = {
-        name: data.name,
-        title: data.title,
-        about: data.about,
-        contact: data.contact,
-        cvUrl: data.cvUrl,
-        profilePictureUrl: data.profilePictureUrl,
-    };
+    // DEFINITIVE FIX: Backend data sanitization is removed. We now trust the
+    // clean payload coming from the AdminForm. This simplifies the logic here.
+    const { projects, education, certificates, skills, tools, ...mainContentData } = data;
     
     const session = client.startSession();
 
@@ -225,19 +193,21 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 { upsert: true, session }
             );
 
-            const overwriteCollection = async (collection: Collection<any>, items: any[], isSimpleArray = false) => {
+            // This helper function now takes the collection name for clarity.
+            const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
+                const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
-                if (items.length > 0) {
+                if (items && items.length > 0) {
                     const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
                     await collection.insertMany(documentsToInsert, { session });
                 }
             };
             
-            await overwriteCollection(db.collection(PROJECTS_COLLECTION_NAME), cleanProjects);
-            await overwriteCollection(db.collection(EDUCATION_COLLECTION_NAME), cleanEducation);
-            await overwriteCollection(db.collection(CERTIFICATES_COLLECTION_NAME), cleanCertificates);
-            await overwriteCollection(db.collection(SKILLS_COLLECTION_NAME), data.skills || [], true);
-            await overwriteCollection(db.collection(TOOLS_COLLECTION_NAME), data.tools || [], true);
+            await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
+            await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
+            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
+            await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
+            await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
         });
     } catch (error) {
         console.error('Error during MongoDB transaction:', error);
