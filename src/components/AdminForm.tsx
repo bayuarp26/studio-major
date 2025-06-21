@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,7 +28,7 @@ const projectSchema = z.object({
   imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
-  details: z.string().min(1, 'Details are required'),
+  details: z.string().min(1, 'Details is required'),
   tags: z.string().min(1, 'Tags are required (comma-separated)'),
 });
 
@@ -69,6 +69,7 @@ type CertificateDialogValues = z.infer<typeof certificateSchema>;
 export default function AdminForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const dataFetchedRef = useRef(false);
   
   const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
@@ -93,9 +94,11 @@ export default function AdminForm() {
       certificates: [],
     }
   });
-  const { reset } = form;
 
   useEffect(() => {
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -114,7 +117,7 @@ export default function AdminForm() {
           education: data.education || [],
           certificates: data.certificates || [],
         };
-        reset(formValues);
+        form.reset(formValues);
       } catch (error) {
         console.error(error);
         toast({
@@ -536,3 +539,5 @@ export default function AdminForm() {
     </>
   );
 }
+
+    
