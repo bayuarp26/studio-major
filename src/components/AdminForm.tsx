@@ -151,7 +151,6 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
 
 
   const onSubmit = async (data: FormValues) => {
-    // Construct a clean data object to ensure no extra fields from react-hook-form are sent.
     const portfolioDataToSave: PortfolioData = {
       name: data.name,
       title: data.title,
@@ -165,30 +164,31 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
       skills: data.skills,
       tools: data.tools,
       projects: data.projects.map(p => {
-        // Rebuild each project object from scratch
-        const { id, _id, ...cleanProject } = p as any;
+        // Strip any internal IDs and convert tags string to array
+        const { ...cleanProject } = p as Project & { id?: string; _id?: any };
         return {
           ...cleanProject,
           imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
           imageHint: p.imageHint || '',
           tags: typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
-        }
+        };
       }),
       education: data.education.map(e => {
-        // Rebuild each education object, removing internal hook-form id
-        const { id, _id, ...cleanEducation } = e as any;
+        // Strip any internal IDs
+        const { ...cleanEducation } = e as EducationItem & { id?: string; _id?: any };
         return cleanEducation;
       }),
       certificates: data.certificates.map(c => {
-         // Rebuild each certificate object, removing internal hook-form id
-        const { id, _id, ...cleanCertificate } = c as any;
+         // Strip any internal IDs and provide fallback URL
+        const { ...cleanCertificate } = c as Certificate & { id?: string; _id?: any };
         return {
           ...cleanCertificate,
           url: c.url || '#'
-        }
+        };
       }),
     };
     
+    form.formState.isSubmitting = true;
     try {
       const response = await fetch('/api/portfolio', {
         method: 'POST',
@@ -214,6 +214,8 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
         title: 'Update Failed',
         description: `Could not save portfolio data. ${errorMessage}`,
       });
+    } finally {
+        form.formState.isSubmitting = false;
     }
   };
 
@@ -226,7 +228,11 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
   };
   const openEditProjectDialog = (index: number) => {
     setEditingProjectIndex(index);
-    projectDialogForm.reset(form.getValues().projects[index]);
+    const projectValues = form.getValues().projects[index];
+    projectDialogForm.reset({
+        ...projectValues,
+        tags: Array.isArray(projectValues.tags) ? projectValues.tags.join(', ') : projectValues.tags
+    });
     setProjectDialogOpen(true);
   };
   const handleProjectDialogSubmit = (data: ProjectDialogValues) => {
@@ -278,7 +284,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     if (trimmedSkill) {
       const currentSkills = form.getValues('skills') || [];
       if (!currentSkills.map(s => s.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
-        form.setValue('skills', [...currentSkills, trimmedSkill], { shouldValidate: true });
+        form.setValue('skills', [...currentSkills, trimmedSkill], { shouldValidate: true, shouldDirty: true });
       }
       setNewSkill('');
     }
@@ -286,7 +292,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
 
   const handleRemoveSkill = (indexToRemove: number) => {
     const currentSkills = form.getValues('skills');
-    form.setValue('skills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true });
+    form.setValue('skills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
   };
 
   const handleAddTool = () => {
@@ -294,7 +300,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     if (trimmedTool) {
       const currentTools = form.getValues('tools') || [];
       if (!currentTools.map(t => t.toLowerCase()).includes(trimmedTool.toLowerCase())) {
-        form.setValue('tools', [...currentTools, trimmedTool], { shouldValidate: true });
+        form.setValue('tools', [...currentTools, trimmedTool], { shouldValidate: true, shouldDirty: true });
       }
       setNewTool('');
     }
@@ -302,7 +308,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
 
   const handleRemoveTool = (indexToRemove: number) => {
     const currentTools = form.getValues('tools');
-    form.setValue('tools', currentTools.filter((_, index) => index !== indexToRemove), { shouldValidate: true });
+    form.setValue('tools', currentTools.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
   };
 
   if (isLoading) {
@@ -343,7 +349,9 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
                   <Table>
                     <TableHeader><TableRow><TableHead>Judul Proyek</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      {projectFields.map((field, index) => (
+                      {projectFields.length === 0 ? (
+                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">No projects yet.</TableCell></TableRow>
+                      ) : projectFields.map((field, index) => (
                         <TableRow key={field.id}>
                           <TableCell className="font-medium">{form.watch(`projects.${index}.title`)}</TableCell>
                           <TableCell className="text-right space-x-2">
@@ -368,7 +376,9 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
                   <Table>
                     <TableHeader><TableRow><TableHead>Gelar & Jurusan</TableHead><TableHead>Sekolah</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      {educationFields.map((field, index) => (
+                     {educationFields.length === 0 ? (
+                        <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No education history yet.</TableCell></TableRow>
+                      ) : educationFields.map((field, index) => (
                         <TableRow key={field.id}>
                           <TableCell className="font-medium">{form.watch(`education.${index}.degree`)}</TableCell>
                           <TableCell>{form.watch(`education.${index}.school`)}</TableCell>
@@ -394,7 +404,9 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
                   <Table>
                     <TableHeader><TableRow><TableHead>Nama Sertifikat</TableHead><TableHead>Penerbit</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      {certificateFields.map((field, index) => (
+                      {certificateFields.length === 0 ? (
+                        <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No certificates yet.</TableCell></TableRow>
+                      ) : certificateFields.map((field, index) => (
                         <TableRow key={field.id}>
                           <TableCell className="font-medium">{form.watch(`certificates.${index}.name`)}</TableCell>
                           <TableCell>{form.watch(`certificates.${index}.issuer`)}</TableCell>
@@ -439,7 +451,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
                         </div>
                         <div className="space-y-2">
                           <Label>Daftar Keahlian Saat Ini:</Label>
-                          <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
+                          <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
                             {field.value?.map((skill, index) => (
                               <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
                                 {skill}
@@ -471,7 +483,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
                         </div>
                         <div className="space-y-2">
                           <Label>Daftar Tools Saat Ini:</Label>
-                          <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
+                          <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
                             {field.value?.map((tool, index) => (
                               <Badge key={`${tool}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
                                 {tool}
@@ -507,7 +519,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
             <form onSubmit={projectDialogForm.handleSubmit(handleProjectDialogSubmit)} className="space-y-4 py-4">
                 <FormField control={projectDialogForm.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={projectDialogForm.formState.isSubmitting} /></FormControl><FormMessage /></FormItem>)}/>
-                <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormDescription>One or two keywords for AI to find a relevant image.</FormDescription><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -559,3 +571,5 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     </>
   );
 }
+
+    

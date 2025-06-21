@@ -27,9 +27,8 @@ export async function POST(request: Request) {
 
     await updatePortfolioData(newData);
 
-    // This is the critical step to invalidate the cache.
-    // It tells Next.js to re-fetch the data for the home page on the next visit.
     revalidatePath('/');
+    revalidatePath('/admin'); // Also revalidate admin to ensure it fetches fresh data
 
     return NextResponse.json({ message: 'Data updated successfully' });
   } catch (error) {
@@ -38,3 +37,5 @@ export async function POST(request: Request) {
      return NextResponse.json({ message: `Failed to update data: ${message}` }, { status: 500 });
   }
 }
+
+    
