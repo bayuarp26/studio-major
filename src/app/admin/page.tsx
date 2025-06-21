@@ -28,10 +28,12 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="bg-secondary/30 min-h-screen">
+    <div className="bg-secondary/5 min-h-screen">
       <div className="container mx-auto py-10">
         <AdminForm />
       </div>
     </div>
   );
 }
+
+    

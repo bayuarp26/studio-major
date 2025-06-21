@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { portfolioData } from '@/lib/data';
@@ -12,6 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, PlusCircle, Trash2, Edit } from 'lucide-react';
 
@@ -49,10 +52,23 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Temporary state for the project dialog form
+const projectDialogSchema = z.object({
+  title: z.string().min(1, 'Project title is required'),
+  imageUrl: z.string().url("Invalid URL").optional().or(z.literal('')),
+  imageHint: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  details: z.string().min(1, 'Details are required'),
+  tags: z.string().min(1, 'Tags are required (comma-separated)'),
+});
+type ProjectDialogValues = z.infer<typeof projectDialogSchema>;
+
 export default function AdminForm() {
   const router = useRouter();
   const { toast } = useToast();
-  
+  const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,9 +85,13 @@ export default function AdminForm() {
   });
 
   const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({ control: form.control, name: "skills" });
-  const { fields: projectFields, append: appendProject, remove: removeProject } = useFieldArray({ control: form.control, name: "projects" });
+  const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
   const { fields: educationFields, append: appendEducation, remove: removeEducation } = useFieldArray({ control: form.control, name: "education" });
   const { fields: certificateFields, append: appendCertificate, remove: removeCertificate } = useFieldArray({ control: form.control, name: "certificates" });
+
+  const projectDialogForm = useForm<ProjectDialogValues>({
+    resolver: zodResolver(projectDialogSchema),
+  });
 
   const onSubmit = (data: FormValues) => {
     console.log('Form data submitted:', {
@@ -90,93 +110,131 @@ export default function AdminForm() {
     router.push('/');
   };
 
-  const sections = [
-    { id: 'info', title: 'Personal Info', description: 'Name, title, about, contact info.' },
-    { id: 'skills', title: 'Keahlian', description: 'Your professional skills.' },
-    { id: 'projects', title: 'Proyek', description: 'Your portfolio projects.' },
-    { id: 'education', title: 'Pendidikan', description: 'Your academic background.' },
-    { id: 'certificates', title: 'Sertifikat', description: 'Certificates and trainings.' },
-  ];
+  const openAddProjectDialog = () => {
+    setEditingProjectIndex(null);
+    projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '' });
+    setProjectDialogOpen(true);
+  };
 
+  const openEditProjectDialog = (index: number) => {
+    setEditingProjectIndex(index);
+    const project = form.getValues().projects[index];
+    projectDialogForm.reset(project);
+    setProjectDialogOpen(true);
+  };
+
+  const handleProjectDialogSubmit = (data: ProjectDialogValues) => {
+    if (editingProjectIndex !== null) {
+      updateProject(editingProjectIndex, data);
+    } else {
+      appendProject(data);
+    }
+    setProjectDialogOpen(false);
+    toast({
+        title: editingProjectIndex !== null ? 'Project Updated' : 'Project Added',
+        description: 'Click "Save All Changes" to finalize.',
+    });
+  };
+  
   return (
-    <Card className="w-full max-w-5xl mx-auto">
-      <CardHeader className="flex flex-row justify-between items-start">
+    <>
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <CardTitle className="font-headline text-3xl text-primary">Admin Dashboard</CardTitle>
-          <CardDescription>Update your portfolio content section by section.</CardDescription>
+          <h1 className="text-4xl font-bold text-primary">Pengaturan Admin</h1>
+          <p className="text-muted-foreground">Kelola konten portofolio Anda di sini.</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
-      </CardHeader>
-      
+        <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
+      </div>
+
       <Form {...form}>
-        <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sections.map(section => (
-            <Dialog key={section.id}>
-              <Card className="flex flex-col">
-                <CardHeader>
-                  <CardTitle>{section.title}</CardTitle>
-                  <CardDescription>{section.description}</CardDescription>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Tabs defaultValue="projects" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="projects">Kelola Proyek</TabsTrigger>
+              <TabsTrigger value="settings">Pengaturan Umum</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="projects" className="mt-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Daftar Proyek</CardTitle>
+                    <CardDescription>Tambah, edit, atau hapus proyek portofolio Anda.</CardDescription>
+                  </div>
+                  <Button type="button" onClick={openAddProjectDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Proyek</Button>
                 </CardHeader>
-                <CardFooter className="mt-auto">
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full"><Edit className="mr-2 h-4 w-4" /> Edit Section</Button>
-                  </DialogTrigger>
-                </CardFooter>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Judul Proyek</TableHead>
+                        <TableHead className="w-[150px] text-right">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {projectFields.map((field, index) => (
+                        <TableRow key={field.id}>
+                          <TableCell className="font-medium">{form.watch(`projects.${index}.title`)}</TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => openEditProjectDialog(index)}><Edit className="h-3 w-3" /></Button>
+                            <Button type="button" variant="destructive" size="sm" onClick={() => removeProject(index)}><Trash2 className="h-3 w-3" /></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="settings" className="mt-6 space-y-6">
+              <Card>
+                <CardHeader><CardTitle>Informasi Pribadi</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                </CardContent>
               </Card>
 
-              <DialogContent className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>Edit {section.title}</DialogTitle></DialogHeader>
-                <div className="py-4 space-y-6">
-                  {section.id === 'info' && (<>
-                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  </>)}
-
-                  {section.id === 'skills' && (<>
+              <Card>
+                <CardHeader><CardTitle>Keahlian</CardTitle></CardHeader>
+                <CardContent>
+                   <div className="space-y-4">
                     {skillFields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md relative space-y-4">
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSkill(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        <FormField control={form.control} name={`skills.${index}.name`} render={({ field }) => (<FormItem><FormLabel>Skill Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`skills.${index}.icon`} render={({ field }) => (<FormItem><FormLabel>Icon Name</FormLabel><FormControl><Input placeholder="e.g., Target, Briefcase" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`skills.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={2} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <div key={field.id} className="flex items-center gap-4 p-2 border rounded-md">
+                        <span className="flex-grow">{form.watch(`skills.${index}.name`)}</span>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSkill(index)} className="h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendSkill({ name: '', icon: '', description: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
-                  </>)}
+                     <Button type="button" variant="outline" size="sm" onClick={() => appendSkill({ name: 'New Skill', icon: 'Star', description: 'Skill description' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
+                     <p className="text-sm text-muted-foreground">Note: Skill icon and description can be edited in the project source file for now.</p>
+                  </div>
+                </CardContent>
+              </Card>
 
-                  {section.id === 'projects' && (<>
-                    {projectFields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md relative space-y-4">
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeProject(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        <FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.imageHint`} render={({ field }) => (<FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.details`} render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.tags`} render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      </div>
-                    ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendProject({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
-                  </>)}
+              <Card>
+                <CardHeader><CardTitle>Pendidikan</CardTitle></CardHeader>
+                <CardContent>
+                  {educationFields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md relative space-y-4 mb-4">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeEducation(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <FormField control={form.control} name={`education.${index}.degree`} render={({ field }) => (<FormItem><FormLabel>Degree/Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name={`education.${index}.school`} render={({ field }) => (<FormItem><FormLabel>School/Institution</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name={`education.${index}.period`} render={({ field }) => (<FormItem><FormLabel>Period</FormLabel><FormControl><Input placeholder="e.g., 2020 - 2025" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" onClick={() => appendEducation({ degree: '', school: '', period: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Education</Button>
+                </CardContent>
+              </Card>
 
-                  {section.id === 'education' && (<>
-                    {educationFields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md relative space-y-4">
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeEducation(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        <FormField control={form.control} name={`education.${index}.degree`} render={({ field }) => (<FormItem><FormLabel>Degree/Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`education.${index}.school`} render={({ field }) => (<FormItem><FormLabel>School/Institution</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`education.${index}.period`} render={({ field }) => (<FormItem><FormLabel>Period</FormLabel><FormControl><Input placeholder="e.g., 2020 - 2025" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      </div>
-                    ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendEducation({ degree: '', school: '', period: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Education</Button>
-                  </>)}
-
-                  {section.id === 'certificates' && (<>
-                    {certificateFields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md relative space-y-4">
+               <Card>
+                <CardHeader><CardTitle>Sertifikat</CardTitle></CardHeader>
+                <CardContent>
+                  {certificateFields.map((field, index) => (
+                      <div key={field.id} className="p-4 border rounded-md relative space-y-4 mb-4">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeCertificate(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         <FormField control={form.control} name={`certificates.${index}.name`} render={({ field }) => (<FormItem><FormLabel>Certificate Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`certificates.${index}.issuer`} render={({ field }) => (<FormItem><FormLabel>Issuer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -184,18 +242,41 @@ export default function AdminForm() {
                          <FormField control={form.control} name={`certificates.${index}.url`} render={({ field }) => (<FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>)} />
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendCertificate({ name: '', issuer: '', date: '', url: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Certificate</Button>
-                  </>)}
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
-                  <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save Changes</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          ))}
-        </CardContent>
+                  <Button type="button" variant="outline" size="sm" onClick={() => appendCertificate({ name: '', issuer: '', date: '', url: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Certificate</Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end pt-4">
+            <Button size="lg" type="submit">Save All Changes</Button>
+          </div>
+        </form>
       </Form>
-    </Card>
+
+      <Dialog open={isProjectDialogOpen} onOpenChange={setProjectDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingProjectIndex !== null ? 'Edit Proyek' : 'Tambah Proyek Baru'}</DialogTitle>
+          </DialogHeader>
+          <Form {...projectDialogForm}>
+            <form onSubmit={projectDialogForm.handleSubmit(handleProjectDialogSubmit)} className="space-y-4 py-4">
+                <FormField control={projectDialogForm.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <DialogFooter>
+                <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                <Button type="submit">Save Project</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
+
+    
