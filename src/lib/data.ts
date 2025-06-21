@@ -28,7 +28,16 @@ const defaultProfileSettings = {
 };
 
 const defaultSkills: string[] = ["SEO", "Content Marketing", "Social Media Advertising", "Google Analytics", "Meta Ads"];
-const defaultProjects: Project[] = [];
+const defaultProjects: Project[] = [
+    {
+        title: "Contoh Proyek",
+        description: "Ini adalah deskripsi untuk proyek contoh Anda. Anda dapat mengedit atau menghapusnya di panel admin.",
+        details: "Detail lebih lanjut tentang proyek contoh.",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "project abstract",
+        tags: ["Contoh", "Tag"]
+    }
+];
 const defaultEducation: EducationItem[] = [
     { degree: "S1 Ilmu Komunikasi", school: "Universitas Gadjah Mada", period: "2018 - 2022" }
 ];
