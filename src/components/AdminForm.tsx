@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, PlusCircle, Trash2, Edit } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -31,7 +32,7 @@ const formSchema = z.object({
   })),
   projects: z.array(z.object({
     title: z.string().min(1, 'Project title is required'),
-    imageUrl: z.string().url("Invalid URL").optional().or(z.literal('')),
+    imageUrl: z.string().optional(),
     imageHint: z.string().optional(),
     description: z.string().min(1, 'Description is required'),
     details: z.string().min(1, 'Details are required'),
@@ -55,7 +56,7 @@ type FormValues = z.infer<typeof formSchema>;
 // Temporary state for the project dialog form
 const projectDialogSchema = z.object({
   title: z.string().min(1, 'Project title is required'),
-  imageUrl: z.string().url("Invalid URL").optional().or(z.literal('')),
+  imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
   details: z.string().min(1, 'Details are required'),
@@ -262,14 +263,32 @@ export default function AdminForm() {
           <Form {...projectDialogForm}>
             <form onSubmit={projectDialogForm.handleSubmit(handleProjectDialogSubmit)} className="space-y-4 py-4">
                 <FormField control={projectDialogForm.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={projectDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField
+                  control={projectDialogForm.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          disabled={projectDialogForm.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
-                <Button type="submit">Save Project</Button>
+                <Button type="submit" disabled={projectDialogForm.formState.isSubmitting}>
+                  {projectDialogForm.formState.isSubmitting ? 'Saving...' : 'Save Project'}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
@@ -278,5 +297,3 @@ export default function AdminForm() {
     </>
   );
 }
-
-    
