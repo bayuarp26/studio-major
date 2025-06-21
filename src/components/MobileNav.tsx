@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface MobileNavProps {
   navLinks: { name: string; href: string }[];
@@ -21,7 +22,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" className="px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0">
+        <Button variant="ghost" className="px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden">
           <Menu className="h-6 w-6" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
@@ -58,9 +59,12 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
               </Link>
             ))}
           </div>
-          <Button asChild>
-            <Link href="#contact" onClick={() => setOpen(false)}>Contact Me</Link>
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button asChild>
+                <Link href="#contact" onClick={() => setOpen(false)}>Hubungi Saya</Link>
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

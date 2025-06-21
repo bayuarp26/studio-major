@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MobileNav } from "./MobileNav";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
   { name: "Tentang", href: "#about" },
@@ -50,10 +51,11 @@ export default function Header({ name }: HeaderProps) {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
            <Button asChild className="hidden md:flex">
             <Link href="#contact">Hubungi Saya</Link>
           </Button>
+          <ThemeToggle />
           <div className="md:hidden">
             <MobileNav navLinks={navLinks} name={name} />
           </div>
