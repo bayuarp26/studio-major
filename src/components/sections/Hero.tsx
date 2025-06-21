@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Download, Send } from "lucide-react";
 
@@ -6,13 +7,14 @@ interface HeroProps {
   name: string;
   title: string;
   cvUrl: string;
+  profilePictureUrl: string;
 }
 
-export default function Hero({ name, title, cvUrl }: HeroProps) {
+export default function Hero({ name, title, cvUrl, profilePictureUrl }: HeroProps) {
   return (
     <section id="hero" className="bg-secondary/30">
-      <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center py-20 text-center">
-        <div className="max-w-3xl">
+      <div className="container grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-2 lg:gap-20">
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           <h1 className="font-headline text-5xl font-bold tracking-tight text-primary md:text-7xl">
             {name}
           </h1>
@@ -33,6 +35,16 @@ export default function Hero({ name, title, cvUrl }: HeroProps) {
               </Link>
             </Button>
           </div>
+        </div>
+        <div className="relative mx-auto h-80 w-80 flex-shrink-0 order-first lg:order-last">
+          <Image
+            src={profilePictureUrl}
+            alt={`Foto profil ${name}`}
+            fill
+            className="rounded-full object-cover shadow-2xl"
+            priority
+            data-ai-hint="professional man"
+          />
         </div>
       </div>
     </section>

@@ -3,6 +3,7 @@ export const portfolioData = {
   title: "Social Media Specialist | Digital Marketing",
   about: "Saya Wahyu Pratomo, seorang Spesialis Media Sosial dengan fokus pada Pemasaran Digital dan Kinerja Pemasaran. Telah berkecimpung di industri ini selama 9 bulan terakhir. Saya suka bekerja dengan merek-merek yang memiliki misi, serta senang merepresentasikan produk di media sosial.",
   cvUrl: "#",
+  profilePictureUrl: "https://placehold.co/400x400.png",
   contact: {
     email: "mailto:wahyupratomo187@gmail.com",
     linkedin: "https://www.linkedin.com/in/wahyu-pratomo-digitalks/",

@@ -20,6 +20,7 @@ export default function Home() {
           name={portfolioData.name}
           title={portfolioData.title}
           cvUrl={portfolioData.cvUrl}
+          profilePictureUrl={portfolioData.profilePictureUrl}
         />
         <About about={portfolioData.about} />
         <Education education={portfolioData.education} />

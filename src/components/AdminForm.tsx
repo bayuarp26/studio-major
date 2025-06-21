@@ -23,6 +23,7 @@ const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   title: z.string().min(5, 'Title is required'),
   about: z.string().min(10, 'About section is required'),
+  profilePictureUrl: z.string().optional(),
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
   skills: z.array(z.object({
@@ -76,6 +77,7 @@ export default function AdminForm() {
       name: portfolioData.name,
       title: portfolioData.title,
       about: portfolioData.about,
+      profilePictureUrl: portfolioData.profilePictureUrl,
       email: portfolioData.contact.email.replace('mailto:', ''),
       linkedin: portfolioData.contact.linkedin,
       skills: portfolioData.skills,
@@ -192,6 +194,23 @@ export default function AdminForm() {
               <Card>
                 <CardHeader><CardTitle>Informasi Pribadi</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
+                   <FormField
+                    control={form.control}
+                    name="profilePictureUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Foto Profil</FormLabel>
+                        <FormControl>
+                          <ImageUpload
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            disabled={form.formState.isSubmitting}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
