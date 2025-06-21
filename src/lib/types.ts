@@ -1,4 +1,6 @@
 
+import { WithId } from 'mongodb';
+
 export interface Contact {
   email: string;
   linkedin: string;
@@ -34,9 +36,9 @@ export interface PortfolioData {
   profilePictureUrl: string;
   contact: Contact;
   skills: string[];
-  projects: Project[];
-  education: EducationItem[];
-  certificates: Certificate[];
+  projects: (Project & { id?: string })[]; // Allow optional 'id' from react-hook-form
+  education: (EducationItem & { id?: string })[];
+  certificates: (Certificate & { id?: string })[];
   tools: string[];
 }
 
