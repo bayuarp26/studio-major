@@ -85,6 +85,7 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
   const [editingCertificateIndex, setEditingCertificateIndex] = useState<number | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [newTool, setNewTool] = useState('');
 
@@ -152,8 +153,9 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
 
 
   const onSubmit = async (data: FormValues) => {
-    // Sanitize and structure the data to be sent to the server.
-    // This prevents sending extra fields like `id` from useFieldArray.
+    setIsSubmitting(true);
+    // CRITICAL FIX: Sanitize and structure the data to be sent to the server.
+    // This removes the internal `id` from useFieldArray and ensures a clean payload.
     const portfolioDataToSave: PortfolioData = {
       name: data.name,
       title: data.title,
@@ -214,6 +216,8 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
         title: 'Update Failed',
         description: `Could not save portfolio data. ${errorMessage}`,
       });
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -424,13 +428,13 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
               <Card>
                 <CardHeader><CardTitle>Informasi Pribadi</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                   <FormField control={form.control} name="profilePictureUrl" render={({ field }) => (<FormItem><FormLabel>Foto Profil</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={form.formState.isSubmitting}/></FormControl><FormMessage /></FormItem>)}/>
+                   <FormField control={form.control} name="profilePictureUrl" render={({ field }) => (<FormItem><FormLabel>Foto Profil</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isSubmitting}/></FormControl><FormMessage /></FormItem>)}/>
                   <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={form.formState.isSubmitting} /></FormControl><FormMessage /></FormItem>)}/>
+                  <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)}/>
                 </CardContent>
               </Card>
 
@@ -501,8 +505,8 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
           </Tabs>
 
           <div className="flex justify-end pt-4">
-            <Button size="lg" type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+            <Button size="lg" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
               Save All Changes
             </Button>
           </div>
