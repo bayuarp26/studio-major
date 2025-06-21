@@ -62,30 +62,37 @@ const getDb = async () => {
     return dbInstance;
 };
 
-// One-time setup function
-const setupInitialDatabase = async (db: Db) => {
-    console.log("Performing one-time database setup...");
-    try {
-        const hashedPassword = await bcrypt.hash('wahyu-58321', 10);
-        await db.collection<User>(USERS_COLLECTION_NAME).updateOne(
-            { username: '085156453246' },
-            { $setOnInsert: { username: '085156453246', password: hashedPassword } },
-            { upsert: true }
-        );
+// --- ROBUST SEEDING FUNCTIONS ---
 
-        const { projects, education, certificates, skills, tools, ...mainContent } = DEFAULT_DATA;
-        await db.collection(CONTENT_COLLECTION_NAME).updateOne(
-            { _id: MAIN_DOC_ID },
-            { $setOnInsert: { _id: MAIN_DOC_ID, ...mainContent } },
-            { upsert: true }
-        );
+const seedAdminUser = async (db: Db) => {
+    const usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
+    const adminUser = await usersCollection.findOne({ username: '085156453246' });
+    if (!adminUser) {
+        console.log("Admin user not found, creating one...");
+        const hashedPassword = await bcrypt.hash('wahyu-58321', 10);
+        await usersCollection.insertOne({ username: '085156453246', password: hashedPassword });
+        console.log("Admin user created successfully.");
+    }
+};
+
+const seedDefaultContent = async (db: Db) => {
+    const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
+    const mainContent = await contentCollection.findOne({ _id: MAIN_DOC_ID });
+
+    if (!mainContent) {
+        console.log("Main content not found, seeding default data...");
+        const { projects, education, certificates, skills, tools, ...defaultMainContent } = DEFAULT_DATA;
+
+        await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...defaultMainContent });
 
         const populateIfEmpty = async (collectionName: string, items: any[], isSimpleArray = false) => {
             const collection = db.collection(collectionName);
             const count = await collection.countDocuments();
             if (count === 0 && items.length > 0) {
                 const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
-                await collection.insertMany(documentsToInsert.map(d => ({...d})));
+                if (documentsToInsert.length > 0) {
+                    await collection.insertMany(documentsToInsert.map(d => ({...d})));
+                }
             }
         };
 
@@ -94,23 +101,29 @@ const setupInitialDatabase = async (db: Db) => {
         await populateIfEmpty(CERTIFICATES_COLLECTION_NAME, certificates);
         await populateIfEmpty(SKILLS_COLLECTION_NAME, skills, true);
         await populateIfEmpty(TOOLS_COLLECTION_NAME, tools, true);
-        
-        console.log("Database setup complete.");
-    } catch (error) {
-        console.error("Critical error during one-time database setup:", error);
-        throw new Error("Database initialization failed.");
+        console.log("Default content seeded successfully.");
     }
 };
 
-// Singleton promise to ensure initialization runs only once.
+// Singleton promise to ensure initialization runs only once per server start.
 let initializationPromise: Promise<void> | null = null;
 const ensureInitialized = async () => {
     if (!initializationPromise) {
         initializationPromise = (async () => {
-            const db = await getDb();
-            const mainContent = await db.collection(CONTENT_COLLECTION_NAME).findOne({ _id: MAIN_DOC_ID });
-            if (!mainContent) {
-                await setupInitialDatabase(db);
+            try {
+                console.log("Ensuring database is initialized...");
+                const db = await getDb();
+                // Run both seeding functions concurrently for efficiency
+                await Promise.all([
+                    seedAdminUser(db),
+                    seedDefaultContent(db)
+                ]);
+                console.log("Database initialization check complete.");
+            } catch (error) {
+                console.error("Critical error during database initialization:", error);
+                // In case of error, nullify the promise to allow retrying on a subsequent call.
+                initializationPromise = null;
+                throw new Error("Database initialization failed.");
             }
         })();
     }
@@ -182,7 +195,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 if (items && items.length > 0) {
                     const documentsToInsert = isSimpleArray
                         ? items.map(name => ({ name }))
-                        : items.map(item => { const { _id, id, ...rest } = item; return rest; });
+                        : items.map(item => { const { _id, id, ...rest } = item as any; return rest; });
                     if (documentsToInsert.length > 0) {
                         await collection.insertMany(documentsToInsert, { session });
                     }
@@ -208,5 +221,3 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };
-
-    
