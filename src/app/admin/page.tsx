@@ -4,19 +4,30 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminForm from '@/components/AdminForm';
 import { Loader2 } from 'lucide-react';
+import { getSession, logout } from '@/lib/auth';
 
 export default function AdminPage() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('is-authenticated') === 'true';
-    if (!isAuthenticated) {
-      router.replace('/login');
-    } else {
-      setIsAuth(true);
+    async function checkAuth() {
+      const session = await getSession();
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setIsAuth(true);
+      }
     }
+    checkAuth();
   }, [router]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+    router.refresh();
+  };
+
 
   if (!isAuth) {
     return (
@@ -30,10 +41,8 @@ export default function AdminPage() {
   return (
     <div className="bg-secondary/5 min-h-screen">
       <div className="container mx-auto py-10">
-        <AdminForm />
+        <AdminForm onLogout={handleLogout} />
       </div>
     </div>
   );
 }
-
-    

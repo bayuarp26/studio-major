@@ -1,10 +1,12 @@
 
 import clientPromise from './mongodb';
-import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
+import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
 import { Collection, Db, MongoClient, WithId } from 'mongodb';
+import bcrypt from 'bcryptjs';
 
 // --- DATABASE & COLLECTION CONSTANTS ---
 const DB_NAME = 'portfolioDB';
+const USERS_COLLECTION_NAME = 'users';
 const CONTENT_COLLECTION_NAME = 'content';
 const PROJECTS_COLLECTION_NAME = 'projects';
 const SKILLS_COLLECTION_NAME = 'skills';
@@ -60,41 +62,78 @@ const getDb = async () => {
     return dbInstance;
 };
 
-// --- DATA INITIALIZATION ---
-// This function runs once to ensure the database is seeded.
-const initializeData = async (db: Db) => {
-    console.log("Checking database initialization...");
-    const contentCollection = db.collection<PortfolioData>(CONTENT_COLLECTION_NAME);
-    const mainContent = await contentCollection.findOne({ _id: MAIN_DOC_ID });
+// This function checks and creates a collection if it doesn't exist.
+const ensureCollection = async (db: Db, collectionName: string) => {
+    const collections = await db.listCollections({ name: collectionName }).toArray();
+    if (collections.length === 0) {
+        await db.createCollection(collectionName);
+        console.log(`Collection '${collectionName}' created.`);
+        return true; // Collection was created
+    }
+    return false; // Collection already existed
+};
 
-    if (!mainContent) {
-        console.log("Database is empty. Seeding with default data...");
-        // Use a temporary structure to match PortfolioData for the singleton doc
-        const singletonDoc = {
-            _id: MAIN_DOC_ID,
-            name: DEFAULT_DATA.name,
-            title: DEFAULT_DATA.title,
-            about: DEFAULT_DATA.about,
-            contact: DEFAULT_DATA.contact,
-            cvUrl: DEFAULT_DATA.cvUrl,
-            profilePictureUrl: DEFAULT_DATA.profilePictureUrl,
-        };
-        await contentCollection.insertOne(singletonDoc as any);
-        if (DEFAULT_DATA.projects.length > 0) await db.collection(PROJECTS_COLLECTION_NAME).insertMany(DEFAULT_DATA.projects);
-        if (DEFAULT_DATA.education.length > 0) await db.collection(EDUCATION_COLLECTION_NAME).insertMany(DEFAULT_DATA.education);
-        if (DEFAULT_DATA.certificates.length > 0) await db.collection(CERTIFICATES_COLLECTION_NAME).insertMany(DEFAULT_DATA.certificates);
-        if (DEFAULT_DATA.skills.length > 0) await db.collection(SKILLS_COLLECTION_NAME).insertMany(DEFAULT_DATA.skills.map(name => ({ name })));
-        if (DEFAULT_DATA.tools.length > 0) await db.collection(TOOLS_COLLECTION_NAME).insertMany(DEFAULT_DATA.tools.map(name => ({ name })));
-        console.log("Database seeded successfully.");
-    } else {
-        console.log("Database already initialized.");
+// This function populates a collection with default data only if it's empty.
+const seedCollection = async <T>(collection: Collection<T>, data: T[]) => {
+    const count = await collection.countDocuments();
+    if (count === 0 && data.length > 0) {
+        // @ts-ignore - InsertMany does not expect _id, but we need it for singleton
+        await collection.insertMany(data);
+        console.log(`Seeded collection '${collection.collectionName}' with ${data.length} documents.`);
     }
 };
 
+const initializeDefaultData = async (db: Db) => {
+    console.log("Checking and initializing data if necessary.");
+    try {
+        // Ensure all collections exist
+        await ensureCollection(db, USERS_COLLECTION_NAME);
+        await ensureCollection(db, CONTENT_COLLECTION_NAME);
+        await ensureCollection(db, PROJECTS_COLLECTION_NAME);
+        await ensureCollection(db, EDUCATION_COLLECTION_NAME);
+        await ensureCollection(db, CERTIFICATES_COLLECTION_NAME);
+        await ensureCollection(db, SKILLS_COLLECTION_NAME);
+        await ensureCollection(db, TOOLS_COLLECTION_NAME);
+
+        // Seed data into collections if they are empty
+        const usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
+        const adminUserCount = await usersCollection.countDocuments({ username: '085156453246' });
+        if (adminUserCount === 0) {
+            const hashedPassword = await bcrypt.hash('wahyu-58321', 10);
+            await usersCollection.insertOne({
+                username: '085156453246',
+                password: hashedPassword
+            });
+            console.log("Default admin user created.");
+        }
+
+        const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
+        const mainContentCount = await contentCollection.countDocuments({ _id: MAIN_DOC_ID });
+        if (mainContentCount === 0) {
+            const { projects, education, certificates, skills, tools, ...mainContent } = DEFAULT_DATA;
+            await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...mainContent });
+            console.log("Seeded main content.");
+        }
+
+        await seedCollection(db.collection(PROJECTS_COLLECTION_NAME), DEFAULT_DATA.projects);
+        await seedCollection(db.collection(EDUCATION_COLLECTION_NAME), DEFAULT_DATA.education);
+        await seedCollection(db.collection(CERTIFICATES_COLLECTION_NAME), DEFAULT_DATA.certificates);
+        await seedCollection(db.collection(SKILLS_COLLECTION_NAME), DEFAULT_DATA.skills.map(name => ({ name })));
+        await seedCollection(db.collection(TOOLS_COLLECTION_NAME), DEFAULT_DATA.tools.map(name => ({ name })));
+
+        console.log("Database initialization check complete.");
+    } catch (error) {
+        console.error("An unexpected error occurred during data initialization:", error);
+    }
+};
+
+
+// --- Initialization guard ---
 let isInitialized = false;
-const ensureInitialized = async (db: Db) => {
+const ensureInitialized = async () => {
     if (!isInitialized) {
-        await initializeData(db);
+        const db = await getDb();
+        await initializeDefaultData(db);
         isInitialized = true;
     }
 };
@@ -103,8 +142,8 @@ const ensureInitialized = async (db: Db) => {
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
     try {
+        await ensureInitialized();
         const db = await getDb();
-        await ensureInitialized(db);
 
         const contentCollection = db.collection<PortfolioData>(CONTENT_COLLECTION_NAME);
         const mainContent = await contentCollection.findOne({ _id: MAIN_DOC_ID });
@@ -120,7 +159,6 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             return DEFAULT_DATA;
         }
 
-        // Clean up the _id field from sub-documents
         const cleanDocs = (docs: WithId<any>[]) => docs.map(({ _id, ...rest }) => rest);
 
         return {
@@ -138,7 +176,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         };
     } catch (error) {
         console.error("Failed to get portfolio data, returning default set:", error);
-        return DEFAULT_DATA; // Fallback to default data on error
+        return DEFAULT_DATA;
     }
 };
 
@@ -147,27 +185,28 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     const session = client.startSession();
 
     try {
+        console.log("Starting transaction to update portfolio data...");
         await session.withTransaction(async () => {
             const db = client.db(DB_NAME);
 
-            // 1. Update the singleton document with main content
-            const { name, title, about, contact, cvUrl, profilePictureUrl } = data;
+            const { name, title, about, contact, cvUrl, profilePictureUrl, projects, education, certificates, skills, tools } = data;
+
+            // 1. Update the singleton main content document
             await db.collection(CONTENT_COLLECTION_NAME).updateOne(
                 { _id: MAIN_DOC_ID },
                 { $set: { name, title, about, contact, cvUrl, profilePictureUrl } },
                 { upsert: true, session }
             );
 
-            // 2. Overwrite array-based collections
+            // 2. Helper to overwrite an entire collection
             const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
                 const collection = db.collection(collectionName);
-                await collection.deleteMany({}, { session }); // Clear the collection
+                await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
                     const documentsToInsert = isSimpleArray
                         ? items.map(name => ({ name }))
                         : items.map(item => {
-                            // Ensure no unwanted _id or id fields are inserted
-                            const { _id, id, ...rest } = item;
+                            const { _id, id, ...rest } = item; // Clean internal IDs
                             return rest;
                           });
                     if (documentsToInsert.length > 0) {
@@ -176,17 +215,26 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 }
             };
             
-            await overwriteCollection(PROJECTS_COLLECTION_NAME, data.projects);
-            await overwriteCollection(EDUCATION_COLLECTION_NAME, data.education);
-            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, data.certificates);
-            await overwriteCollection(SKILLS_COLLECTION_NAME, data.skills, true);
-            await overwriteCollection(TOOLS_COLLECTION_NAME, data.tools, true);
+            // 3. Overwrite each collection with new data
+            await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
+            await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
+            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
+            await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
+            await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
         });
-        console.log("Portfolio data updated successfully within a transaction.");
+        console.log("Transaction committed. Portfolio data updated successfully.");
     } catch (error) {
         console.error('Error during MongoDB transaction:', error);
         throw new Error('Could not update portfolio data due to a database transaction error.');
     } finally {
         await session.endSession();
+        console.log("Transaction session ended.");
     }
+};
+
+
+export const getUser = async (username: string): Promise<WithId<User> | null> => {
+    await ensureInitialized();
+    const db = await getDb();
+    return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };

@@ -39,3 +39,13 @@ export interface PortfolioData {
   certificates: Certificate[];
   tools: string[];
 }
+
+export interface User {
+    username: string;
+    password?: string; // Hashed password
+}
+
+export interface SessionPayload {
+  username: string;
+  expiresAt: Date;
+}

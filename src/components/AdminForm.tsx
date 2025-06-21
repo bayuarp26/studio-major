@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -66,7 +65,11 @@ type ProjectDialogValues = z.infer<typeof projectSchema>;
 type EducationDialogValues = z.infer<typeof educationSchema>;
 type CertificateDialogValues = z.infer<typeof certificateSchema>;
 
-export default function AdminForm() {
+interface AdminFormProps {
+  onLogout: () => void;
+}
+
+export default function AdminForm({ onLogout }: AdminFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const dataFetchedRef = useRef(false);
@@ -161,28 +164,29 @@ export default function AdminForm() {
       },
       skills: data.skills,
       tools: data.tools,
-      projects: data.projects.map(p => ({
+      projects: data.projects.map(p => {
         // Rebuild each project object from scratch
-        title: p.title,
-        description: p.description,
-        details: p.details,
-        imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
-        imageHint: p.imageHint || '',
-        tags: typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
-      })),
-      education: data.education.map(e => ({
-        // Rebuild each education object
-        degree: e.degree,
-        school: e.school,
-        period: e.period,
-      })),
-      certificates: data.certificates.map(c => ({
-         // Rebuild each certificate object
-        name: c.name,
-        issuer: c.issuer,
-        date: c.date,
-        url: c.url || '#'
-      })),
+        const { id, _id, ...cleanProject } = p as any;
+        return {
+          ...cleanProject,
+          imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
+          imageHint: p.imageHint || '',
+          tags: typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+        }
+      }),
+      education: data.education.map(e => {
+        // Rebuild each education object, removing internal hook-form id
+        const { id, _id, ...cleanEducation } = e as any;
+        return cleanEducation;
+      }),
+      certificates: data.certificates.map(c => {
+         // Rebuild each certificate object, removing internal hook-form id
+        const { id, _id, ...cleanCertificate } = c as any;
+        return {
+          ...cleanCertificate,
+          url: c.url || '#'
+        }
+      }),
     };
     
     try {
@@ -213,11 +217,6 @@ export default function AdminForm() {
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('is-authenticated');
-    toast({ description: 'You have been logged out.' });
-    router.push('/');
-  };
 
   // Project Dialog Handlers
   const openAddProjectDialog = () => {
@@ -321,7 +320,7 @@ export default function AdminForm() {
           <h1 className="text-4xl font-bold text-primary">Pengaturan Admin</h1>
           <p className="text-muted-foreground">Kelola konten portofolio Anda di sini.</p>
         </div>
-        <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
+        <Button variant="outline" onClick={onLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
       </div>
 
       <Form {...form}>
@@ -442,7 +441,7 @@ export default function AdminForm() {
                           <Label>Daftar Keahlian Saat Ini:</Label>
                           <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
                             {field.value?.map((skill, index) => (
-                              <Badge key={index} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                              <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
                                 {skill}
                                 <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
                                   <span className="sr-only">Hapus {skill}</span><Trash2 className="h-3.5 w-3.5" />
@@ -474,7 +473,7 @@ export default function AdminForm() {
                           <Label>Daftar Tools Saat Ini:</Label>
                           <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
                             {field.value?.map((tool, index) => (
-                              <Badge key={index} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                              <Badge key={`${tool}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
                                 {tool}
                                 <button type="button" onClick={() => handleRemoveTool(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
                                   <span className="sr-only">Hapus {tool}</span><Trash2 className="h-3.5 w-3.5" />
