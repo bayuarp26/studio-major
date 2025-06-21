@@ -93,6 +93,7 @@ export default function AdminForm() {
       certificates: [],
     }
   });
+  const { reset } = form;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,7 +114,7 @@ export default function AdminForm() {
           education: data.education || [],
           certificates: data.certificates || [],
         };
-        form.reset(formValues);
+        reset(formValues);
       } catch (error) {
         console.error(error);
         toast({
@@ -126,7 +127,7 @@ export default function AdminForm() {
       }
     };
     fetchData();
-  }, [form, toast]);
+  }, [reset, toast]);
 
   const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
   const { fields: educationFields, append: appendEducation, remove: removeEducation, update: updateEducation } = useFieldArray({ control: form.control, name: "education" });
