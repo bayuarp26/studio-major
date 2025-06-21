@@ -8,10 +8,37 @@ import Skills from "@/components/sections/Skills";
 import Projects from "@/components/sections/Projects";
 import Tools from "@/components/sections/Tools";
 import Contact from "@/components/sections/Contact";
-import { portfolioData } from "@/lib/data";
+import fs from 'fs';
+import path from 'path';
+import type { PortfolioData } from '@/lib/types';
+
+const getPortfolioData = (): PortfolioData => {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(fileContent);
+  } catch (error) {
+    console.error("Failed to load portfolio data for page, returning fallback. Error: ", error);
+    // Return a fallback object if the file can't be read to prevent crash
+    return {
+      name: "Error",
+      title: "Could not load data",
+      about: "",
+      cvUrl: "",
+      profilePictureUrl: "",
+      contact: { email: "", linkedin: "" },
+      skills: [],
+      projects: [],
+      education: [],
+      certificates: [],
+    };
+  }
+};
 
 
 export default function Home() {
+  const portfolioData = getPortfolioData();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header name={portfolioData.name} />

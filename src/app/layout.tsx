@@ -3,12 +3,39 @@ import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { portfolioData } from "@/lib/data";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import fs from 'fs';
+import path from 'path';
+import type { PortfolioData } from '@/lib/types';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
+const getPortfolioData = (): PortfolioData => {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(fileContent);
+  } catch (error) {
+    console.error("Failed to load portfolio data for layout, returning fallback. Error: ", error);
+    // Return a fallback object if the file can't be read
+    return {
+      name: "Portfolio",
+      title: "My Portfolio",
+      about: "",
+      cvUrl: "",
+      profilePictureUrl: "",
+      contact: { email: "", linkedin: "" },
+      skills: [],
+      projects: [],
+      education: [],
+      certificates: [],
+    };
+  }
+};
+
+
 export async function generateMetadata(): Promise<Metadata> {
+  const portfolioData = getPortfolioData();
   return {
     title: `Portofolio ${portfolioData.name}`,
     description: portfolioData.title,

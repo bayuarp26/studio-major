@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { portfolioData } from '@/lib/data';
+import type { PortfolioData } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, PlusCircle, Trash2, Edit } from 'lucide-react';
+import { LogOut, PlusCircle, Trash2, Edit, Loader2 } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 
@@ -56,7 +56,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// Temporary state for the project dialog form
 const projectDialogSchema = z.object({
   title: z.string().min(1, 'Project title is required'),
   imageUrl: z.string().optional(),
@@ -72,23 +71,42 @@ export default function AdminForm() {
   const { toast } = useToast();
   const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: portfolioData.name,
-      title: portfolioData.title,
-      about: portfolioData.about,
-      profilePictureUrl: portfolioData.profilePictureUrl,
-      cvUrl: portfolioData.cvUrl,
-      email: portfolioData.contact.email.replace('mailto:', ''),
-      linkedin: portfolioData.contact.linkedin,
-      skills: portfolioData.skills,
-      projects: portfolioData.projects.map(p => ({ ...p, tags: p.tags.join(', ') })),
-      education: portfolioData.education,
-      certificates: portfolioData.certificates,
-    },
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/portfolio');
+        if (!response.ok) throw new Error('Failed to fetch data');
+        
+        const data: PortfolioData = await response.json();
+        
+        const formValues = {
+          ...data,
+          email: data.contact.email.replace('mailto:', ''),
+          linkedin: data.contact.linkedin || '',
+          projects: data.projects.map(p => ({ ...p, tags: p.tags.join(', ') })),
+        };
+        form.reset(formValues);
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not load portfolio data.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [form, toast]);
+
 
   const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({ control: form.control, name: "skills" });
   const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
@@ -99,15 +117,53 @@ export default function AdminForm() {
     resolver: zodResolver(projectDialogSchema),
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log('Form data submitted:', {
-      ...data,
-      projects: data.projects.map(p => ({...p, tags: p.tags.split(',').map(t => t.trim())}))
-    });
-    toast({
-      title: 'Update Successful',
-      description: 'Portfolio information has been updated (check console).',
-    });
+  const onSubmit = async (data: FormValues) => {
+    const portfolioDataToSave: PortfolioData = {
+      name: data.name,
+      title: data.title,
+      about: data.about,
+      profilePictureUrl: data.profilePictureUrl || 'https://placehold.co/400x400.png',
+      cvUrl: data.cvUrl,
+      contact: {
+          email: `mailto:${data.email}`,
+          linkedin: data.linkedin || '',
+      },
+      skills: data.skills,
+      projects: data.projects.map(p => ({ 
+        ...p, 
+        imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
+        imageHint: p.imageHint || '',
+        tags: p.tags.split(',').map(t => t.trim()) 
+      })),
+      education: data.education,
+      certificates: data.certificates,
+    };
+    
+    try {
+      const response = await fetch('/api/portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(portfolioDataToSave),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save data');
+      }
+
+      toast({
+        title: 'Update Successful',
+        description: 'Portfolio information has been updated.',
+      });
+    } catch (error) {
+      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: `Could not save portfolio data. ${errorMessage}`,
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -141,6 +197,14 @@ export default function AdminForm() {
         description: 'Click "Save All Changes" to finalize.',
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
   
   return (
     <>
@@ -289,7 +353,10 @@ export default function AdminForm() {
           </Tabs>
 
           <div className="flex justify-end pt-4">
-            <Button size="lg" type="submit">Save All Changes</Button>
+            <Button size="lg" type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+              Save All Changes
+            </Button>
           </div>
         </form>
       </Form>
