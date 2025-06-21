@@ -1,3 +1,4 @@
+
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
 
@@ -100,6 +101,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         if (!mainDataDoc) {
             console.log('No data found in MongoDB. Initializing with default data.');
             
+            // FIXED: Only insert main data into the content collection
             await contentCollection.insertOne({ ...defaultMainData, docId: DOC_ID });
             
             if (defaultProjects.length > 0) await projectsCollection.insertMany(defaultProjects);
@@ -177,7 +179,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         // For array collections, we clear and re-insert.
         await projectsCollection.deleteMany({});
         if (projects && projects.length > 0) {
-            await projectsCollection.insertMany(projects);
+            await projectsCollection.insertMany(projects.map(({...p}) => p));
         }
 
         await skillsCollection.deleteMany({});
@@ -187,12 +189,12 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
 
         await educationCollection.deleteMany({});
         if (education && education.length > 0) {
-            await educationCollection.insertMany(education);
+            await educationCollection.insertMany(education.map(({...e}) => e));
         }
 
         await certificatesCollection.deleteMany({});
         if (certificates && certificates.length > 0) {
-            await certificatesCollection.insertMany(certificates);
+            await certificatesCollection.insertMany(certificates.map(({...c}) => c));
         }
 
     } catch (error) {
