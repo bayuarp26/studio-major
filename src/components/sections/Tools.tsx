@@ -23,8 +23,8 @@ export default function Tools({ tools }: ToolsProps) {
         <Card className="mt-16 max-w-3xl mx-auto bg-card">
           <CardContent className="p-8">
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-3">
-              {tools.map((tool) => (
-                <li key={tool} className="flex items-center gap-3">
+              {tools.map((tool, index) => (
+                <li key={`${tool}-${index}`} className="flex items-center gap-3">
                   <CheckCircle className="h-5 w-5 text-accent flex-shrink-0" />
                   <span className="text-foreground/80">{tool}</span>
                 </li>
@@ -36,3 +36,4 @@ export default function Tools({ tools }: ToolsProps) {
     </section>
   );
 }
+
