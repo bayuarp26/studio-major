@@ -29,7 +29,14 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
              <Link href="/" className="flex items-center" onClick={() => setOpen(false)}>
-              <span className="font-headline text-2xl font-bold text-primary">{name}</span>
+              <span
+                className={cn(
+                  "font-headline text-2xl font-bold text-primary transition-opacity duration-300",
+                  activeSection === 'about' ? "opacity-0" : "opacity-100"
+                )}
+              >
+                {name}
+              </span>
             </Link>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
                 <X className="h-5 w-5"/>

@@ -19,14 +19,20 @@ interface HeaderProps {
 }
 
 export default function Header({ name }: HeaderProps) {
-  const firstName = name.split(" ")[0];
   const activeSection = useActiveSection(navLinks.map(link => link.href.substring(1)));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <span className="text-2xl font-bold text-primary">{firstName}</span>
+          <span
+            className={cn(
+              "text-2xl font-bold text-primary transition-all duration-300",
+              activeSection === 'about' ? "opacity-0 -translate-x-2" : "opacity-100 translate-x-0"
+            )}
+          >
+            {name}
+          </span>
         </Link>
         <nav className="hidden md:flex md:items-center md:gap-6 text-sm">
           {navLinks.map((link) => (
