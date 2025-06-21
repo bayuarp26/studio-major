@@ -196,9 +196,15 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items.length > 0) {
-                    // Data is pre-sanitized in AdminForm, so we can insert directly.
                     const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
-                    await collection.insertMany(documentsToInsert, { session });
+                    // Ensure no _id fields are accidentally inserted from previous fetches
+                    const cleanDocuments = documentsToInsert.map(doc => {
+                        const { _id, ...rest } = doc;
+                        return rest;
+                    });
+                    if(cleanDocuments.length > 0) {
+                       await collection.insertMany(cleanDocuments, { session });
+                    }
                 }
             };
             
