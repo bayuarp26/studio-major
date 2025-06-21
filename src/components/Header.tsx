@@ -14,7 +14,7 @@ const navLinks = [
   { name: "Proyek", href: "#projects" },
 ];
 
-const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1))];
+const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1)), 'contact'];
 
 interface HeaderProps {
   name: string;
@@ -30,7 +30,7 @@ export default function Header({ name }: HeaderProps) {
           <span
             className={cn(
               "text-2xl font-bold text-primary transition-all duration-300",
-              activeSection === 'hero' || activeSection === 'about' ? "opacity-0 -translate-x-2" : "opacity-100 translate-x-0"
+              activeSection === 'hero' ? "opacity-0 -translate-x-2" : "opacity-100 translate-x-0"
             )}
           >
             {name}

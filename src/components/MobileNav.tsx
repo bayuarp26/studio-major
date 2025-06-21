@@ -15,7 +15,7 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, name }: MobileNavProps) {
   const [open, setOpen] = useState(false);
-  const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1))];
+  const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1)), 'contact'];
   const activeSection = useActiveSection(allSectionIds);
 
   return (
@@ -33,7 +33,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
               <span
                 className={cn(
                   "font-headline text-2xl font-bold text-primary transition-opacity duration-300",
-                  activeSection === 'hero' || activeSection === 'about' ? "opacity-0" : "opacity-100"
+                  activeSection === 'hero' ? "opacity-0" : "opacity-100"
                 )}
               >
                 {name}
