@@ -1,7 +1,7 @@
-
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
 
+// Constants for database and collection names
 const DB_NAME = 'portfolioDB';
 const CONTENT_COLLECTION_NAME = 'content';
 const PROFILE_SETTINGS_COLLECTION_NAME = 'profile_settings';
@@ -10,7 +10,10 @@ const SKILLS_COLLECTION_NAME = 'skills';
 const EDUCATION_COLLECTION_NAME = 'education';
 const CERTIFICATES_COLLECTION_NAME = 'certificates';
 const TOOLS_COLLECTION_NAME = 'tools';
-const DOC_ID = 'main';
+const DOC_ID = 'main'; // Use a consistent ID for singleton documents
+
+// --- DEFAULT DATA ---
+// This data is used to populate the database on the very first run.
 
 const defaultMainData = {
     name: "Wahyu Pratomo",
@@ -27,7 +30,7 @@ const defaultProfileSettings = {
     profilePictureUrl: "https://placehold.co/400x400.png",
 };
 
-const defaultProjects: Project[] = [
+const defaultProjects: Omit<Project, '_id'>[] = [
     {
         title: "Kampanye Harisenin.com",
         description: "Meningkatkan kesadaran merek dan akuisisi pelanggan untuk Harisenin.com melalui strategi media sosial yang komprehensif. Bertanggung jawab untuk meningkatkan copywriting, hook, dan desain konten yang menarik bagi audiens target.",
@@ -47,117 +50,174 @@ const defaultProjects: Project[] = [
     {
         title: "Analisis Media Sosial TukangSayur.co",
         description: "Melakukan analisis mendalam terhadap performa media sosial TukangSayur.co di platform Instagram. Memberikan rekomendasi strategis berdasarkan data untuk peningkatan engagement dan pertumbuhan.",
-        details: "Analisis Kompetitor: Mengidentifikasi kekuatan dan kelemahan.\nAnalisis Konten: Menemukan format konten paling efektif.\nRekomendasi: Memberikan saran untuk optimasi strategi.",
+        details: "Analisis Competitor: Mengidentifikasi kekuatan dan kelemahan.\nAnalisis Konten: Menemukan format konten paling efektif.\nRekomendasi: Memberikan saran untuk optimasi strategi.",
         imageUrl: "https://placehold.co/600x400.png",
         imageHint: "data analytics",
         tags: ["Social Media Analysis", "Instagram", "Data Analytics"]
     }
 ];
-const defaultEducation: EducationItem[] = [
+
+const defaultEducation: Omit<EducationItem, '_id'>[] = [
     { degree: "S1 Ilmu Komunikasi", school: "Universitas Gadjah Mada", period: "2018 - 2022" }
 ];
-const defaultCertificates: Certificate[] = [
+
+const defaultCertificates: Omit<Certificate, '_id'>[] = [
     { name: "Google Analytics for Beginners", issuer: "Google", date: "Jan 2023", url: "#" }
 ];
+
 const defaultSkills: string[] = [
-    "Digital marketing",
-    "Manajemen Proyek",
-    "Ads Desain",
-    "Kolaborasi Tim",
-    "SEO Specialist",
-    "Social Media Specialist",
-    "Content Ads Creation"
+    "Digital marketing", "Manajemen Proyek", "Ads Desain", "Kolaborasi Tim", 
+    "SEO Specialist", "Social Media Specialist", "Content Ads Creation"
 ];
+
 const defaultTools: string[] = [
   "Social Blade", "Canva", "Google Analytics", "Meta Business Suite", "Instagram Insights", "Figma"
 ];
 
+
+// --- DATABASE FUNCTIONS ---
 
 const getDb = async () => {
     const client = await clientPromise;
     return client.db(DB_NAME);
 };
 
-const initializeDefaultData = async (db: any) => {
+/**
+ * Initializes the database with default data if it's empty.
+ * This function is idempotent and safe to call on every data fetch.
+ */
+const initializeDefaultData = async () => {
+    const db = await getDb();
+    
+    // An array of promises to run initialization checks in parallel
+    const initPromises = [
+        async () => {
+            const collection = db.collection(CONTENT_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertOne({ docId: DOC_ID, ...defaultMainData });
+            }
+        },
+        async () => {
+            const collection = db.collection(PROFILE_SETTINGS_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertOne({ docId: DOC_ID, ...defaultProfileSettings });
+            }
+        },
+        async () => {
+            const collection = db.collection(PROJECT_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertMany(defaultProjects);
+            }
+        },
+        async () => {
+            const collection = db.collection(EDUCATION_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertMany(defaultEducation);
+            }
+        },
+        async () => {
+            const collection = db.collection(CERTIFICATES_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertMany(defaultCertificates);
+            }
+        },
+        async () => {
+            const collection = db.collection(SKILLS_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertMany(defaultSkills.map(name => ({ name })));
+            }
+        },
+        async () => {
+            const collection = db.collection(TOOLS_COLLECTION_NAME);
+            if (await collection.countDocuments() === 0) {
+                await collection.insertMany(defaultTools.map(name => ({ name })));
+            }
+        }
+    ];
+    
     try {
-        console.log('Checking and initializing data if necessary.');
-
-        // Use a control document to prevent race conditions during initialization
-        const initCollection = db.collection('_init');
-        const initDoc = await initCollection.findOne({ docId: 'initial_data_seeded' });
-
-        if (initDoc) {
-            console.log('Default data already seeded. Skipping initialization.');
-            return;
-        }
-
-        // Upsert single documents
-        await db.collection(CONTENT_COLLECTION_NAME).updateOne({ docId: DOC_ID }, { $set: defaultMainData }, { upsert: true });
-        await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).updateOne({ docId: DOC_ID }, { $set: defaultProfileSettings }, { upsert: true });
-
-        // Insert array data
-        if (defaultProjects.length > 0) await db.collection(PROJECT_COLLECTION_NAME).insertMany(defaultProjects);
-        if (defaultSkills.length > 0) await db.collection(SKILLS_COLLECTION_NAME).insertMany(defaultSkills.map(name => ({ name })));
-        if (defaultEducation.length > 0) await db.collection(EDUCATION_COLLECTION_NAME).insertMany(defaultEducation);
-        if (defaultCertificates.length > 0) await db.collection(CERTIFICATES_COLLECTION_NAME).insertMany(defaultCertificates);
-        if (defaultTools.length > 0) await db.collection(TOOLS_COLLECTION_NAME).insertMany(defaultTools.map(name => ({ name })));
-        
-        // Mark initialization as complete
-        await initCollection.insertOne({ docId: 'initial_data_seeded', timestamp: new Date() });
-        
-        console.log('Default data initialization complete.');
-    } catch (error: any) {
-        if (error.code === 11000) { // E11000 is duplicate key error code
-            console.log('Initialization already in progress or completed by another process. Skipping.');
-        } else {
-            console.error("An unexpected error occurred during data initialization:", error);
-            throw error; // Re-throw other errors
-        }
+        // Wait for all initialization checks to complete
+        await Promise.all(initPromises.map(p => p()));
+    } catch (error) {
+        console.error("Error during database initialization:", error);
+        // We throw the error to be handled by the caller, which will prevent the app from crashing.
+        throw new Error('Could not initialize database.');
     }
 };
 
+/**
+ * Fetches all portfolio data from the database.
+ * Ensures the database is initialized before fetching.
+ */
 export const getPortfolioData = async (): Promise<PortfolioData> => {
-    const db = await getDb();
-    
-    // This will now reliably set up the database on the first run.
-    await initializeDefaultData(db);
-    
-    const mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
-    const profileSettingsDoc = await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).findOne({ docId: DOC_ID });
-    
-    const projectsFromDb = await db.collection(PROJECT_COLLECTION_NAME).find({}).toArray();
-    const skillsFromDb = await db.collection(SKILLS_COLLECTION_NAME).find({}).toArray();
-    const educationFromDb = await db.collection(EDUCATION_COLLECTION_NAME).find({}).toArray();
-    const certificatesFromDb = await db.collection(CERTIFICATES_COLLECTION_NAME).find({}).toArray();
-    const toolsFromDb = await db.collection(TOOLS_COLLECTION_NAME).find({}).toArray();
+    try {
+        await initializeDefaultData();
+        const db = await getDb();
 
-    const { _id: mainId, docId: mainDocId, ...mainData } = mainDataDoc || {};
-    const { _id: profileId, docId: profileDocId, ...profileSettings } = profileSettingsDoc || {};
+        const mainDataDoc = await db.collection(CONTENT_COLLECTION_NAME).findOne({ docId: DOC_ID });
+        const profileSettingsDoc = await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).findOne({ docId: DOC_ID });
+        
+        // Fetch all documents from array-based collections
+        const projectsFromDb = await db.collection(PROJECT_COLLECTION_NAME).find({}).toArray();
+        const skillsFromDb = await db.collection(SKILLS_COLLECTION_NAME).find({}).toArray();
+        const educationFromDb = await db.collection(EDUCATION_COLLECTION_NAME).find({}).toArray();
+        const certificatesFromDb = await db.collection(CERTIFICATES_COLLECTION_NAME).find({}).toArray();
+        const toolsFromDb = await db.collection(TOOLS_COLLECTION_NAME).find({}).toArray();
 
-    return {
-        name: mainData.name || defaultMainData.name,
-        title: mainData.title || defaultMainData.title,
-        about: mainData.about || defaultMainData.about,
-        contact: { ...defaultMainData.contact, ...mainData.contact },
-        cvUrl: profileSettings.cvUrl || defaultProfileSettings.cvUrl,
-        profilePictureUrl: profileSettings.profilePictureUrl || defaultProfileSettings.profilePictureUrl,
-        projects: projectsFromDb.map(({ _id, ...p }: any) => p as Project),
-        skills: skillsFromDb.map((s: any) => s.name),
-        education: educationFromDb.map(({ _id, ...e }: any) => e as EducationItem),
-        certificates: certificatesFromDb.map(({ _id, ...c }: any) => c as Certificate),
-        tools: toolsFromDb.map((t: any) => t.name),
-    };
+        // Destructure and remove MongoDB's internal _id and our docId
+        const { _id: mainId, docId: mainDocId, ...mainData } = mainDataDoc || {};
+        const { _id: profileId, docId: profileDocId, ...profileSettings } = profileSettingsDoc || {};
+
+        // Assemble the final data object, providing defaults if data is missing
+        return {
+            name: mainData.name || defaultMainData.name,
+            title: mainData.title || defaultMainData.title,
+            about: mainData.about || defaultMainData.about,
+            contact: { ...defaultMainData.contact, ...mainData.contact },
+            cvUrl: profileSettings.cvUrl || defaultProfileSettings.cvUrl,
+            profilePictureUrl: profileSettings.profilePictureUrl || defaultProfileSettings.profilePictureUrl,
+            projects: projectsFromDb.map(({ _id, ...p }: any) => p as Project),
+            skills: skillsFromDb.map((s: any) => s.name),
+            education: educationFromDb.map(({ _id, ...e }: any) => e as EducationItem),
+            certificates: certificatesFromDb.map(({ _id, ...c }: any) => c as Certificate),
+            tools: toolsFromDb.map((t: any) => t.name),
+        };
+    } catch (error) {
+        console.error("Failed to get portfolio data:", error);
+        // In case of a failure, return the default data to prevent the app from crashing.
+        return {
+            name: "Wahyu Pratomo",
+            title: "Digital Marketing Specialist & SEO Analyst",
+            about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
+            contact: {
+                email: "mailto:wahyu.pratomo@example.com",
+                linkedin: "https://linkedin.com/in/wahyu-pratomo"
+            },
+            cvUrl: "#",
+            profilePictureUrl: "https://placehold.co/400x400.png",
+            projects: defaultProjects,
+            skills: defaultSkills,
+            education: defaultEducation,
+            certificates: defaultCertificates,
+            tools: defaultTools,
+        };
+    }
 };
 
+/**
+ * Updates the entire portfolio data in the database.
+ * This uses a "replace all" strategy for simplicity.
+ */
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
     try {
         const db = await getDb();
         const { projects, skills, education, certificates, tools, cvUrl, profilePictureUrl, ...mainData } = data;
 
+        // Update single-document collections
         await db.collection(CONTENT_COLLECTION_NAME).updateOne(
             { docId: DOC_ID },
             { $set: mainData },
-            { upsert: true }
+            { upsert: true } // Creates the document if it doesn't exist
         );
 
         await db.collection(PROFILE_SETTINGS_COLLECTION_NAME).updateOne(
@@ -166,17 +226,18 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
             { upsert: true }
         );
 
-        // This "replace all" strategy is simple and effective for this app.
-        const updateCollection = async (collectionName: string, items: any[]) => {
+        // Helper function for replacing all items in a collection
+        const replaceCollection = async (collectionName: string, items: any[]) => {
             const collection = db.collection(collectionName);
-            await collection.deleteMany({});
+            await collection.deleteMany({}); // Clear the collection
             if (items && items.length > 0) {
                 // The data from the form is clean and does not have MongoDB's _id
                 await collection.insertMany(items);
             }
         };
         
-        const updateSimpleCollection = async (collectionName: string, items: string[]) => {
+        // Helper for collections that just store a list of names
+        const replaceSimpleCollection = async (collectionName: string, items: string[]) => {
             const collection = db.collection(collectionName);
             await collection.deleteMany({});
             if (items && items.length > 0) {
@@ -184,14 +245,19 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
             }
         };
 
-        await updateCollection(PROJECT_COLLECTION_NAME, projects);
-        await updateSimpleCollection(SKILLS_COLLECTION_NAME, skills);
-        await updateCollection(EDUCATION_COLLECTION_NAME, education);
-        await updateCollection(CERTIFICATES_COLLECTION_NAME, certificates);
-        await updateSimpleCollection(TOOLS_COLLECTION_NAME, tools);
+        // Execute all updates
+        await Promise.all([
+            replaceCollection(PROJECT_COLLECTION_NAME, projects),
+            replaceSimpleCollection(SKILLS_COLLECTION_NAME, skills),
+            replaceCollection(EDUCATION_COLLECTION_NAME, education),
+            replaceCollection(CERTIFICATES_COLLECTION_NAME, certificates),
+            replaceSimpleCollection(TOOLS_COLLECTION_NAME, tools)
+        ]);
 
     } catch (error) {
         console.error('Error updating data in MongoDB:', error);
         throw new Error('Could not update portfolio data in MongoDB.');
     }
 };
+
+    
