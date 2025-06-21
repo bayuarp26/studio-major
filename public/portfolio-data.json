@@ -9,31 +9,10 @@
     "linkedin": "https://www.linkedin.com/in/wahyu-pratomo-digitalks/"
   },
   "skills": [
-    {
-      "icon": "Target",
-      "name": "Digital Marketing",
-      "description": "Strategi dan eksekusi kampanye pemasaran digital."
-    },
-    {
-      "icon": "Briefcase",
-      "name": "Project Management",
-      "description": "Mengelola proyek dari konsepsi hingga selesai."
-    },
-    {
-      "icon": "Leaf",
-      "name": "Sustainable Design",
-      "description": "Prinsip desain yang berfokus pada dampak lingkungan."
-    },
-    {
-      "icon": "Users",
-      "name": "Client Communication",
-      "description": "Membangun hubungan yang kuat dengan klien."
-    },
-    {
-      "icon": "Handshake",
-      "name": "Team Collaboration",
-      "description": "Bekerja secara efektif dalam tim untuk mencapai tujuan."
-    }
+    "Digital Marketing",
+    "Project Management",
+    "Client Communication",
+    "Team Collaboration"
   ],
   "projects": [
     {

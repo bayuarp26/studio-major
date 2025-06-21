@@ -1,33 +1,12 @@
+
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getPortfolioData, updatePortfolioData } from '@/lib/data';
 import type { PortfolioData } from '@/lib/types';
-
-const dataFilePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
-
-// Helper function to read data
-const readData = (): PortfolioData => {
-  try {
-    const fileContent = fs.readFileSync(dataFilePath, 'utf-8');
-    const data = JSON.parse(fileContent);
-
-    // Coerce skills to be string[] if they are objects
-    if (data.skills && Array.isArray(data.skills) && data.skills.length > 0 && typeof data.skills[0] === 'object' && data.skills[0] !== null) {
-      data.skills = data.skills.map((skill: any) => String(skill.name || ''));
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Failed to read portfolio data, file might not exist or is corrupted.', error);
-    // This is a critical error, but we'll let the GET/POST handlers decide how to respond.
-    throw new Error('Could not read portfolio data file.');
-  }
-};
 
 // GET handler to fetch current portfolio data
 export async function GET() {
   try {
-    const data = readData();
+    const data = await getPortfolioData();
     return NextResponse.json(data);
   } catch (error) {
     if (error instanceof Error) {
@@ -46,7 +25,7 @@ export async function POST(request: Request) {
     if (!newData || !newData.name) {
         return NextResponse.json({ message: 'Invalid data provided' }, { status: 400 });
     }
-    fs.writeFileSync(dataFilePath, JSON.stringify(newData, null, 2), 'utf-8');
+    await updatePortfolioData(newData);
     return NextResponse.json({ message: 'Data updated successfully' });
   } catch (error) {
      if (error instanceof Error) {
