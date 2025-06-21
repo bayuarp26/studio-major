@@ -4,6 +4,7 @@ import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/t
 
 const DB_NAME = 'portfolioDB';
 const CONTENT_COLLECTION_NAME = 'content';
+const PROFILE_SETTINGS_COLLECTION_NAME = 'profile_settings';
 const PROJECT_COLLECTION_NAME = 'projects';
 const SKILLS_COLLECTION_NAME = 'skills';
 const EDUCATION_COLLECTION_NAME = 'education';
@@ -14,12 +15,15 @@ const defaultMainData = {
     name: "Wahyu Pratomo",
     title: "Digital Marketing Specialist & SEO Analyst",
     about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
-    cvUrl: "#",
-    profilePictureUrl: "https://placehold.co/400x400.png",
     contact: {
         email: "mailto:wahyu.pratomo@example.com",
         linkedin: "https://linkedin.com/in/wahyu-pratomo"
     },
+};
+
+const defaultProfileSettings = {
+    cvUrl: "#",
+    profilePictureUrl: "https://placehold.co/400x400.png",
 };
 
 const defaultSkills: string[] = ["SEO", "Content Marketing", "Social Media Advertising", "Google Analytics", "Meta Ads"];
@@ -34,6 +38,7 @@ const defaultCertificates: Certificate[] = [
 
 const defaultPortfolioData: PortfolioData = {
     ...defaultMainData,
+    ...defaultProfileSettings,
     skills: defaultSkills,
     projects: defaultProjects,
     education: defaultEducation,
@@ -49,17 +54,20 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
     try {
         const db = await getDb();
         const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
+        const profileSettingsCollection = db.collection(PROFILE_SETTINGS_COLLECTION_NAME);
         const projectsCollection = db.collection(PROJECT_COLLECTION_NAME);
         const skillsCollection = db.collection(SKILLS_COLLECTION_NAME);
         const educationCollection = db.collection(EDUCATION_COLLECTION_NAME);
         const certificatesCollection = db.collection(CERTIFICATES_COLLECTION_NAME);
         
         let mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
+        let profileSettingsDoc = await profileSettingsCollection.findOne({ docId: DOC_ID });
 
         if (!mainDataDoc) {
             console.log('No data found in MongoDB. Initializing with default data.');
             
             await contentCollection.insertOne({ ...defaultMainData, docId: DOC_ID });
+            await profileSettingsCollection.insertOne({ ...defaultProfileSettings, docId: DOC_ID });
             
             if (defaultProjects.length > 0) await projectsCollection.insertMany(defaultProjects);
             if (defaultSkills.length > 0) await skillsCollection.insertMany(defaultSkills.map(name => ({ name })));
@@ -67,17 +75,21 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             if (defaultCertificates.length > 0) await certificatesCollection.insertMany(defaultCertificates);
             
             mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
+            profileSettingsDoc = await profileSettingsCollection.findOne({ docId: DOC_ID });
         }
         
         if (!mainDataDoc) {
-             throw new Error('Failed to retrieve data after initialization.');
+             throw new Error('Failed to retrieve main data after initialization.');
         }
 
         const { _id, docId, ...dbMainData } = mainDataDoc;
+        const { _id: _id2, docId: docId2, ...dbProfileSettings } = profileSettingsDoc || {};
 
-        const mainData = {
+        const combinedData = {
             ...defaultMainData,
+            ...defaultProfileSettings,
             ...dbMainData,
+            ...dbProfileSettings,
             contact: {
                 ...defaultMainData.contact,
                 ...(dbMainData.contact || {}),
@@ -97,7 +109,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const certificates = certificatesFromDb.map(c => { const { _id, ...certData } = c; return certData as Certificate; });
 
 
-        return { ...mainData, projects, skills, education, certificates };
+        return { ...combinedData, projects, skills, education, certificates };
     } catch (error) {
         console.error('Error fetching data from MongoDB:', error);
         return defaultPortfolioData;
@@ -108,12 +120,13 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     try {
         const db = await getDb();
         const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
+        const profileSettingsCollection = db.collection(PROFILE_SETTINGS_COLLECTION_NAME);
         const projectsCollection = db.collection(PROJECT_COLLECTION_NAME);
         const skillsCollection = db.collection(SKILLS_COLLECTION_NAME);
         const educationCollection = db.collection(EDUCATION_COLLECTION_NAME);
         const certificatesCollection = db.collection(CERTIFICATES_COLLECTION_NAME);
         
-        const { projects, skills, education, certificates, ...mainData } = data;
+        const { projects, skills, education, certificates, cvUrl, profilePictureUrl, ...mainData } = data;
 
         await contentCollection.updateOne(
             { docId: DOC_ID },
@@ -123,8 +136,18 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                     projects: "",
                     skills: "",
                     education: "",
-                    certificates: ""
+                    certificates: "",
+                    cvUrl: "",
+                    profilePictureUrl: ""
                 }
+            },
+            { upsert: true }
+        );
+
+        await profileSettingsCollection.updateOne(
+            { docId: DOC_ID },
+            {
+                $set: { cvUrl, profilePictureUrl }
             },
             { upsert: true }
         );
