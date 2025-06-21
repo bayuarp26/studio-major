@@ -64,11 +64,11 @@ const getDb = async () => {
 
 const seedAdminUser = async (db: Db) => {
     const usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
-    const adminUser = await usersCollection.findOne({ username: '085156453246' });
+    const adminUser = await usersCollection.findOne({ username: '082286514244' });
     if (!adminUser) {
         console.log("Admin user not found, creating one...");
         const hashedPassword = await bcrypt.hash('wahyu-58321', 10);
-        await usersCollection.insertOne({ username: '085156453246', password: hashedPassword });
+        await usersCollection.insertOne({ username: '082286514244', password: hashedPassword });
         console.log("Admin user created successfully.");
     }
 };
