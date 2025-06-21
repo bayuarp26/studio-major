@@ -1,7 +1,7 @@
 
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
-import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
+import { Collection, Db, MongoClient, WithId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 // --- DATABASE & COLLECTION CONSTANTS ---
@@ -75,21 +75,20 @@ const seedAdminUser = async (db: Db) => {
 
 const seedDefaultContent = async (db: Db) => {
     const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
-    const mainContent = await contentCollection.findOne({ _id: MAIN_DOC_ID });
+    const mainContentExists = await contentCollection.countDocuments({ _id: MAIN_DOC_ID }) > 0;
 
-    if (!mainContent) {
+    if (!mainContentExists) {
         console.log("Main content not found, seeding default data...");
         const { projects, education, certificates, skills, tools, ...defaultMainContent } = DEFAULT_DATA;
-
         await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...defaultMainContent });
 
         const populateIfEmpty = async (collectionName: string, items: any[], isSimpleArray = false) => {
             const collection = db.collection(collectionName);
             const count = await collection.countDocuments();
             if (count === 0 && items.length > 0) {
-                const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
+                const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items.map(d => ({ ...d }));
                 if (documentsToInsert.length > 0) {
-                    await collection.insertMany(documentsToInsert.map(d => ({...d})));
+                    await collection.insertMany(documentsToInsert);
                 }
             }
         };
@@ -105,22 +104,19 @@ const seedDefaultContent = async (db: Db) => {
 
 let initializationPromise: Promise<void> | null = null;
 const ensureDbInitialized = async () => {
-    if (initializationPromise) {
-        return initializationPromise;
+    if (!initializationPromise) {
+        initializationPromise = (async () => {
+            try {
+                const db = await getDb();
+                await seedAdminUser(db);
+                await seedDefaultContent(db);
+            } catch (error) {
+                console.error("Critical error during database initialization:", error);
+                initializationPromise = null; // Reset promise on failure to allow retry
+                throw error;
+            }
+        })();
     }
-    initializationPromise = (async () => {
-        try {
-            const db = await getDb();
-            await Promise.all([
-                seedAdminUser(db),
-                seedDefaultContent(db)
-            ]);
-        } catch (error) {
-            console.error("Critical error during database initialization:", error);
-            initializationPromise = null;
-            throw error;
-        }
-    })();
     return initializationPromise;
 };
 
@@ -131,13 +127,20 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
     const db = await getDb();
     
     try {
+        const mainContentCollection = db.collection<Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>>(CONTENT_COLLECTION_NAME);
+        const projectsCollection = db.collection<Project>(PROJECTS_COLLECTION_NAME);
+        const educationCollection = db.collection<EducationItem>(EDUCATION_COLLECTION_NAME);
+        const certificatesCollection = db.collection<Certificate>(CERTIFICATES_COLLECTION_NAME);
+        const skillsCollection = db.collection<{ name: string }>(SKILLS_COLLECTION_NAME);
+        const toolsCollection = db.collection<{ name: string }>(TOOLS_COLLECTION_NAME);
+
         const [mainContent, projects, education, certificates, skillsDocs, toolsDocs] = await Promise.all([
-            db.collection<Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>>(CONTENT_COLLECTION_NAME).findOne({ _id: MAIN_DOC_ID }),
-            db.collection<Project>(PROJECTS_COLLECTION_NAME).find({}).toArray(),
-            db.collection<EducationItem>(EDUCATION_COLLECTION_NAME).find({}).toArray(),
-            db.collection<Certificate>(CERTIFICATES_COLLECTION_NAME).find({}).toArray(),
-            db.collection<{name: string}>(SKILLS_COLLECTION_NAME).find({}).toArray(),
-            db.collection<{name: string}>(TOOLS_COLLECTION_NAME).find({}).toArray(),
+            mainContentCollection.findOne({ _id: MAIN_DOC_ID }),
+            projectsCollection.find({}).toArray(),
+            educationCollection.find({}).toArray(),
+            certificatesCollection.find({}).toArray(),
+            skillsCollection.find({}).toArray(),
+            toolsCollection.find({}).toArray(),
         ]);
 
         if (!mainContent) {
@@ -188,7 +191,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 if (items && items.length > 0) {
                     const documentsToInsert = isSimpleArray
                         ? items.map(name => ({ name }))
-                        : items.map(item => { const { _id, id, ...rest } = item as any; return rest; });
+                        : items.map(item => { const { ...rest } = item; return rest; }); // Already cleaned in AdminForm
                     if (documentsToInsert.length > 0) {
                         await collection.insertMany(documentsToInsert, { session });
                     }
@@ -203,6 +206,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         });
     } catch (error) {
         console.error('Error during MongoDB transaction:', error);
+        await session.abortTransaction();
         throw new Error('Could not update portfolio data due to a database transaction error.');
     } finally {
         await session.endSession();
@@ -214,3 +218,5 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };
+
+    
