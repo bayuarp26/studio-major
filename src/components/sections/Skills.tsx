@@ -1,9 +1,19 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { LucideIcon } from "lucide-react";
+import { Target, Briefcase, Leaf, Users, Handshake, type LucideIcon } from "lucide-react";
+
+const iconMap: { [key: string]: LucideIcon } = {
+  Target,
+  Briefcase,
+  Leaf,
+  Users,
+  Handshake,
+};
 
 interface Skill {
   name: string;
-  icon: LucideIcon;
+  icon: string;
   description: string;
 }
 
@@ -24,19 +34,24 @@ export default function Skills({ skills }: SkillsProps) {
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {skills.map((skill) => (
-            <Card key={skill.name} className="flex flex-col items-center justify-center text-center transition-transform duration-300 hover:scale-105 hover:shadow-lg">
-              <CardHeader>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <skill.icon className="h-8 w-8" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardTitle className="text-xl font-headline font-semibold">{skill.name}</CardTitle>
-                <p className="mt-2 text-muted-foreground">{skill.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {skills.map((skill) => {
+            const IconComponent = iconMap[skill.icon];
+            if (!IconComponent) return null;
+
+            return (
+              <Card key={skill.name} className="flex flex-col items-center justify-center text-center transition-transform duration-300 hover:scale-105 hover:shadow-lg">
+                <CardHeader>
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <IconComponent className="h-8 w-8" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardTitle className="text-xl font-headline font-semibold">{skill.name}</CardTitle>
+                  <p className="mt-2 text-muted-foreground">{skill.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>

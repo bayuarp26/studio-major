@@ -10,11 +10,11 @@ export const portfolioData = {
     linkedin: "",
   },
   skills: [
-    { name: "Digital Marketing", icon: Target, description: "Strategi dan eksekusi kampanye pemasaran digital." },
-    { name: "Project Management", icon: Briefcase, description: "Mengelola proyek dari konsepsi hingga selesai." },
-    { name: "Sustainable Design", icon: Leaf, description: "Prinsip desain yang berfokus pada dampak lingkungan." },
-    { name: "Client Communication", icon: Users, description: "Membangun hubungan yang kuat dengan klien." },
-    { name: "Team Collaboration", icon: Handshake, description: "Bekerja secara efektif dalam tim untuk mencapai tujuan." },
+    { name: "Digital Marketing", icon: "Target", description: "Strategi dan eksekusi kampanye pemasaran digital." },
+    { name: "Project Management", icon: "Briefcase", description: "Mengelola proyek dari konsepsi hingga selesai." },
+    { name: "Sustainable Design", icon: "Leaf", description: "Prinsip desain yang berfokus pada dampak lingkungan." },
+    { name: "Client Communication", icon: "Users", description: "Membangun hubungan yang kuat dengan klien." },
+    { name: "Team Collaboration", icon: "Handshake", description: "Bekerja secara efektif dalam tim untuk mencapai tujuan." },
   ],
   projects: [
     {
