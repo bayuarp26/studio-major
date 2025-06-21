@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,11 +10,13 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
   { name: "Tentang", href: "#about" },
+  { name: "Pendidikan", href: "#education" },
   { name: "Keahlian", href: "#skills" },
   { name: "Proyek", href: "#projects" },
+  { name: "Sertifikat", href: "#certificates" },
 ];
 
-const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1)), 'contact'];
+const allSectionIds = ['hero', ...navLinks.map(link => link.href.substring(1)), 'tools', 'contact'];
 
 interface HeaderProps {
   name: string;

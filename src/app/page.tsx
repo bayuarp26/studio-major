@@ -8,6 +8,8 @@ import Projects from "@/components/sections/Projects";
 import Tools from "@/components/sections/Tools";
 import Contact from "@/components/sections/Contact";
 import { getPortfolioData } from "@/lib/data";
+import Education from "@/components/sections/Education";
+import Certificates from "@/components/sections/Certificates";
 
 export default async function Home() {
   const portfolioData = await getPortfolioData();
@@ -26,8 +28,10 @@ export default async function Home() {
           about={portfolioData.about}
           profilePictureUrl={portfolioData.profilePictureUrl}
         />
+        <Education education={portfolioData.education} />
         <Skills skills={portfolioData.skills} />
         <Projects projects={portfolioData.projects} />
+        <Certificates certificates={portfolioData.certificates} />
         <Tools />
         <Contact contact={portfolioData.contact} />
       </main>

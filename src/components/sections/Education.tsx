@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+
 import { GraduationCap } from "lucide-react";
 
 interface EducationItem {
@@ -12,6 +12,8 @@ interface EducationProps {
 }
 
 export default function Education({ education }: EducationProps) {
+  if (!education || education.length === 0) return null;
+
   return (
     <section id="education" className="bg-background py-24 sm:py-32">
       <div className="container">
@@ -23,25 +25,27 @@ export default function Education({ education }: EducationProps) {
             Perjalanan akademis saya.
           </p>
         </div>
-        <div className="mt-16 max-w-2xl mx-auto">
-          {education.map((edu) => (
-            <Card key={edu.school} className="p-6 transition-shadow duration-300 hover:shadow-lg bg-card/50">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
-                    <GraduationCap className="h-6 w-6" />
-                </div>
+        <div className="relative mt-16 max-w-2xl mx-auto">
+          <div className="absolute left-6 top-0 h-full w-0.5 bg-border -translate-x-1/2"></div>
+          
+          <div className="space-y-12">
+            {education.map((edu, index) => (
+              <div key={index} className="relative pl-12">
+                 <div className="absolute left-6 top-1 h-6 w-6 -translate-x-1/2 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-8 ring-background">
+                    <GraduationCap className="h-4 w-4" />
+                  </div>
                 <div>
                   <h3 className="text-lg font-semibold">{edu.degree}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-base font-medium text-primary">
                     {edu.school}
                   </p>
-                  <p className="mt-1 text-sm font-medium text-primary">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {edu.period}
                   </p>
                 </div>
               </div>
-            </Card>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

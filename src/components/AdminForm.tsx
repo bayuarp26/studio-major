@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PortfolioData } from '@/lib/types';
+import type { PortfolioData, EducationItem, Certificate } from '@/lib/types';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,29 @@ import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles } from 'lucide-reac
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 
+const projectSchema = z.object({
+  title: z.string().min(1, 'Project title is required'),
+  imageUrl: z.string().optional(),
+  imageHint: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  details: z.string().min(1, 'Details are required'),
+  tags: z.string().min(1, 'Tags are required (comma-separated)'),
+});
+
+const educationSchema = z.object({
+  degree: z.string().min(1, 'Degree is required'),
+  school: z.string().min(1, 'School is required'),
+  period: z.string().min(1, 'Period is required'),
+});
+
+const certificateSchema = z.object({
+  name: z.string().min(1, 'Certificate name is required'),
+  issuer: z.string().min(1, 'Issuer is required'),
+  date: z.string().min(1, 'Date is required'),
+  url: z.string().url('Invalid URL').optional().or(z.literal('')),
+});
+
+
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   title: z.string().min(5, 'Title is required'),
@@ -31,33 +55,29 @@ const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
   skills: z.array(z.string()).min(1, 'At least one skill is required'),
-  projects: z.array(z.object({
-    title: z.string().min(1, 'Project title is required'),
-    imageUrl: z.string().optional(),
-    imageHint: z.string().optional(),
-    description: z.string().min(1, 'Description is required'),
-    details: z.string().min(1, 'Details are required'),
-    tags: z.string().min(1, 'Tags are required (comma-separated)'),
-  })),
+  projects: z.array(projectSchema),
+  education: z.array(educationSchema),
+  certificates: z.array(certificateSchema),
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-const projectDialogSchema = z.object({
-  title: z.string().min(1, 'Project title is required'),
-  imageUrl: z.string().optional(),
-  imageHint: z.string().optional(),
-  description: z.string().min(1, 'Description is required'),
-  details: z.string().min(1, 'Details are required'),
-  tags: z.string().min(1, 'Tags are required (comma-separated)'),
-});
-type ProjectDialogValues = z.infer<typeof projectDialogSchema>;
+type ProjectDialogValues = z.infer<typeof projectSchema>;
+type EducationDialogValues = z.infer<typeof educationSchema>;
+type CertificateDialogValues = z.infer<typeof certificateSchema>;
 
 export default function AdminForm() {
   const router = useRouter();
   const { toast } = useToast();
+  
   const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
+  
+  const [isEducationDialogOpen, setEducationDialogOpen] = useState(false);
+  const [editingEducationIndex, setEditingEducationIndex] = useState<number | null>(null);
+
+  const [isCertificateDialogOpen, setCertificateDialogOpen] = useState(false);
+  const [editingCertificateIndex, setEditingCertificateIndex] = useState<number | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [newSkill, setNewSkill] = useState('');
 
@@ -65,6 +85,9 @@ export default function AdminForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       skills: [],
+      projects: [],
+      education: [],
+      certificates: [],
     }
   });
 
@@ -81,8 +104,10 @@ export default function AdminForm() {
           ...data,
           email: data.contact.email.replace('mailto:', ''),
           linkedin: data.contact.linkedin || '',
-          skills: data.skills,
-          projects: data.projects.map(p => ({ ...p, tags: p.tags.join(', ') })),
+          skills: data.skills || [],
+          projects: data.projects.map(p => ({ ...p, tags: p.tags.join(', ') })) || [],
+          education: data.education || [],
+          certificates: data.certificates || [],
         };
         form.reset(formValues);
       } catch (error) {
@@ -100,10 +125,13 @@ export default function AdminForm() {
   }, [form, toast]);
 
   const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
+  const { fields: educationFields, append: appendEducation, remove: removeEducation, update: updateEducation } = useFieldArray({ control: form.control, name: "education" });
+  const { fields: certificateFields, append: appendCertificate, remove: removeCertificate, update: updateCertificate } = useFieldArray({ control: form.control, name: "certificates" });
 
-  const projectDialogForm = useForm<ProjectDialogValues>({
-    resolver: zodResolver(projectDialogSchema),
-  });
+  const projectDialogForm = useForm<ProjectDialogValues>({ resolver: zodResolver(projectSchema) });
+  const educationDialogForm = useForm<EducationDialogValues>({ resolver: zodResolver(educationSchema) });
+  const certificateDialogForm = useForm<CertificateDialogValues>({ resolver: zodResolver(certificateSchema) });
+
 
   const onSubmit = async (data: FormValues) => {
     const portfolioDataToSave: PortfolioData = {
@@ -123,6 +151,8 @@ export default function AdminForm() {
         imageHint: p.imageHint || '',
         tags: p.tags.split(',').map(t => t.trim()) 
       })),
+      education: data.education,
+      certificates: data.certificates.map(c => ({...c, url: c.url || '#'})),
     };
     
     try {
@@ -158,31 +188,60 @@ export default function AdminForm() {
     router.push('/');
   };
 
+  // Project Dialog Handlers
   const openAddProjectDialog = () => {
     setEditingProjectIndex(null);
     projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '' });
     setProjectDialogOpen(true);
   };
-
   const openEditProjectDialog = (index: number) => {
     setEditingProjectIndex(index);
-    const project = form.getValues().projects[index];
-    projectDialogForm.reset(project);
+    projectDialogForm.reset(form.getValues().projects[index]);
     setProjectDialogOpen(true);
   };
-
   const handleProjectDialogSubmit = (data: ProjectDialogValues) => {
-    if (editingProjectIndex !== null) {
-      updateProject(editingProjectIndex, data);
-    } else {
-      appendProject(data);
-    }
+    if (editingProjectIndex !== null) updateProject(editingProjectIndex, data);
+    else appendProject(data);
     setProjectDialogOpen(false);
-    toast({
-        title: editingProjectIndex !== null ? 'Project Updated' : 'Project Added',
-        description: 'Click "Save All Changes" to finalize.',
-    });
+    toast({ title: editingProjectIndex !== null ? 'Project Updated' : 'Project Added' });
   };
+
+  // Education Dialog Handlers
+  const openAddEducationDialog = () => {
+    setEditingEducationIndex(null);
+    educationDialogForm.reset({ degree: '', school: '', period: '' });
+    setEducationDialogOpen(true);
+  };
+  const openEditEducationDialog = (index: number) => {
+    setEditingEducationIndex(index);
+    educationDialogForm.reset(form.getValues().education[index]);
+    setEducationDialogOpen(true);
+  };
+  const handleEducationDialogSubmit = (data: EducationDialogValues) => {
+    if (editingEducationIndex !== null) updateEducation(editingEducationIndex, data);
+    else appendEducation(data);
+    setEducationDialogOpen(false);
+    toast({ title: editingEducationIndex !== null ? 'Education Updated' : 'Education Added' });
+  };
+
+  // Certificate Dialog Handlers
+  const openAddCertificateDialog = () => {
+    setEditingCertificateIndex(null);
+    certificateDialogForm.reset({ name: '', issuer: '', date: '', url: '' });
+    setCertificateDialogOpen(true);
+  };
+  const openEditCertificateDialog = (index: number) => {
+    setEditingCertificateIndex(index);
+    certificateDialogForm.reset(form.getValues().certificates[index]);
+    setCertificateDialogOpen(true);
+  };
+  const handleCertificateDialogSubmit = (data: CertificateDialogValues) => {
+    if (editingCertificateIndex !== null) updateCertificate(editingCertificateIndex, data);
+    else appendCertificate(data);
+    setCertificateDialogOpen(false);
+    toast({ title: editingCertificateIndex !== null ? 'Certificate Updated' : 'Certificate Added' });
+  };
+
 
   const handleAddSkill = () => {
     const trimmedSkill = newSkill.trim();
@@ -221,28 +280,22 @@ export default function AdminForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Tabs defaultValue="projects" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="projects">Kelola Proyek</TabsTrigger>
+              <TabsTrigger value="education">Kelola Pendidikan</TabsTrigger>
+              <TabsTrigger value="certificates">Kelola Sertifikat</TabsTrigger>
               <TabsTrigger value="settings">Pengaturan Umum</TabsTrigger>
             </TabsList>
             
             <TabsContent value="projects" className="mt-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle>Daftar Proyek</CardTitle>
-                    <CardDescription>Tambah, edit, atau hapus proyek portofolio Anda.</CardDescription>
-                  </div>
+                  <div><CardTitle>Daftar Proyek</CardTitle><CardDescription>Tambah, edit, atau hapus proyek portofolio Anda.</CardDescription></div>
                   <Button type="button" onClick={openAddProjectDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Proyek</Button>
                 </CardHeader>
                 <CardContent>
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Judul Proyek</TableHead>
-                        <TableHead className="w-[150px] text-right">Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                    <TableHeader><TableRow><TableHead>Judul Proyek</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
                     <TableBody>
                       {projectFields.map((field, index) => (
                         <TableRow key={field.id}>
@@ -259,84 +312,84 @@ export default function AdminForm() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="education" className="mt-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div><CardTitle>Riwayat Pendidikan</CardTitle><CardDescription>Kelola riwayat pendidikan formal Anda.</CardDescription></div>
+                  <Button type="button" onClick={openAddEducationDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Pendidikan</Button>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader><TableRow><TableHead>Gelar & Jurusan</TableHead><TableHead>Sekolah</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {educationFields.map((field, index) => (
+                        <TableRow key={field.id}>
+                          <TableCell className="font-medium">{form.watch(`education.${index}.degree`)}</TableCell>
+                          <TableCell>{form.watch(`education.${index}.school`)}</TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => openEditEducationDialog(index)}><Edit className="h-3 w-3" /></Button>
+                            <Button type="button" variant="destructive" size="sm" onClick={() => removeEducation(index)}><Trash2 className="h-3 w-3" /></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="certificates" className="mt-6">
+               <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div><CardTitle>Daftar Sertifikat</CardTitle><CardDescription>Kelola sertifikat dan pelatihan yang Anda miliki.</CardDescription></div>
+                  <Button type="button" onClick={openAddCertificateDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Sertifikat</Button>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader><TableRow><TableHead>Nama Sertifikat</TableHead><TableHead>Penerbit</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {certificateFields.map((field, index) => (
+                        <TableRow key={field.id}>
+                          <TableCell className="font-medium">{form.watch(`certificates.${index}.name`)}</TableCell>
+                          <TableCell>{form.watch(`certificates.${index}.issuer`)}</TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => openEditCertificateDialog(index)}><Edit className="h-3 w-3" /></Button>
+                            <Button type="button" variant="destructive" size="sm" onClick={() => removeCertificate(index)}><Trash2 className="h-3 w-3" /></Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="settings" className="mt-6 space-y-6">
               <Card>
                 <CardHeader><CardTitle>Informasi Pribadi</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                   <FormField
-                    control={form.control}
-                    name="profilePictureUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Foto Profil</FormLabel>
-                        <FormControl>
-                          <ImageUpload
-                            value={field.value || ''}
-                            onChange={field.onChange}
-                            disabled={form.formState.isSubmitting}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                   <FormField control={form.control} name="profilePictureUrl" render={({ field }) => (<FormItem><FormLabel>Foto Profil</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={form.formState.isSubmitting}/></FormControl><FormMessage /></FormItem>)}/>
                   <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField
-                    control={form.control}
-                    name="cvUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CV</FormLabel>
-                        <FormControl>
-                          <FileUpload
-                            value={field.value || ''}
-                            onChange={field.onChange}
-                            disabled={form.formState.isSubmitting}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={form.formState.isSubmitting} /></FormControl><FormMessage /></FormItem>)}/>
                 </CardContent>
               </Card>
 
-              <FormField
-                control={form.control}
-                name="skills"
-                render={({ field }) => (
+              <FormField control={form.control} name="skills" render={({ field }) => (
                   <FormItem>
                     <Card>
                       <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="h-5 w-5 text-primary" />
-                          <CardTitle>Kelola Keahlian Utama</CardTitle>
-                        </div>
+                        <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle>Kelola Keahlian Utama</CardTitle></div>
                         <CardDescription>Tambah atau hapus keahlian yang ditampilkan di halaman utama.</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <Label htmlFor="new-skill">Nama Keahlian Baru</Label>
                         <div className="flex gap-2 mt-2 mb-4">
-                          <Input
-                            id="new-skill"
-                            placeholder="Contoh: SEO Specialist"
-                            value={newSkill}
-                            onChange={(e) => setNewSkill(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddSkill();
-                              }
-                            }}
-                          />
-                          <Button type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Tambah
-                          </Button>
+                          <Input id="new-skill" placeholder="Contoh: SEO Specialist" value={newSkill} onChange={(e) => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(); } }}/>
+                          <Button type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Tambah</Button>
                         </div>
                         <div className="space-y-2">
                           <Label>Daftar Keahlian Saat Ini:</Label>
@@ -345,8 +398,7 @@ export default function AdminForm() {
                               <Badge key={index} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
                                 {skill}
                                 <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
-                                  <span className="sr-only">Hapus {skill}</span>
-                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <span className="sr-only">Hapus {skill}</span><Trash2 className="h-3.5 w-3.5" />
                                 </button>
                               </Badge>
                             ))}
@@ -356,9 +408,7 @@ export default function AdminForm() {
                     </Card>
                     <FormMessage className="mt-2" />
                   </FormItem>
-                )}
-              />
-
+              )}/>
             </TabsContent>
           </Tabs>
 
@@ -371,40 +421,58 @@ export default function AdminForm() {
         </form>
       </Form>
 
+      {/* Project Dialog */}
       <Dialog open={isProjectDialogOpen} onOpenChange={setProjectDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingProjectIndex !== null ? 'Edit Proyek' : 'Tambah Proyek Baru'}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{editingProjectIndex !== null ? 'Edit Proyek' : 'Tambah Proyek Baru'}</DialogTitle></DialogHeader>
           <Form {...projectDialogForm}>
             <form onSubmit={projectDialogForm.handleSubmit(handleProjectDialogSubmit)} className="space-y-4 py-4">
                 <FormField control={projectDialogForm.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField
-                  control={projectDialogForm.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image</FormLabel>
-                      <FormControl>
-                        <ImageUpload
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                          disabled={projectDialogForm.formState.isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={projectDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={projectDialogForm.formState.isSubmitting} /></FormControl><FormMessage /></FormItem>)}/>
                 <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
-                <Button type="submit" disabled={projectDialogForm.formState.isSubmitting}>
-                  {projectDialogForm.formState.isSubmitting ? 'Saving...' : 'Save Project'}
-                </Button>
+                <Button type="submit" disabled={projectDialogForm.formState.isSubmitting}>{projectDialogForm.formState.isSubmitting ? 'Saving...' : 'Save Project'}</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Education Dialog */}
+      <Dialog open={isEducationDialogOpen} onOpenChange={setEducationDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editingEducationIndex !== null ? 'Edit Pendidikan' : 'Tambah Pendidikan'}</DialogTitle></DialogHeader>
+          <Form {...educationDialogForm}>
+            <form onSubmit={educationDialogForm.handleSubmit(handleEducationDialogSubmit)} className="space-y-4 py-4">
+              <FormField control={educationDialogForm.control} name="degree" render={({ field }) => (<FormItem><FormLabel>Gelar & Jurusan</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={educationDialogForm.control} name="school" render={({ field }) => (<FormItem><FormLabel>Nama Sekolah/Universitas</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={educationDialogForm.control} name="period" render={({ field }) => (<FormItem><FormLabel>Periode</FormLabel><FormControl><Input placeholder="e.g., 2018 - 2022" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <DialogFooter>
+                <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                <Button type="submit" disabled={educationDialogForm.formState.isSubmitting}>{educationDialogForm.formState.isSubmitting ? 'Saving...' : 'Save'}</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Certificate Dialog */}
+      <Dialog open={isCertificateDialogOpen} onOpenChange={setCertificateDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editingCertificateIndex !== null ? 'Edit Sertifikat' : 'Tambah Sertifikat'}</DialogTitle></DialogHeader>
+          <Form {...certificateDialogForm}>
+            <form onSubmit={certificateDialogForm.handleSubmit(handleCertificateDialogSubmit)} className="space-y-4 py-4">
+              <FormField control={certificateDialogForm.control} name="name" render={({ field }) => (<FormItem><FormLabel>Nama Sertifikat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="issuer" render={({ field }) => (<FormItem><FormLabel>Penerbit</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="date" render={({ field }) => (<FormItem><FormLabel>Tanggal Diperoleh</FormLabel><FormControl><Input placeholder="e.g., Jan 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>URL Verifikasi (Opsional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <DialogFooter>
+                <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                <Button type="submit" disabled={certificateDialogForm.formState.isSubmitting}>{certificateDialogForm.formState.isSubmitting ? 'Saving...' : 'Save'}</Button>
               </DialogFooter>
             </form>
           </Form>
