@@ -24,6 +24,7 @@ const formSchema = z.object({
   title: z.string().min(5, 'Title is required'),
   about: z.string().min(10, 'About section is required'),
   profilePictureUrl: z.string().optional(),
+  cvUrl: z.string().min(1, 'CV URL/File Path is required'),
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
   skills: z.array(z.object({
@@ -78,6 +79,7 @@ export default function AdminForm() {
       title: portfolioData.title,
       about: portfolioData.about,
       profilePictureUrl: portfolioData.profilePictureUrl,
+      cvUrl: portfolioData.cvUrl,
       email: portfolioData.contact.email.replace('mailto:', ''),
       linkedin: portfolioData.contact.linkedin,
       skills: portfolioData.skills,
@@ -216,6 +218,7 @@ export default function AdminForm() {
                   <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV URL/File Path</FormLabel><FormControl><Input placeholder="e.g., /my-cv.pdf atau https://example.com/cv" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </CardContent>
               </Card>
 
