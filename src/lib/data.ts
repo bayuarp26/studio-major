@@ -54,21 +54,25 @@ const DEFAULT_DATA: PortfolioData = {
 };
 
 // --- DATABASE CONNECTION & INITIALIZATION ---
-let dbInstance: Db | null = null;
+let db: Db;
+let client: MongoClient;
+
 const getDb = async () => {
-    if (dbInstance) return dbInstance;
-    const client = await clientPromise;
-    dbInstance = client.db(DB_NAME);
-    return dbInstance;
+    if (db) return db;
+    client = await clientPromise;
+    db = client.db(DB_NAME);
+    return db;
 };
 
 const seedAdminUser = async (db: Db) => {
     const usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
-    const adminUser = await usersCollection.findOne({ username: '082286514244' });
+    const adminUsername = '082286514244';
+    const adminUser = await usersCollection.findOne({ username: adminUsername });
+    
     if (!adminUser) {
         console.log("Admin user not found, creating one...");
         const hashedPassword = await bcrypt.hash('wahyu-58321', 10);
-        await usersCollection.insertOne({ username: '082286514244', password: hashedPassword });
+        await usersCollection.insertOne({ username: adminUsername, password: hashedPassword });
         console.log("Admin user created successfully.");
     }
 };
@@ -80,6 +84,7 @@ const seedDefaultContent = async (db: Db) => {
     if (!mainContentExists) {
         console.log("Main content not found, seeding default data...");
         const { projects, education, certificates, skills, tools, ...defaultMainContent } = DEFAULT_DATA;
+        
         await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...defaultMainContent });
 
         const populateIfEmpty = async (collectionName: string, items: any[], isSimpleArray = false) => {
@@ -112,7 +117,7 @@ const ensureDbInitialized = async () => {
                 await seedDefaultContent(db);
             } catch (error) {
                 console.error("Critical error during database initialization:", error);
-                initializationPromise = null; // Reset promise on failure to allow retry
+                initializationPromise = null; // Allow retry on failure
                 throw error;
             }
         })();
@@ -144,7 +149,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         ]);
 
         if (!mainContent) {
-            console.error("Main content not found after initialization. Returning default data.");
+            console.error("Main content not found after initialization. This should not happen. Returning default data.");
             return DEFAULT_DATA;
         }
         
@@ -171,30 +176,29 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
     await ensureDbInitialized();
-    const client: MongoClient = await clientPromise;
+    const db = await getDb();
+    const client = await clientPromise;
     const session = client.startSession();
 
     try {
         await session.withTransaction(async () => {
-            const db = client.db(DB_NAME);
             const { name, title, about, contact, cvUrl, profilePictureUrl, projects, education, certificates, skills, tools } = data;
 
+            // Update the main singleton document
             await db.collection(CONTENT_COLLECTION_NAME).updateOne(
                 { _id: MAIN_DOC_ID },
                 { $set: { name, title, about, contact, cvUrl, profilePictureUrl } },
                 { upsert: true, session }
             );
 
+            // A robust helper to overwrite a collection's content within a transaction
             const overwriteCollection = async (collectionName: string, items: any[] = [], isSimpleArray = false) => {
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
-                if (items && items.length > 0) {
-                    const documentsToInsert = isSimpleArray
-                        ? items.map(name => ({ name }))
-                        : items.map(item => { const { ...rest } = item; return rest; }); // Already cleaned in AdminForm
-                    if (documentsToInsert.length > 0) {
-                        await collection.insertMany(documentsToInsert, { session });
-                    }
+                if (items.length > 0) {
+                    // Data is pre-sanitized in AdminForm, so we can insert directly.
+                    const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
+                    await collection.insertMany(documentsToInsert, { session });
                 }
             };
             
@@ -206,7 +210,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         });
     } catch (error) {
         console.error('Error during MongoDB transaction:', error);
-        await session.abortTransaction();
+        // The session will be automatically aborted by the helper on error
         throw new Error('Could not update portfolio data due to a database transaction error.');
     } finally {
         await session.endSession();
