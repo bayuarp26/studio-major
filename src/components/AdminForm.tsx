@@ -209,7 +209,7 @@ export default function AdminForm() {
     if (editingProjectIndex !== null) updateProject(editingProjectIndex, data);
     else appendProject(data);
     setProjectDialogOpen(false);
-    toast({ title: editingProjectIndex !== null ? 'Project Updated' : 'Project Added' });
+    toast({ description: editingProjectIndex !== null ? 'Project updated in list. Click "Save All Changes" to finalize.' : 'Project added to list. Click "Save All Changes" to finalize.' });
   };
 
   // Education Dialog Handlers
@@ -227,7 +227,7 @@ export default function AdminForm() {
     if (editingEducationIndex !== null) updateEducation(editingEducationIndex, data);
     else appendEducation(data);
     setEducationDialogOpen(false);
-    toast({ title: editingEducationIndex !== null ? 'Education Updated' : 'Education Added' });
+    toast({ description: editingEducationIndex !== null ? 'Education updated in list. Click "Save All Changes" to finalize.' : 'Education added to list. Click "Save All Changes" to finalize.' });
   };
 
   // Certificate Dialog Handlers
@@ -245,7 +245,7 @@ export default function AdminForm() {
     if (editingCertificateIndex !== null) updateCertificate(editingCertificateIndex, data);
     else appendCertificate(data);
     setCertificateDialogOpen(false);
-    toast({ title: editingCertificateIndex !== null ? 'Certificate Updated' : 'Certificate Added' });
+    toast({ description: editingCertificateIndex !== null ? 'Certificate updated in list. Click "Save All Changes" to finalize.' : 'Certificate added to list. Click "Save All Changes" to finalize.' });
   };
 
 
