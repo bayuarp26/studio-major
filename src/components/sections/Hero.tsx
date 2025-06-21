@@ -23,7 +23,7 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl }: HeroProp
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button asChild size="lg">
-              <a href={cvUrl} download>
+              <a href={cvUrl} download="CV-Wahyu-Pratomo.pdf">
                 <Download className="mr-2 h-5 w-5" />
                 Unduh CV
               </a>

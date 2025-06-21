@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, PlusCircle, Trash2, Edit } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
+import { FileUpload } from './FileUpload';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -218,7 +219,23 @@ export default function AdminForm() {
                   <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV URL/File Path</FormLabel><FormControl><Input placeholder="e.g., /my-cv.pdf atau https://example.com/cv" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField
+                    control={form.control}
+                    name="cvUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CV</FormLabel>
+                        <FormControl>
+                          <FileUpload
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            disabled={form.formState.isSubmitting}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 
