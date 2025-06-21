@@ -23,6 +23,10 @@ export default function AdminPage() {
   }, [router]);
 
   const handleLogout = async () => {
+    // Membersihkan semua data dari local storage saat logout
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
     await logout();
     router.push('/');
     router.refresh();

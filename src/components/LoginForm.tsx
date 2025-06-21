@@ -30,6 +30,10 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (state?.success) {
+      // Membersihkan data login lama yang mungkin ada di local storage
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+      }
       toast({
         title: 'Login Successful',
         description: 'Redirecting to admin dashboard...',
