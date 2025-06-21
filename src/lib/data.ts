@@ -179,30 +179,34 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     const db = await getDb();
     const client = await clientPromise;
     
-    // DEFINITIVE FIX: Backend data sanitization is removed. We now trust the
-    // clean payload coming from the AdminForm. This simplifies the logic here.
+    // The incoming 'data' is now trusted to be a clean payload from AdminForm.
+    // This simplifies the logic here significantly.
     const { projects, education, certificates, skills, tools, ...mainContentData } = data;
     
     const session = client.startSession();
 
     try {
         await session.withTransaction(async () => {
+            // Update the main document with general info
             await db.collection(CONTENT_COLLECTION_NAME).updateOne(
                 { _id: MAIN_DOC_ID },
                 { $set: mainContentData },
                 { upsert: true, session }
             );
 
-            // This helper function now takes the collection name for clarity.
+            // Helper function to overwrite an entire collection with new data.
             const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
                     const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
-                    await collection.insertMany(documentsToInsert, { session });
+                    if (documentsToInsert.length > 0) {
+                        await collection.insertMany(documentsToInsert, { session });
+                    }
                 }
             };
             
+            // Overwrite each related collection
             await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
             await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
             await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
