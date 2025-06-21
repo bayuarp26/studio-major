@@ -29,7 +29,7 @@ const projectSchema = z.object({
   imageHint: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
   details: z.string().min(1, 'Details is required'),
-  tags: z.string().min(1, 'Tags are required (comma-separated)'),
+  tags: z.string().optional(),
 });
 
 const educationSchema = z.object({
@@ -161,7 +161,7 @@ export default function AdminForm() {
         details: p.details,
         imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
         imageHint: p.imageHint || '',
-        tags: p.tags.split(',').map(t => t.trim())
+        tags: p.tags ? p.tags.split(',').map(t => t.trim()) : []
       })),
       education: data.education,
       certificates: data.certificates.map(c => ({
