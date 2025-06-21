@@ -41,7 +41,8 @@ export async function getSession(): Promise<SessionPayload | null> {
   try {
     const payload = verify(token, SECRET_KEY) as SessionPayload;
     if (new Date(payload.expiresAt) < new Date()) {
-      return null; // Token expired
+      await logout(); // Logout if expired
+      return null;
     }
     return payload;
   } catch (error) {

@@ -1,7 +1,7 @@
 
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
-import { Collection, Db, MongoClient, WithId } from 'mongodb';
+import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 // --- DATABASE & COLLECTION CONSTANTS ---
@@ -62,8 +62,6 @@ const getDb = async () => {
     return dbInstance;
 };
 
-// --- ROBUST SEEDING FUNCTIONS ---
-
 const seedAdminUser = async (db: Db) => {
     const usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
     const adminUser = await usersCollection.findOne({ username: '085156453246' });
@@ -105,56 +103,51 @@ const seedDefaultContent = async (db: Db) => {
     }
 };
 
-// Singleton promise to ensure initialization runs only once per server start.
 let initializationPromise: Promise<void> | null = null;
-const ensureInitialized = async () => {
-    if (!initializationPromise) {
-        initializationPromise = (async () => {
-            try {
-                console.log("Ensuring database is initialized...");
-                const db = await getDb();
-                // Run both seeding functions concurrently for efficiency
-                await Promise.all([
-                    seedAdminUser(db),
-                    seedDefaultContent(db)
-                ]);
-                console.log("Database initialization check complete.");
-            } catch (error) {
-                console.error("Critical error during database initialization:", error);
-                // In case of error, nullify the promise to allow retrying on a subsequent call.
-                initializationPromise = null;
-                throw new Error("Database initialization failed.");
-            }
-        })();
+const ensureDbInitialized = async () => {
+    if (initializationPromise) {
+        return initializationPromise;
     }
-    await initializationPromise;
+    initializationPromise = (async () => {
+        try {
+            const db = await getDb();
+            await Promise.all([
+                seedAdminUser(db),
+                seedDefaultContent(db)
+            ]);
+        } catch (error) {
+            console.error("Critical error during database initialization:", error);
+            initializationPromise = null;
+            throw error;
+        }
+    })();
+    return initializationPromise;
 };
 
 // --- PUBLIC DATA ACCESS FUNCTIONS ---
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    
     try {
-        await ensureInitialized();
-        const db = await getDb();
-
         const [mainContent, projects, education, certificates, skillsDocs, toolsDocs] = await Promise.all([
-            db.collection<PortfolioData>(CONTENT_COLLECTION_NAME).findOne({ _id: MAIN_DOC_ID }),
+            db.collection<Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>>(CONTENT_COLLECTION_NAME).findOne({ _id: MAIN_DOC_ID }),
             db.collection<Project>(PROJECTS_COLLECTION_NAME).find({}).toArray(),
             db.collection<EducationItem>(EDUCATION_COLLECTION_NAME).find({}).toArray(),
             db.collection<Certificate>(CERTIFICATES_COLLECTION_NAME).find({}).toArray(),
-            db.collection(SKILLS_COLLECTION_NAME).find({}, { projection: { name: 1, _id: 0 } }).toArray(),
-            db.collection(TOOLS_COLLECTION_NAME).find({}, { projection: { name: 1, _id: 0 } }).toArray(),
+            db.collection<{name: string}>(SKILLS_COLLECTION_NAME).find({}).toArray(),
+            db.collection<{name: string}>(TOOLS_COLLECTION_NAME).find({}).toArray(),
         ]);
 
         if (!mainContent) {
-            console.error("Main content not found after initialization, returning default data.");
+            console.error("Main content not found after initialization. Returning default data.");
             return DEFAULT_DATA;
         }
-
+        
         const cleanDocs = (docs: WithId<any>[]) => docs.map(({ _id, ...rest }) => rest);
 
         return {
-            ...DEFAULT_DATA, // Start with defaults to ensure all keys exist
             name: mainContent.name,
             title: mainContent.title,
             about: mainContent.about,
@@ -174,7 +167,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 };
 
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
-    await ensureInitialized();
+    await ensureDbInitialized();
     const client: MongoClient = await clientPromise;
     const session = client.startSession();
 
@@ -189,7 +182,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 { upsert: true, session }
             );
 
-            const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
+            const overwriteCollection = async (collectionName: string, items: any[] = [], isSimpleArray = false) => {
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
@@ -217,7 +210,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
 };
 
 export const getUser = async (username: string): Promise<WithId<User> | null> => {
-    await ensureInitialized();
+    await ensureDbInitialized();
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };
