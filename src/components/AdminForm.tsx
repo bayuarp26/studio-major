@@ -164,32 +164,30 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
       },
       skills: data.skills,
       tools: data.tools,
-      projects: data.projects.map(p => {
-        // Strip any internal IDs and convert tags string to array
-        const { ...cleanProject } = p as Project & { id?: string; _id?: any };
-        return {
-          ...cleanProject,
-          imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
-          imageHint: p.imageHint || '',
-          tags: typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
-        };
-      }),
-      education: data.education.map(e => {
-        // Strip any internal IDs
-        const { ...cleanEducation } = e as EducationItem & { id?: string; _id?: any };
-        return cleanEducation;
-      }),
-      certificates: data.certificates.map(c => {
-         // Strip any internal IDs and provide fallback URL
-        const { ...cleanCertificate } = c as Certificate & { id?: string; _id?: any };
-        return {
-          ...cleanCertificate,
-          url: c.url || '#'
-        };
-      }),
+      projects: data.projects.map(p => ({
+        title: p.title,
+        imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
+        imageHint: p.imageHint || '',
+        description: p.description,
+        details: p.details,
+        // Ensure tags are always an array of strings
+        tags: typeof p.tags === 'string' 
+            ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) 
+            : (Array.isArray(p.tags) ? p.tags : [])
+      })),
+      education: data.education.map(e => ({
+        degree: e.degree,
+        school: e.school,
+        period: e.period,
+      })),
+      certificates: data.certificates.map(c => ({
+        name: c.name,
+        issuer: c.issuer,
+        date: c.date,
+        url: c.url || '#',
+      })),
     };
     
-    form.formState.isSubmitting = true;
     try {
       const response = await fetch('/api/portfolio', {
         method: 'POST',
@@ -215,8 +213,6 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
         title: 'Update Failed',
         description: `Could not save portfolio data. ${errorMessage}`,
       });
-    } finally {
-        form.formState.isSubmitting = false;
     }
   };
 
@@ -572,3 +568,5 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     </>
   );
 }
+
+    
