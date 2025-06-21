@@ -1,14 +1,13 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { Asterisk } from "lucide-react";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 interface Project {
-  topTitle: string;
-  handle: string;
-  logoUrl: string;
-  imageHint: string;
   title: string;
+  imageUrl: string;
+  imageHint: string;
   description: string;
+  details: string;
   tags: string[];
 }
 
@@ -30,35 +29,29 @@ export default function Projects({ projects }: ProjectsProps) {
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, index) => (
-            <div key={index} className="flex flex-col overflow-hidden rounded-xl shadow-lg transition-transform duration-300 hover:-translate-y-2">
-              <div className="bg-secondary p-8 text-center text-secondary-foreground">
-                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-foreground">
-                  <Image
-                    src={project.logoUrl}
-                    alt={`${project.handle} logo`}
-                    width={80}
-                    height={80}
-                    className="rounded-full"
-                    data-ai-hint={project.imageHint}
-                  />
-                </div>
-                <h3 className="text-xl font-bold">{project.topTitle}</h3>
-                <p className="flex items-center justify-center gap-1 text-sm text-foreground/70">
-                  <Asterisk className="h-4 w-4" />/{project.handle}
-                </p>
+            <Card key={index} className="group flex flex-col overflow-hidden rounded-xl bg-card/50 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
+              <div className="aspect-video overflow-hidden">
+                 <Image
+                  src={project.imageUrl || 'https://placehold.co/600x400.png'}
+                  alt={project.title}
+                  width={600}
+                  height={400}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  data-ai-hint={project.imageHint}
+                />
               </div>
-              <div className="flex flex-grow flex-col bg-foreground p-6 text-background">
-                <h4 className="text-xl font-bold text-primary">{project.title}</h4>
-                <p className="mt-3 text-base text-background/80 flex-grow">{project.description}</p>
+              <CardContent className="flex flex-grow flex-col p-6">
+                <CardTitle className="text-xl font-bold text-primary">{project.title}</CardTitle>
+                <p className="mt-3 flex-grow text-base text-foreground/80">{project.description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {project.tags.map((tag) => (
-                    <Badge key={tag} className="border-0 bg-background px-3 py-1 text-primary hover:bg-background/90">
+                    <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>
                   ))}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

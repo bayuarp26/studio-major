@@ -27,13 +27,12 @@ const formSchema = z.object({
     description: z.string().min(1, 'Description is required'),
   })),
   projects: z.array(z.object({
-    topTitle: z.string().min(1, 'Brand is required'),
-    handle: z.string().min(1, 'Handle is required'),
     title: z.string().min(1, 'Project title is required'),
-    description: z.string().min(1, 'Description is required'),
-    tags: z.string().min(1, 'Tags are required (comma-separated)'),
-    logoUrl: z.string().url("Invalid URL").optional().or(z.literal('')),
+    imageUrl: z.string().url("Invalid URL").optional().or(z.literal('')),
     imageHint: z.string().optional(),
+    description: z.string().min(1, 'Description is required'),
+    details: z.string().min(1, 'Details are required'),
+    tags: z.string().min(1, 'Tags are required (comma-separated)'),
   })),
   education: z.array(z.object({
     degree: z.string().min(1, 'Degree is required'),
@@ -152,14 +151,15 @@ export default function AdminForm() {
                     {projectFields.map((field, index) => (
                       <div key={field.id} className="p-4 border rounded-md relative space-y-4">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeProject(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        <FormField control={form.control} name={`projects.${index}.topTitle`} render={({ field }) => (<FormItem><FormLabel>Brand</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.handle`} render={({ field }) => (<FormItem><FormLabel>Handle</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (<FormItem><FormLabel>Project Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`projects.${index}.imageHint`} render={({ field }) => (<FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`projects.${index}.details`} render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`projects.${index}.tags`} render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendProject({ topTitle: '', handle: '', title: '', description: '', tags: '', logoUrl: '', imageHint: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendProject({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
                   </>)}
 
                   {section.id === 'education' && (<>
