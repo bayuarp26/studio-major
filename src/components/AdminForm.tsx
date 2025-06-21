@@ -155,14 +155,21 @@ export default function AdminForm() {
       },
       skills: data.skills,
       tools: data.tools,
-      projects: data.projects.map(p => ({ 
-        ...p, 
+      projects: data.projects.map(p => ({
+        title: p.title,
+        description: p.description,
+        details: p.details,
         imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
         imageHint: p.imageHint || '',
-        tags: p.tags.split(',').map(t => t.trim()) 
+        tags: p.tags.split(',').map(t => t.trim())
       })),
       education: data.education,
-      certificates: data.certificates.map(c => ({...c, url: c.url || '#'})),
+      certificates: data.certificates.map(c => ({
+        name: c.name,
+        issuer: c.issuer,
+        date: c.date,
+        url: c.url || '#'
+      })),
     };
     
     try {
