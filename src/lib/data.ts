@@ -1,8 +1,9 @@
 import clientPromise from './mongodb';
-import type { PortfolioData } from '@/lib/types';
+import type { PortfolioData, Project } from '@/lib/types';
 
 const DB_NAME = 'portfolioDB';
-const COLLECTION_NAME = 'content';
+const CONTENT_COLLECTION_NAME = 'content';
+const PROJECT_COLLECTION_NAME = 'projects';
 const DOC_ID = 'main';
 
 const defaultPortfolioData: PortfolioData = {
@@ -16,7 +17,24 @@ const defaultPortfolioData: PortfolioData = {
         linkedin: "https://linkedin.com/in/wahyu-pratomo"
     },
     skills: ["SEO Analysis", "Content Strategy", "Social Media Marketing", "Google Analytics", "Campaign Management"],
-    projects: [],
+    projects: [
+        {
+            title: "Sample Project: Digital Campaign",
+            imageUrl: "https://placehold.co/600x400.png",
+            imageHint: "marketing campaign",
+            description: "Managed a full-cycle digital marketing campaign, resulting in a 40% increase in lead generation.",
+            details: "Strategy, content creation, ad spend management, and performance analysis.",
+            tags: ["Marketing", "Lead Gen"]
+        },
+        {
+            title: "Sample Project: SEO Overhaul",
+            imageUrl: "https://placehold.co/600x400.png",
+            imageHint: "website analytics",
+            description: "Executed a complete SEO overhaul for a client website, improving organic search ranking for key terms.",
+            details: "Keyword research, on-page optimization, backlink building, and technical SEO.",
+            tags: ["SEO", "Analytics"]
+        }
+    ],
     education: [],
     certificates: []
 };
@@ -26,10 +44,9 @@ const getDb = async () => {
     return client.db(DB_NAME);
 };
 
-// Coerce skills to be string[] if they are objects, ensuring data consistency.
-const processData = (data: any): PortfolioData => {
-    // Remove the _id and docId fields from the returned object
-    const { _id, docId, ...rest } = data;
+// Processes the main data document, excluding projects
+const processData = (data: any): Omit<PortfolioData, 'projects'> => {
+    const { _id, docId, projects, ...rest } = data;
 
     const processedData = {
         ...defaultPortfolioData,
@@ -39,7 +56,6 @@ const processData = (data: any): PortfolioData => {
             ...(rest.contact || {}),
         },
         skills: rest.skills || defaultPortfolioData.skills,
-        projects: rest.projects || defaultPortfolioData.projects,
         education: rest.education || defaultPortfolioData.education,
         certificates: rest.certificates || defaultPortfolioData.certificates,
     };
@@ -47,30 +63,45 @@ const processData = (data: any): PortfolioData => {
     if (processedData.skills && Array.isArray(processedData.skills) && processedData.skills.length > 0 && typeof processedData.skills[0] === 'object' && processedData.skills[0] !== null) {
       processedData.skills = processedData.skills.map((skill: any) => String(skill.name || ''));
     }
-    return processedData;
+    
+    const { projects: _, ...mainData } = processedData;
+    return mainData;
 }
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
     try {
         const db = await getDb();
-        const collection = db.collection(COLLECTION_NAME);
-        let data = await collection.findOne({ docId: DOC_ID });
+        const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
+        const projectsCollection = db.collection(PROJECT_COLLECTION_NAME);
+        
+        let mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
 
-        if (!data) {
+        if (!mainDataDoc) {
             console.log('No data found in MongoDB. Initializing with default data.');
-            await collection.insertOne({ ...defaultPortfolioData, docId: DOC_ID });
-            data = await collection.findOne({ docId: DOC_ID });
+            const { projects: defaultProjects, ...defaultMainData } = defaultPortfolioData;
+            
+            await contentCollection.insertOne({ ...defaultMainData, docId: DOC_ID });
+            
+            if (defaultProjects.length > 0) {
+                await projectsCollection.insertMany(defaultProjects);
+            }
+            mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
         }
         
-        if (!data) {
-             // This should not happen if the insert was successful
+        if (!mainDataDoc) {
              throw new Error('Failed to retrieve data after initialization.');
         }
 
-        return processData(data);
+        const mainData = processData(mainDataDoc);
+        const projectsFromDb = await projectsCollection.find({}).toArray();
+        const projects = projectsFromDb.map(p => {
+            const { _id, ...projectData } = p;
+            return projectData as Project;
+        });
+
+        return { ...mainData, projects };
     } catch (error) {
         console.error('Error fetching data from MongoDB:', error);
-        // Fallback to default data in case of a connection error
         return defaultPortfolioData;
     }
 };
@@ -78,16 +109,22 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
     try {
         const db = await getDb();
-        const collection = db.collection(COLLECTION_NAME);
+        const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
+        const projectsCollection = db.collection(PROJECT_COLLECTION_NAME);
         
-        // Data to update, ensuring docId is not nested inside
-        const dataToUpdate = { ...data };
+        const { projects, ...mainData } = data;
 
-        await collection.updateOne(
+        await contentCollection.updateOne(
             { docId: DOC_ID },
-            { $set: dataToUpdate },
+            { $set: mainData },
             { upsert: true }
         );
+
+        await projectsCollection.deleteMany({});
+        if (projects && projects.length > 0) {
+            await projectsCollection.insertMany(projects);
+        }
+
     } catch (error) {
         console.error('Error updating data in MongoDB:', error);
         throw new Error('Could not update portfolio data in MongoDB.');
