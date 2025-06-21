@@ -24,36 +24,10 @@ const defaultMainData = {
 };
 
 // Define default data for other collections
-const defaultSkills: string[] = [
-    "Digital Marketing Strategy",
-    "SEO (Search Engine Optimization)",
-    "Content Creation & Marketing",
-    "Social Media Management",
-    "Data Analysis",
-    "Google Ads & Analytics"
-];
+const defaultSkills: string[] = [];
 const defaultProjects: Project[] = [];
-const defaultEducation: EducationItem[] = [
-    {
-        degree: "Sarjana Komunikasi",
-        school: "Universitas Gadjah Mada",
-        period: "2015 - 2019"
-    }
-];
-const defaultCertificates: Certificate[] = [
-    {
-        name: "Google Analytics Individual Qualification",
-        issuer: "Google",
-        date: "2023",
-        url: "#"
-    },
-    {
-        name: "HubSpot Content Marketing Certification",
-        issuer: "HubSpot Academy",
-        date: "2022",
-        url: "#"
-    }
-];
+const defaultEducation: EducationItem[] = [];
+const defaultCertificates: Certificate[] = [];
 
 // Combine all defaults into a single object for cases where the full object is needed (e.g., error fallback)
 const defaultPortfolioData: PortfolioData = {
