@@ -3,12 +3,6 @@ export interface Contact {
   linkedin: string;
 }
 
-export interface Skill {
-  name: string;
-  icon: string;
-  description: string;
-}
-
 export interface Project {
   title: string;
   imageUrl: string;
@@ -38,7 +32,7 @@ export interface PortfolioData {
   cvUrl: string;
   profilePictureUrl: string;
   contact: Contact;
-  skills: Skill[];
+  skills: string[];
   projects: Project[];
   education: EducationItem[];
   certificates: Certificate[];

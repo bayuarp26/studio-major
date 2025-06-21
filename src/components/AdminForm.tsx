@@ -7,16 +7,18 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { PortfolioData } from '@/lib/types';
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, PlusCircle, Trash2, Edit, Loader2 } from 'lucide-react';
+import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 
@@ -28,11 +30,7 @@ const formSchema = z.object({
   cvUrl: z.string().min(1, 'CV URL/File Path is required'),
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
-  skills: z.array(z.object({
-    icon: z.string().min(1, 'Icon name is required'),
-    name: z.string().min(1, 'Skill name is required'),
-    description: z.string().min(1, 'Description is required'),
-  })),
+  skills: z.array(z.string()).min(1, 'At least one skill is required'),
   projects: z.array(z.object({
     title: z.string().min(1, 'Project title is required'),
     imageUrl: z.string().optional(),
@@ -72,9 +70,13 @@ export default function AdminForm() {
   const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [newSkill, setNewSkill] = useState('');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      skills: [],
+    }
   });
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export default function AdminForm() {
           ...data,
           email: data.contact.email.replace('mailto:', ''),
           linkedin: data.contact.linkedin || '',
+          skills: data.skills,
           projects: data.projects.map(p => ({ ...p, tags: p.tags.join(', ') })),
         };
         form.reset(formValues);
@@ -107,8 +110,6 @@ export default function AdminForm() {
     fetchData();
   }, [form, toast]);
 
-
-  const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({ control: form.control, name: "skills" });
   const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
   const { fields: educationFields, append: appendEducation, remove: removeEducation } = useFieldArray({ control: form.control, name: "education" });
   const { fields: certificateFields, append: appendCertificate, remove: removeCertificate } = useFieldArray({ control: form.control, name: "certificates" });
@@ -196,6 +197,22 @@ export default function AdminForm() {
         title: editingProjectIndex !== null ? 'Project Updated' : 'Project Added',
         description: 'Click "Save All Changes" to finalize.',
     });
+  };
+
+  const handleAddSkill = () => {
+    const trimmedSkill = newSkill.trim();
+    if (trimmedSkill) {
+      const currentSkills = form.getValues('skills') || [];
+      if (!currentSkills.map(s => s.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
+        form.setValue('skills', [...currentSkills, trimmedSkill], { shouldValidate: true });
+      }
+      setNewSkill('');
+    }
+  };
+
+  const handleRemoveSkill = (indexToRemove: number) => {
+    const currentSkills = form.getValues('skills');
+    form.setValue('skills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true });
   };
 
   if (isLoading) {
@@ -303,21 +320,59 @@ export default function AdminForm() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader><CardTitle>Keahlian</CardTitle></CardHeader>
-                <CardContent>
-                   <div className="space-y-4">
-                    {skillFields.map((field, index) => (
-                      <div key={field.id} className="flex items-center gap-4 p-2 border rounded-md">
-                        <span className="flex-grow">{form.watch(`skills.${index}.name`)}</span>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSkill(index)} className="h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    ))}
-                     <Button type="button" variant="outline" size="sm" onClick={() => appendSkill({ name: 'New Skill', icon: 'Star', description: 'Skill description' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
-                     <p className="text-sm text-muted-foreground">Note: Skill icon and description can be edited in the project source file for now.</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <FormField
+                control={form.control}
+                name="skills"
+                render={({ field }) => (
+                  <FormItem>
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-5 w-5 text-primary" />
+                          <CardTitle>Kelola Keahlian Utama</CardTitle>
+                        </div>
+                        <CardDescription>Tambah atau hapus keahlian yang ditampilkan di halaman utama.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Label htmlFor="new-skill">Nama Keahlian Baru</Label>
+                        <div className="flex gap-2 mt-2 mb-4">
+                          <Input
+                            id="new-skill"
+                            placeholder="Contoh: SEO Specialist"
+                            value={newSkill}
+                            onChange={(e) => setNewSkill(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddSkill();
+                              }
+                            }}
+                          />
+                          <Button type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Tambah
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Daftar Keahlian Saat Ini:</Label>
+                          <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
+                            {field.value?.map((skill, index) => (
+                              <Badge key={index} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                {skill}
+                                <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                  <span className="sr-only">Hapus {skill}</span>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <FormMessage className="mt-2" />
+                  </FormItem>
+                )}
+              />
 
               <Card>
                 <CardHeader><CardTitle>Pendidikan</CardTitle></CardHeader>

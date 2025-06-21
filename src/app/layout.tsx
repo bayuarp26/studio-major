@@ -14,7 +14,14 @@ const getPortfolioData = (): PortfolioData => {
   try {
     const filePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
     const fileContent = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(fileContent);
+    const data = JSON.parse(fileContent);
+
+    // Coerce skills to be string[] if they are objects
+    if (data.skills && Array.isArray(data.skills) && data.skills.length > 0 && typeof data.skills[0] === 'object' && data.skills[0] !== null) {
+      data.skills = data.skills.map((skill: any) => String(skill.name || ''));
+    }
+
+    return data;
   } catch (error) {
     console.error("Failed to load portfolio data for layout, returning fallback. Error: ", error);
     // Return a fallback object if the file can't be read

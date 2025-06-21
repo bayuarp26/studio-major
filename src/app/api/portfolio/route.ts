@@ -9,7 +9,14 @@ const dataFilePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
 const readData = (): PortfolioData => {
   try {
     const fileContent = fs.readFileSync(dataFilePath, 'utf-8');
-    return JSON.parse(fileContent);
+    const data = JSON.parse(fileContent);
+
+    // Coerce skills to be string[] if they are objects
+    if (data.skills && Array.isArray(data.skills) && data.skills.length > 0 && typeof data.skills[0] === 'object' && data.skills[0] !== null) {
+      data.skills = data.skills.map((skill: any) => String(skill.name || ''));
+    }
+    
+    return data;
   } catch (error) {
     console.error('Failed to read portfolio data, file might not exist or is corrupted.', error);
     // This is a critical error, but we'll let the GET/POST handlers decide how to respond.
