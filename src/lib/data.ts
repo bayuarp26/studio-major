@@ -1,27 +1,49 @@
 
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
 import fs from 'fs';
 import path from 'path';
 import type { PortfolioData } from '@/lib/types';
 
-const PORTFOLIO_COLLECTION = 'portfolio';
-const PORTFOLIO_DOCUMENT_ID = 'main';
-const docRef = doc(db, PORTFOLIO_COLLECTION, PORTFOLIO_DOCUMENT_ID);
+const dataFilePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
 
-// Helper to read from the JSON file as a fallback/seed
-const readSeedData = (): PortfolioData => {
-    const dataFilePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
+// Helper to read from the JSON file
+const readDataFromFile = (): PortfolioData => {
     try {
         const fileContent = fs.readFileSync(dataFilePath, 'utf-8');
         return JSON.parse(fileContent);
     } catch (error) {
-        console.error("Fatal: Could not read seed data file 'portfolio-data.json'.", error);
-        throw new Error("Could not read seed portfolio data file.");
+        console.warn("Warning: Could not read data file 'portfolio-data.json'. A new file will be created on save. Using default data for now.");
+        // Fallback to a default structure if the file doesn't exist or is invalid
+        return {
+            name: "Wahyu Pratomo",
+            title: "Digital Marketing Specialist & SEO Analyst",
+            about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
+            cvUrl: "#",
+            profilePictureUrl: "https://placehold.co/400x400.png",
+            contact: {
+                email: "mailto:wahyu.pratomo@example.com",
+                linkedin: "https://linkedin.com/in/wahyu-pratomo"
+            },
+            skills: ["SEO Analysis", "Content Strategy", "Social Media Marketing", "Google Analytics", "Campaign Management"],
+            projects: [],
+            education: [],
+            certificates: []
+        };
     }
 };
 
-// Coerce skills to be string[] if they are objects
+// Helper to write to the JSON file
+const writeDataToFile = (data: PortfolioData): void => {
+    try {
+        // Ensure the public directory exists
+        fs.mkdirSync(path.join(process.cwd(), 'public'), { recursive: true });
+        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (error) {
+        console.error('Error writing data file:', error);
+        throw new Error('Could not write portfolio data to file.');
+    }
+};
+
+// Coerce skills to be string[] if they are objects, ensuring data consistency.
 const processData = (data: PortfolioData): PortfolioData => {
     if (data.skills && Array.isArray(data.skills) && data.skills.length > 0 && typeof data.skills[0] === 'object' && data.skills[0] !== null) {
       data.skills = data.skills.map((skill: any) => String(skill.name || ''));
@@ -30,30 +52,10 @@ const processData = (data: PortfolioData): PortfolioData => {
 }
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
-    try {
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            return processData(docSnap.data() as PortfolioData);
-        } else {
-            console.log("No data in Firestore. Seeding from portfolio-data.json...");
-            const seedData = readSeedData();
-            await setDoc(docRef, seedData);
-            console.log("Seeding successful.");
-            return processData(seedData);
-        }
-    } catch (error) {
-        console.error("Error fetching data from Firestore, falling back to seed file.", error);
-        // Fallback to seed data if firestore connection fails
-        return processData(readSeedData());
-    }
+    const data = readDataFromFile();
+    return processData(data);
 };
 
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
-    try {
-        await setDoc(docRef, data);
-    } catch (error) {
-        console.error("Failed to update data in Firestore.", error);
-        throw new Error("Could not update portfolio data in database.");
-    }
+    writeDataToFile(data);
 };
