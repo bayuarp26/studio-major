@@ -13,7 +13,7 @@ interface EducationProps {
 
 export default function Education({ education }: EducationProps) {
   return (
-    <section id="education" className="bg-secondary/30 py-24 sm:py-32">
+    <section id="education" className="bg-background py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">

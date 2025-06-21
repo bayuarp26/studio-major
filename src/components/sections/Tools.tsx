@@ -12,7 +12,7 @@ const tools = [
 
 export default function Tools() {
   return (
-    <section id="tools" className="bg-secondary/30 py-24 sm:py-32">
+    <section id="tools" className="bg-background py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
@@ -22,7 +22,7 @@ export default function Tools() {
             Beberapa tools yang saya kuasai untuk mendukung analisis dan strategi digital marketing.
           </p>
         </div>
-        <Card className="mt-16 max-w-3xl mx-auto bg-card/50">
+        <Card className="mt-16 max-w-3xl mx-auto bg-card">
           <CardContent className="p-8">
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-3">
               {tools.map((tool) => (

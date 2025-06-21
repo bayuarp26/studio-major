@@ -13,7 +13,7 @@ interface ContactProps {
 
 export default function Contact({ contact }: ContactProps) {
   return (
-    <section id="contact" className="py-24 sm:py-32">
+    <section id="contact" className="py-24 sm:py-32 bg-secondary">
       <div className="container text-center">
         <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
           Hubungi Saya

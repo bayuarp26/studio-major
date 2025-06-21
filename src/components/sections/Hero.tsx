@@ -12,7 +12,7 @@ interface HeroProps {
 
 export default function Hero({ name, title, cvUrl, profilePictureUrl }: HeroProps) {
   return (
-    <section id="hero" className="bg-secondary/30">
+    <section id="hero" className="bg-background">
       <div className="container grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-2 lg:gap-20">
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           <h1 className="font-headline text-5xl font-bold tracking-tight text-primary md:text-7xl">

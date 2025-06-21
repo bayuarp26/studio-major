@@ -23,7 +23,7 @@ interface SkillsProps {
 
 export default function Skills({ skills }: SkillsProps) {
   return (
-    <section id="skills" className="bg-secondary/50 py-24 sm:py-32">
+    <section id="skills" className="bg-background py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">

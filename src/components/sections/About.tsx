@@ -7,7 +7,7 @@ interface AboutProps {
 
 export default function About({ about, profilePictureUrl }: AboutProps) {
   return (
-    <section id="about" className="py-24 sm:py-32">
+    <section id="about" className="py-24 sm:py-32 bg-secondary">
       <div className="container">
         <div className="grid items-center gap-16 lg:grid-cols-5">
           <div className="hidden lg:col-span-2 lg:block">

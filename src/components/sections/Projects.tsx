@@ -17,7 +17,7 @@ interface ProjectsProps {
 
 export default function Projects({ projects }: ProjectsProps) {
   return (
-    <section id="projects" className="py-24 sm:py-32 bg-background">
+    <section id="projects" className="py-24 sm:py-32 bg-secondary">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
@@ -29,7 +29,7 @@ export default function Projects({ projects }: ProjectsProps) {
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, index) => (
-            <Card key={index} className="group flex flex-col overflow-hidden rounded-xl bg-card/50 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
+            <Card key={index} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
               <div className="aspect-video overflow-hidden">
                  <Image
                   src={project.imageUrl || 'https://placehold.co/600x400.png'}

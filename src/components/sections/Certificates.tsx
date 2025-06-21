@@ -14,7 +14,7 @@ interface CertificatesProps {
 
 export default function Certificates({ certificates }: CertificatesProps) {
   return (
-    <section id="certificates" className="bg-background py-24 sm:py-32">
+    <section id="certificates" className="bg-secondary py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
