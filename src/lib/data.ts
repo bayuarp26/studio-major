@@ -32,24 +32,7 @@ const defaultSkills: string[] = [
     "Data Analysis",
     "Google Ads & Analytics"
 ];
-const defaultProjects: Project[] = [
-    {
-        title: "Peningkatan SEO Situs E-commerce",
-        imageUrl: "https://placehold.co/600x400.png",
-        imageHint: "seo analytics",
-        description: "Meningkatkan peringkat pencarian organik sebesar 40% dalam 6 bulan.",
-        details: "Melakukan riset kata kunci, mengoptimalkan konten, dan membangun backlink berkualitas tinggi.",
-        tags: ["SEO", "E-commerce", "Content Marketing"]
-    },
-    {
-        title: "Kampanye Iklan Media Sosial",
-        imageUrl: "https://placehold.co/600x400.png",
-        imageHint: "social media",
-        description: "Menghasilkan ROI 300% dari kampanye iklan berbayar di platform Meta.",
-        details: "Menargetkan audiens yang tepat, membuat iklan yang menarik, dan menganalisis metrik kinerja.",
-        tags: ["Social Media", "Advertising", "Meta Ads"]
-    }
-];
+const defaultProjects: Project[] = [];
 const defaultEducation: EducationItem[] = [
     {
         degree: "Sarjana Komunikasi",
