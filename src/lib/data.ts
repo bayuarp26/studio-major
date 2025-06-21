@@ -30,12 +30,44 @@ const defaultProfileSettings = {
 const defaultSkills: string[] = ["SEO", "Content Marketing", "Social Media Advertising", "Google Analytics", "Meta Ads"];
 const defaultProjects: Project[] = [
     {
-        title: "Contoh Proyek",
-        description: "Ini adalah deskripsi untuk proyek contoh Anda. Anda dapat mengedit atau menghapusnya di panel admin.",
-        details: "Detail lebih lanjut tentang proyek contoh.",
+        title: "Kampanye Harisenin.com",
+        description: "Meningkatkan kesadaran merek dan akuisisi pelanggan untuk Harisenin.com melalui strategi media sosial yang komprehensif. Bertanggung jawab untuk meningkatkan copywriting, hook, dan desain konten yang menarik bagi audiens target.",
+        details: "Tujuan: Meningkatkan kesadaran merek dan produk melalui media sosial.\nStrategi: Meningkatkan copywriting, hook, dan desain konten. Menarik audiens.\nHasil: Pertumbuhan follower (+30%), jangkauan brand (100.000+), engagement (5%+), leads baru (100+).",
         imageUrl: "https://placehold.co/600x400.png",
-        imageHint: "project abstract",
-        tags: ["Contoh", "Tag"]
+        imageHint: "marketing campaign",
+        tags: ["Social Media", "Copywriting", "Content Strategy", "Campaign Management"]
+    },
+    {
+        title: "Identitas Merek TEMA Coffee & Space",
+        description: "Mengembangkan identitas merek yang kuat untuk TEMA Coffee & Space dengan melakukan analisis pasar mendalam dan riset audiens. Fokus pada penguatan posisi pasar dan pengembangan pesan yang resonan.",
+        details: "Analisis Merek: Memperkuat posisi pasar TEMA.\nRiset Audiens: Menarik pelanggan baru.\nPengembangan Pesan: Meningkatkan kesadaran merek dan penjualan.",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "brand design",
+        tags: ["Branding", "Market Research", "Strategy"]
+    },
+    {
+        title: "Analisis Media Sosial TukangSayur.co",
+        description: "Melakukan analisis mendalam terhadap performa media sosial TukangSayur.co di platform Instagram. Memberikan rekomendasi strategis berdasarkan data untuk peningkatan engagement dan pertumbuhan.",
+        details: "Analisis Kompetitor: Mengidentifikasi kekuatan dan kelemahan.\nAnalisis Konten: Menemukan format konten paling efektif.\nRekomendasi: Memberikan saran untuk optimasi strategi.",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "Data analytics",
+        tags: ["Social Media Analysis", "Instagram", "Data Analytics"]
+    },
+    {
+        title: "Kanenakan (Donat) - Konten Kreatif",
+        description: "Merancang dan mengimplementasikan strategi konten kreatif untuk Kanenakan (Donat) yang berfokus pada visual produk yang menarik dan peningkatan interaksi pengguna melalui berbagai format konten.",
+        details: "Pembuatan Konten Video & Foto: Menampilkan produk secara menggugah selera.\nManajemen Instagram: Mengelola jadwal posting dan interaksi.\nAnalisis Engagement: Memantau metrik untuk perbaikan berkelanjutan.",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "Food content",
+        tags: ["Content Creation", "Visual Design", "User Engagement"]
+    },
+     {
+        title: "Sambal Sarumpet - Warisan Rasa",
+        description: "Merancang dan mengimplementasikan strategi konten kreatif untuk @sambalsarumpet yang berfokus pada penekanan warisan rasa dan keautentikan, termasuk untuk konsep take away, melalui visual yang menarik dan interaksi persuasif",
+        details: "Menyusun pilar konten utama yang mencerminkan nilai-nilai merek.\nMembuat dan mengelola jadwal konten mingguan.\nMeningkatkan interaksi dengan audiens melalui konten yang relevan.",
+        imageUrl: "https://placehold.co/600x400.png",
+        imageHint: "Food content",
+        tags: ["Content Creation", "Visual Design", "User Engagement"]
     }
 ];
 const defaultEducation: EducationItem[] = [
