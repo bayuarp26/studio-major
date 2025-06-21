@@ -10,6 +10,7 @@ import Contact from "@/components/sections/Contact";
 import { getPortfolioData } from "@/lib/data";
 import Education from "@/components/sections/Education";
 import Certificates from "@/components/sections/Certificates";
+import { Analytics } from "@vercel/analytics/next"
 
 export default async function Home() {
   const portfolioData = await getPortfolioData();
