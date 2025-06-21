@@ -28,6 +28,9 @@ export interface Certificate {
   url: string;
 }
 
+// DEFINITIVE FIX: The data types now strictly represent the database schema.
+// The optional 'id' from react-hook-form is removed, enforcing that only
+// clean data is used throughout the application.
 export interface PortfolioData {
   name: string;
   title: string;
@@ -36,9 +39,9 @@ export interface PortfolioData {
   profilePictureUrl: string;
   contact: Contact;
   skills: string[];
-  projects: (Project & { id?: string })[]; // Allow optional 'id' from react-hook-form
-  education: (EducationItem & { id?: string })[];
-  certificates: (Certificate & { id?: string })[];
+  projects: Project[];
+  education: EducationItem[];
+  certificates: Certificate[];
   tools: string[];
 }
 
