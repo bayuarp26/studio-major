@@ -30,8 +30,8 @@ export default function Certificates({ certificates }: CertificatesProps) {
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {certificates.map((cert) => (
-            <Card key={cert.name} className="flex flex-col p-6 transition-shadow duration-300 hover:shadow-lg bg-card/50">
+          {certificates.map((cert, index) => (
+            <Card key={`${cert.name}-${index}`} className="flex flex-col p-6 transition-shadow duration-300 hover:shadow-lg bg-card/50">
               <div className="flex-grow">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
