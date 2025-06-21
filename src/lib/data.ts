@@ -61,6 +61,7 @@ const defaultTools: string[] = [
 
 // --- DATABASE FUNCTIONS ---
 
+// Singleton promise to prevent race conditions during initialization
 let initializationPromise: Promise<void> | null = null;
 
 const getDb = async () => {
@@ -69,74 +70,59 @@ const getDb = async () => {
 };
 
 const initializeDefaultData = async () => {
-    // If initialization is already in progress, wait for it to complete.
     if (initializationPromise) {
-      console.log("Initialization already in progress. Waiting...");
-      return initializationPromise;
+        return initializationPromise;
     }
-  
-    // Create a new promise to represent the initialization process.
+
     let resolvePromise: () => void;
     initializationPromise = new Promise((resolve) => {
-      resolvePromise = resolve;
+        resolvePromise = resolve;
     });
-  
+
     try {
-      console.log("Checking and initializing data if necessary.");
-      const db = await getDb();
-      const collections = await db.listCollections().toArray();
-      const collectionNames = collections.map(c => c.name);
+        console.log("Checking and initializing data if necessary.");
+        const db = await getDb();
+        const collections = await db.listCollections().toArray();
+        const collectionNames = collections.map(c => c.name);
 
-      const ensureCollection = async (
-        collectionName: string, 
-        defaultData: any[], 
-        isSimple: boolean = false
-      ) => {
-        if (!collectionNames.includes(collectionName)) {
-            console.log(`Collection ${collectionName} does not exist. Creating and seeding...`);
-            const collection = db.collection(collectionName);
-            const dataToInsert = isSimple ? defaultData.map(name => ({ name })) : defaultData;
-            if (dataToInsert.length > 0) {
-                await collection.insertMany(dataToInsert);
+        const ensureCollection = async (collectionName: string, defaultData: any[], isSimpleArray = false) => {
+            if (!collectionNames.includes(collectionName)) {
+                console.log(`Collection ${collectionName} does not exist. Creating and seeding...`);
+                const collection = db.collection(collectionName);
+                if (defaultData.length > 0) {
+                    const dataToInsert = isSimpleArray ? defaultData.map(name => ({ name })) : defaultData;
+                    await collection.insertMany(dataToInsert);
+                }
             }
-        }
-      };
+        };
 
-      const ensureSingletonDoc = async (collectionName: string, defaultDoc: any) => {
-        if (!collectionNames.includes(collectionName)) {
-            console.log(`Collection ${collectionName} does not exist. Creating and seeding...`);
-            await db.collection(collectionName).insertOne({ docId: DOC_ID, ...defaultDoc });
-        } else {
-             const collection = db.collection(collectionName);
-             const count = await collection.countDocuments({ docId: DOC_ID });
-             if(count === 0) {
+        const ensureSingletonDoc = async (collectionName: string, defaultDoc: any) => {
+            const collection = db.collection(collectionName);
+            const count = await collection.countDocuments({ docId: DOC_ID });
+            if (count === 0) {
                 console.log(`Singleton doc in ${collectionName} is missing. Seeding...`);
                 await collection.insertOne({ docId: DOC_ID, ...defaultDoc });
-             }
-        }
-      }
-      
-      await ensureSingletonDoc(CONTENT_COLLECTION_NAME, defaultMainData);
-      await ensureSingletonDoc(PROFILE_SETTINGS_COLLECTION_NAME, defaultProfileSettings);
-      
-      await ensureCollection(PROJECT_COLLECTION_NAME, defaultProjects);
-      await ensureCollection(EDUCATION_COLLECTION_NAME, defaultEducation);
-      await ensureCollection(CERTIFICATES_COLLECTION_NAME, defaultCertificates);
-      await ensureCollection(SKILLS_COLLECTION_NAME, defaultSkills, true);
-      await ensureCollection(TOOLS_COLLECTION_NAME, defaultTools, true);
-      
-      console.log("Data initialization check complete.");
+            }
+        };
+
+        await ensureSingletonDoc(CONTENT_COLLECTION_NAME, defaultMainData);
+        await ensureSingletonDoc(PROFILE_SETTINGS_COLLECTION_NAME, defaultProfileSettings);
+        await ensureCollection(PROJECT_COLLECTION_NAME, defaultProjects);
+        await ensureCollection(EDUCATION_COLLECTION_NAME, defaultEducation);
+        await ensureCollection(CERTIFICATES_COLLECTION_NAME, defaultCertificates);
+        await ensureCollection(SKILLS_COLLECTION_NAME, defaultSkills, true);
+        await ensureCollection(TOOLS_COLLECTION_NAME, defaultTools, true);
+
+        console.log("Data initialization check complete.");
     } catch (error) {
-      console.error("An unexpected error occurred during data initialization:", error);
-      // Reset promise on error to allow retry on the next call.
-      initializationPromise = null; 
-      throw error; // Re-throw the error to be handled by the caller.
+        console.error("An error occurred during data initialization:", error);
+        initializationPromise = null; 
+        throw error;
     } finally {
-      // Once initialization is done (or failed), resolve the promise and clear it.
-      resolvePromise!();
-      initializationPromise = null;
+        resolvePromise!();
+        // Keep the promise to indicate completion, don't reset to null
     }
-  };
+};
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
     try {
@@ -152,7 +138,6 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const certificatesFromDb = await db.collection(CERTIFICATES_COLLECTION_NAME).find({}).toArray();
         const toolsFromDb = await db.collection(TOOLS_COLLECTION_NAME).find({}).toArray();
 
-        // Safely destructure with fallbacks to prevent errors if documents are missing
         const { _id: mainId, docId: mainDocId, ...mainData } = mainDataDoc || { contact: {} };
         const { _id: profileId, docId: profileDocId, ...profileSettings } = profileSettingsDoc || {};
 
@@ -191,7 +176,6 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         await session.withTransaction(async () => {
             const db = client.db(DB_NAME);
 
-            // 1. Update Singleton Documents (Name, Title, About, Contact, CV, etc.)
             const { name, title, about, contact, cvUrl, profilePictureUrl } = data;
             await db.collection(CONTENT_COLLECTION_NAME).updateOne(
                 { docId: DOC_ID },
@@ -204,32 +188,32 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 { upsert: true, session }
             );
 
-            // 2. Helper function to safely update a collection by replacing all its documents
-            const updateCollection = async (collectionName: string, items: any[], isSimpleStringArray = false) => {
+            // Helper to safely overwrite a collection's data
+            const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
-                    const documentsToInsert = isSimpleStringArray
+                    // Ensure data is clean (no _id or other unwanted fields)
+                    const documentsToInsert = isSimpleArray
                         ? items.map(name => ({ name }))
-                        // Ensure no _id or react-hook-form 'id' fields are carried over.
                         : items.map(item => {
-                            const { _id, id, ...rest } = item;
+                            const { _id, id, ...rest } = item; // Explicitly remove _id and react-hook-form's id
                             return rest;
                           });
-                    await collection.insertMany(documentsToInsert, { session });
+                    if (documentsToInsert.length > 0) {
+                       await collection.insertMany(documentsToInsert, { session });
+                    }
                 }
             };
             
-            // 3. Update all array-based collections using the helper
-            await updateCollection(PROJECT_COLLECTION_NAME, data.projects);
-            await updateCollection(SKILLS_COLLECTION_NAME, data.skills, true);
-            await updateCollection(EDUCATION_COLLECTION_NAME, data.education);
-            await updateCollection(CERTIFICATES_COLLECTION_NAME, data.certificates);
-            await updateCollection(TOOLS_COLLECTION_NAME, data.tools, true);
+            await overwriteCollection(PROJECT_COLLECTION_NAME, data.projects);
+            await overwriteCollection(EDUCATION_COLLECTION_NAME, data.education);
+            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, data.certificates);
+            await overwriteCollection(SKILLS_COLLECTION_NAME, data.skills, true);
+            await overwriteCollection(TOOLS_COLLECTION_NAME, data.tools, true);
         });
     } catch (error) {
         console.error('Error during MongoDB transaction:', error);
-        // Re-throw the error so the API route can catch it and send a 500 response
         throw new Error('Could not update portfolio data due to a database transaction error.');
     } finally {
         await session.endSession();

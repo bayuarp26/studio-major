@@ -148,6 +148,7 @@ export default function AdminForm() {
 
 
   const onSubmit = async (data: FormValues) => {
+    // Construct a clean data object to ensure no extra fields from react-hook-form are sent.
     const portfolioDataToSave: PortfolioData = {
       name: data.name,
       title: data.title,
@@ -161,15 +162,22 @@ export default function AdminForm() {
       skills: data.skills,
       tools: data.tools,
       projects: data.projects.map(p => ({
+        // Rebuild each project object from scratch
         title: p.title,
         description: p.description,
         details: p.details,
         imageUrl: p.imageUrl || 'https://placehold.co/600x400.png',
         imageHint: p.imageHint || '',
-        tags: p.tags ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+        tags: typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
       })),
-      education: data.education.map(({ degree, school, period }) => ({ degree, school, period })),
+      education: data.education.map(e => ({
+        // Rebuild each education object
+        degree: e.degree,
+        school: e.school,
+        period: e.period,
+      })),
       certificates: data.certificates.map(c => ({
+         // Rebuild each certificate object
         name: c.name,
         issuer: c.issuer,
         date: c.date,
@@ -193,6 +201,7 @@ export default function AdminForm() {
         title: 'Update Successful',
         description: 'Portfolio information has been updated.',
       });
+      router.refresh();
     } catch (error) {
       console.error(error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
