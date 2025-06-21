@@ -37,5 +37,3 @@ export async function POST(request: Request) {
      return NextResponse.json({ message: `Failed to update data: ${message}` }, { status: 500 });
   }
 }
-
-    

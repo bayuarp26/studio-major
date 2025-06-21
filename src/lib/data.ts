@@ -218,5 +218,3 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };
-
-    
