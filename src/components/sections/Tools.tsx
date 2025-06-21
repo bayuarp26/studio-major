@@ -7,7 +7,7 @@ const tools = [
   "Google Analytics",
   "Meta Business Suite",
   "Instagram Insights",
-  "dan lainnya..."
+  "Figma"
 ];
 
 export default function Tools() {
