@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./MobileNav";
+import { useActiveSection } from "@/hooks/use-active-section";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
   { name: "Tentang", href: "#about" },
@@ -18,6 +20,7 @@ interface HeaderProps {
 
 export default function Header({ name }: HeaderProps) {
   const firstName = name.split(" ")[0];
+  const activeSection = useActiveSection(navLinks.map(link => link.href.substring(1)));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -30,7 +33,10 @@ export default function Header({ name }: HeaderProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="font-medium text-foreground/60 transition-colors hover:text-foreground/80"
+              className={cn(
+                "font-medium transition-colors hover:text-primary",
+                activeSection === link.href.substring(1) ? "text-primary" : "text-foreground/60"
+              )}
             >
               {link.name}
             </Link>

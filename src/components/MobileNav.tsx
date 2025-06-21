@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useActiveSection } from "@/hooks/use-active-section";
+import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
   navLinks: { name: string; href: string }[];
@@ -13,6 +15,7 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, name }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  const activeSection = useActiveSection(navLinks.map(link => link.href.substring(1)));
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -38,7 +41,10 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="text-lg font-medium text-foreground/70 transition-colors hover:text-foreground"
+                className={cn(
+                  "text-lg font-medium transition-colors hover:text-primary",
+                  activeSection === link.href.substring(1) ? "text-primary" : "text-foreground/70"
+                )}
               >
                 {link.name}
               </Link>
