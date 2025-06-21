@@ -1,9 +1,9 @@
-
-import fs from 'fs';
-import path from 'path';
+import clientPromise from './mongodb';
 import type { PortfolioData } from '@/lib/types';
 
-const dataFilePath = path.join(process.cwd(), 'public', 'portfolio-data.json');
+const DB_NAME = 'portfolioDB';
+const COLLECTION_NAME = 'content';
+const DOC_ID = 'main';
 
 const defaultPortfolioData: PortfolioData = {
     name: "Wahyu Pratomo",
@@ -21,63 +21,75 @@ const defaultPortfolioData: PortfolioData = {
     certificates: []
 };
 
-// Helper to read from the JSON file
-const readDataFromFile = (): PortfolioData => {
-    try {
-        const fileContent = fs.readFileSync(dataFilePath, 'utf-8');
-        // Handle empty file case
-        if (!fileContent) {
-            return defaultPortfolioData;
-        }
-        const fileData = JSON.parse(fileContent);
-        
-        // Merge file data with default data to ensure all keys are present
-        return {
-            ...defaultPortfolioData,
-            ...fileData,
-            contact: {
-                ...defaultPortfolioData.contact,
-                ...(fileData.contact || {}),
-            },
-            // ensure arrays are not undefined
-            skills: fileData.skills || defaultPortfolioData.skills,
-            projects: fileData.projects || defaultPortfolioData.projects,
-            education: fileData.education || defaultPortfolioData.education,
-            certificates: fileData.certificates || defaultPortfolioData.certificates,
-        };
+const getDb = async () => {
+    const client = await clientPromise;
+    return client.db(DB_NAME);
+};
 
+// Coerce skills to be string[] if they are objects, ensuring data consistency.
+const processData = (data: any): PortfolioData => {
+    // Remove the _id and docId fields from the returned object
+    const { _id, docId, ...rest } = data;
+
+    const processedData = {
+        ...defaultPortfolioData,
+        ...rest,
+        contact: {
+            ...defaultPortfolioData.contact,
+            ...(rest.contact || {}),
+        },
+        skills: rest.skills || defaultPortfolioData.skills,
+        projects: rest.projects || defaultPortfolioData.projects,
+        education: rest.education || defaultPortfolioData.education,
+        certificates: rest.certificates || defaultPortfolioData.certificates,
+    };
+
+    if (processedData.skills && Array.isArray(processedData.skills) && processedData.skills.length > 0 && typeof processedData.skills[0] === 'object' && processedData.skills[0] !== null) {
+      processedData.skills = processedData.skills.map((skill: any) => String(skill.name || ''));
+    }
+    return processedData;
+}
+
+export const getPortfolioData = async (): Promise<PortfolioData> => {
+    try {
+        const db = await getDb();
+        const collection = db.collection(COLLECTION_NAME);
+        let data = await collection.findOne({ docId: DOC_ID });
+
+        if (!data) {
+            console.log('No data found in MongoDB. Initializing with default data.');
+            await collection.insertOne({ ...defaultPortfolioData, docId: DOC_ID });
+            data = await collection.findOne({ docId: DOC_ID });
+        }
+        
+        if (!data) {
+             // This should not happen if the insert was successful
+             throw new Error('Failed to retrieve data after initialization.');
+        }
+
+        return processData(data);
     } catch (error) {
-        console.warn("Warning: Could not read or parse data file 'portfolio-data.json'. Using default data.");
-        // Fallback to a default structure if the file doesn't exist or is invalid
+        console.error('Error fetching data from MongoDB:', error);
+        // Fallback to default data in case of a connection error
         return defaultPortfolioData;
     }
 };
 
-// Helper to write to the JSON file
-const writeDataToFile = (data: PortfolioData): void => {
-    try {
-        // Ensure the public directory exists
-        fs.mkdirSync(path.join(process.cwd(), 'public'), { recursive: true });
-        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (error) {
-        console.error('Error writing data file:', error);
-        throw new Error('Could not write portfolio data to file.');
-    }
-};
-
-// Coerce skills to be string[] if they are objects, ensuring data consistency.
-const processData = (data: PortfolioData): PortfolioData => {
-    if (data.skills && Array.isArray(data.skills) && data.skills.length > 0 && typeof data.skills[0] === 'object' && data.skills[0] !== null) {
-      data.skills = data.skills.map((skill: any) => String(skill.name || ''));
-    }
-    return data;
-}
-
-export const getPortfolioData = async (): Promise<PortfolioData> => {
-    const data = readDataFromFile();
-    return processData(data);
-};
-
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
-    writeDataToFile(data);
+    try {
+        const db = await getDb();
+        const collection = db.collection(COLLECTION_NAME);
+        
+        // Data to update, ensuring docId is not nested inside
+        const dataToUpdate = { ...data };
+
+        await collection.updateOne(
+            { docId: DOC_ID },
+            { $set: dataToUpdate },
+            { upsert: true }
+        );
+    } catch (error) {
+        console.error('Error updating data in MongoDB:', error);
+        throw new Error('Could not update portfolio data in MongoDB.');
+    }
 };
