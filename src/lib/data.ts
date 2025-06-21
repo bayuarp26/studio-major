@@ -61,7 +61,6 @@ const defaultTools: string[] = [
 
 // --- DATABASE FUNCTIONS ---
 
-let isInitialized = false;
 let initializationPromise: Promise<void> | null = null;
 
 const getDb = async () => {
@@ -70,13 +69,13 @@ const getDb = async () => {
 };
 
 const initializeDefaultData = async () => {
+    // If initialization is already in progress, wait for it to complete.
     if (initializationPromise) {
+      console.log("Initialization already in progress. Waiting...");
       return initializationPromise;
     }
-    if (isInitialized) {
-      return;
-    }
   
+    // Create a new promise to represent the initialization process.
     let resolvePromise: () => void;
     initializationPromise = new Promise((resolve) => {
       resolvePromise = resolve;
@@ -85,45 +84,57 @@ const initializeDefaultData = async () => {
     try {
       console.log("Checking and initializing data if necessary.");
       const db = await getDb();
-  
-      const ensureCollection = async (collection: Collection, defaultData: any[], isSimple: boolean = false) => {
-        const count = await collection.countDocuments();
-        if (count === 0) {
-          console.log(`Collection ${collection.collectionName} is empty. Seeding with default data.`);
-          const dataToInsert = isSimple ? defaultData.map(name => ({ name })) : defaultData;
-          if (dataToInsert.length > 0) {
-             await collection.insertMany(dataToInsert);
-          }
+      const collections = await db.listCollections().toArray();
+      const collectionNames = collections.map(c => c.name);
+
+      const ensureCollection = async (
+        collectionName: string, 
+        defaultData: any[], 
+        isSimple: boolean = false
+      ) => {
+        if (!collectionNames.includes(collectionName)) {
+            console.log(`Collection ${collectionName} does not exist. Creating and seeding...`);
+            const collection = db.collection(collectionName);
+            const dataToInsert = isSimple ? defaultData.map(name => ({ name })) : defaultData;
+            if (dataToInsert.length > 0) {
+                await collection.insertMany(dataToInsert);
+            }
         }
       };
-      
-      const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
-      if (await contentCollection.countDocuments({ docId: DOC_ID }) === 0) {
-          await contentCollection.insertOne({ docId: DOC_ID, ...defaultMainData });
-      }
-      
-      const profileCollection = db.collection(PROFILE_SETTINGS_COLLECTION_NAME);
-      if (await profileCollection.countDocuments({ docId: DOC_ID }) === 0) {
-          await profileCollection.insertOne({ docId: DOC_ID, ...defaultProfileSettings });
-      }
 
-      await ensureCollection(db.collection(PROJECT_COLLECTION_NAME), defaultProjects);
-      await ensureCollection(db.collection(EDUCATION_COLLECTION_NAME), defaultEducation);
-      await ensureCollection(db.collection(CERTIFICATES_COLLECTION_NAME), defaultCertificates);
-      await ensureCollection(db.collection(SKILLS_COLLECTION_NAME), defaultSkills, true);
-      await ensureCollection(db.collection(TOOLS_COLLECTION_NAME), defaultTools, true);
+      const ensureSingletonDoc = async (collectionName: string, defaultDoc: any) => {
+        if (!collectionNames.includes(collectionName)) {
+            console.log(`Collection ${collectionName} does not exist. Creating and seeding...`);
+            await db.collection(collectionName).insertOne({ docId: DOC_ID, ...defaultDoc });
+        } else {
+             const collection = db.collection(collectionName);
+             const count = await collection.countDocuments({ docId: DOC_ID });
+             if(count === 0) {
+                console.log(`Singleton doc in ${collectionName} is missing. Seeding...`);
+                await collection.insertOne({ docId: DOC_ID, ...defaultDoc });
+             }
+        }
+      }
       
-      isInitialized = true;
+      await ensureSingletonDoc(CONTENT_COLLECTION_NAME, defaultMainData);
+      await ensureSingletonDoc(PROFILE_SETTINGS_COLLECTION_NAME, defaultProfileSettings);
+      
+      await ensureCollection(PROJECT_COLLECTION_NAME, defaultProjects);
+      await ensureCollection(EDUCATION_COLLECTION_NAME, defaultEducation);
+      await ensureCollection(CERTIFICATES_COLLECTION_NAME, defaultCertificates);
+      await ensureCollection(SKILLS_COLLECTION_NAME, defaultSkills, true);
+      await ensureCollection(TOOLS_COLLECTION_NAME, defaultTools, true);
+      
       console.log("Data initialization check complete.");
     } catch (error) {
       console.error("An unexpected error occurred during data initialization:", error);
-      initializationPromise = null; // Reset promise on error to allow retry
-      throw error;
+      // Reset promise on error to allow retry on the next call.
+      initializationPromise = null; 
+      throw error; // Re-throw the error to be handled by the caller.
     } finally {
-      if (initializationPromise) {
-          resolvePromise!();
-          initializationPromise = null;
-      }
+      // Once initialization is done (or failed), resolve the promise and clear it.
+      resolvePromise!();
+      initializationPromise = null;
     }
   };
 
@@ -141,6 +152,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const certificatesFromDb = await db.collection(CERTIFICATES_COLLECTION_NAME).find({}).toArray();
         const toolsFromDb = await db.collection(TOOLS_COLLECTION_NAME).find({}).toArray();
 
+        // Safely destructure with fallbacks to prevent errors if documents are missing
         const { _id: mainId, docId: mainDocId, ...mainData } = mainDataDoc || { contact: {} };
         const { _id: profileId, docId: profileDocId, ...profileSettings } = profileSettingsDoc || {};
 
@@ -197,14 +209,11 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
-                    // For simple arrays (skills, tools), format them into objects { name: '...' }
-                    // For complex objects (projects, etc.), this ensures no leftover fields like `id` from react-hook-form
-                    // or `_id` from a previous fetch are included in the insert operation.
                     const documentsToInsert = isSimpleStringArray
                         ? items.map(name => ({ name }))
+                        // Ensure no _id or react-hook-form 'id' fields are carried over.
                         : items.map(item => {
-                            // This stripping of _id is crucial to prevent duplicate key errors if data was fetched and sent back
-                            const { _id, ...rest } = item;
+                            const { _id, id, ...rest } = item;
                             return rest;
                           });
                     await collection.insertMany(documentsToInsert, { session });

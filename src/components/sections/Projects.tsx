@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ export default function Projects({ projects }: ProjectsProps) {
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, index) => (
-            <Card key={index} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
+            <Card key={`${project.title}-${index}`} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
               <div className="aspect-video overflow-hidden">
                  <Image
                   src={project.imageUrl || 'https://placehold.co/600x400.png'}

@@ -87,6 +87,11 @@ export default function AdminForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
+      title: '',
+      about: '',
+      email: '',
+      linkedin: '',
       skills: [],
       tools: [],
       projects: [],
