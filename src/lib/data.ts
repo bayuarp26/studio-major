@@ -1,13 +1,11 @@
 
 import clientPromise from './mongodb';
-import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
+import type { PortfolioData, Project } from '@/lib/types';
 
 const DB_NAME = 'portfolioDB';
 const CONTENT_COLLECTION_NAME = 'content';
 const PROJECT_COLLECTION_NAME = 'projects';
 const SKILLS_COLLECTION_NAME = 'skills';
-const EDUCATION_COLLECTION_NAME = 'education';
-const CERTIFICATES_COLLECTION_NAME = 'certificates';
 const DOC_ID = 'main';
 
 // Define default data for the main content collection
@@ -26,16 +24,13 @@ const defaultMainData = {
 // Define default data for other collections
 const defaultSkills: string[] = [];
 const defaultProjects: Project[] = [];
-const defaultEducation: EducationItem[] = [];
-const defaultCertificates: Certificate[] = [];
+
 
 // Combine all defaults into a single object for cases where the full object is needed (e.g., error fallback)
 const defaultPortfolioData: PortfolioData = {
     ...defaultMainData,
     skills: defaultSkills,
     projects: defaultProjects,
-    education: defaultEducation,
-    certificates: defaultCertificates
 };
 
 const getDb = async () => {
@@ -49,8 +44,6 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
         const projectsCollection = db.collection(PROJECT_COLLECTION_NAME);
         const skillsCollection = db.collection(SKILLS_COLLECTION_NAME);
-        const educationCollection = db.collection(EDUCATION_COLLECTION_NAME);
-        const certificatesCollection = db.collection(CERTIFICATES_COLLECTION_NAME);
         
         let mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
 
@@ -58,13 +51,10 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         if (!mainDataDoc) {
             console.log('No data found in MongoDB. Initializing with default data.');
             
-            // FIXED: Only insert main data into the content collection
             await contentCollection.insertOne({ ...defaultMainData, docId: DOC_ID });
             
             if (defaultProjects.length > 0) await projectsCollection.insertMany(defaultProjects);
             if (defaultSkills.length > 0) await skillsCollection.insertMany(defaultSkills.map(name => ({ name })));
-            if (defaultEducation.length > 0) await educationCollection.insertMany(defaultEducation);
-            if (defaultCertificates.length > 0) await certificatesCollection.insertMany(defaultCertificates);
             
             mainDataDoc = await contentCollection.findOne({ docId: DOC_ID });
         }
@@ -92,13 +82,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const skillsFromDb = await skillsCollection.find({}).toArray();
         const skills = skillsFromDb.map(s => s.name as string);
 
-        const educationFromDb = await educationCollection.find({}).toArray();
-        const education = educationFromDb.map(e => { const { _id, ...eduData } = e; return eduData as EducationItem; });
-
-        const certificatesFromDb = await certificatesCollection.find({}).toArray();
-        const certificates = certificatesFromDb.map(c => { const { _id, ...certData } = c; return certData as Certificate; });
-
-        return { ...mainData, projects, skills, education, certificates };
+        return { ...mainData, projects, skills };
     } catch (error) {
         console.error('Error fetching data from MongoDB:', error);
         // On error, return the default data to avoid crashing the app.
@@ -112,10 +96,8 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
         const projectsCollection = db.collection(PROJECT_COLLECTION_NAME);
         const skillsCollection = db.collection(SKILLS_COLLECTION_NAME);
-        const educationCollection = db.collection(EDUCATION_COLLECTION_NAME);
-        const certificatesCollection = db.collection(CERTIFICATES_COLLECTION_NAME);
         
-        const { projects, skills, education, certificates, ...mainData } = data;
+        const { projects, skills, ...mainData } = data;
 
         // Update main content document, explicitly unsetting the array fields
         // to ensure they are not stored in the 'content' collection.
@@ -142,16 +124,6 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         await skillsCollection.deleteMany({});
         if (skills && skills.length > 0) {
             await skillsCollection.insertMany(skills.map(name => ({ name })));
-        }
-
-        await educationCollection.deleteMany({});
-        if (education && education.length > 0) {
-            await educationCollection.insertMany(education.map(({...e}) => e));
-        }
-
-        await certificatesCollection.deleteMany({});
-        if (certificates && certificates.length > 0) {
-            await certificatesCollection.insertMany(certificates.map(({...c}) => c));
         }
 
     } catch (error) {

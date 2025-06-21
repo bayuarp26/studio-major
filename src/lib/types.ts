@@ -12,19 +12,6 @@ export interface Project {
   tags: string[];
 }
 
-export interface EducationItem {
-  degree: string;
-  school: string;
-  period: string;
-}
-
-export interface Certificate {
-  name: string;
-  issuer: string;
-  date: string;
-  url: string;
-}
-
 export interface PortfolioData {
   name: string;
   title: string;
@@ -34,6 +21,4 @@ export interface PortfolioData {
   contact: Contact;
   skills: string[];
   projects: Project[];
-  education: EducationItem[];
-  certificates: Certificate[];
 }

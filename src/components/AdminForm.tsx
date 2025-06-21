@@ -39,17 +39,6 @@ const formSchema = z.object({
     details: z.string().min(1, 'Details are required'),
     tags: z.string().min(1, 'Tags are required (comma-separated)'),
   })),
-  education: z.array(z.object({
-    degree: z.string().min(1, 'Degree is required'),
-    school: z.string().min(1, 'School is required'),
-    period: z.string().min(1, 'Period is required'),
-  })),
-  certificates: z.array(z.object({
-    name: z.string().min(1, 'Certificate name is required'),
-    issuer: z.string().min(1, 'Issuer is required'),
-    date: z.string().min(1, 'Date is required'),
-    url: z.string().url("Invalid URL").optional().or(z.literal('')),
-  }))
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -111,8 +100,6 @@ export default function AdminForm() {
   }, [form, toast]);
 
   const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
-  const { fields: educationFields, append: appendEducation, remove: removeEducation } = useFieldArray({ control: form.control, name: "education" });
-  const { fields: certificateFields, append: appendCertificate, remove: removeCertificate } = useFieldArray({ control: form.control, name: "certificates" });
 
   const projectDialogForm = useForm<ProjectDialogValues>({
     resolver: zodResolver(projectDialogSchema),
@@ -136,8 +123,6 @@ export default function AdminForm() {
         imageHint: p.imageHint || '',
         tags: p.tags.split(',').map(t => t.trim()) 
       })),
-      education: data.education,
-      certificates: data.certificates,
     };
     
     try {
@@ -374,36 +359,6 @@ export default function AdminForm() {
                 )}
               />
 
-              <Card>
-                <CardHeader><CardTitle>Pendidikan</CardTitle></CardHeader>
-                <CardContent>
-                  {educationFields.map((field, index) => (
-                    <div key={field.id} className="p-4 border rounded-md relative space-y-4 mb-4">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeEducation(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      <FormField control={form.control} name={`education.${index}.degree`} render={({ field }) => (<FormItem><FormLabel>Degree/Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name={`education.${index}.school`} render={({ field }) => (<FormItem><FormLabel>School/Institution</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name={`education.${index}.period`} render={({ field }) => (<FormItem><FormLabel>Period</FormLabel><FormControl><Input placeholder="e.g., 2020 - 2025" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    </div>
-                  ))}
-                  <Button type="button" variant="outline" size="sm" onClick={() => appendEducation({ degree: '', school: '', period: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Education</Button>
-                </CardContent>
-              </Card>
-
-               <Card>
-                <CardHeader><CardTitle>Sertifikat</CardTitle></CardHeader>
-                <CardContent>
-                  {certificateFields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-md relative space-y-4 mb-4">
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeCertificate(index)} className="absolute top-2 right-2 h-7 w-7"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        <FormField control={form.control} name={`certificates.${index}.name`} render={({ field }) => (<FormItem><FormLabel>Certificate Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`certificates.${index}.issuer`} render={({ field }) => (<FormItem><FormLabel>Issuer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`certificates.${index}.date`} render={({ field }) => (<FormItem><FormLabel>Date</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                         <FormField control={form.control} name={`certificates.${index}.url`} render={({ field }) => (<FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      </div>
-                    ))}
-                  <Button type="button" variant="outline" size="sm" onClick={() => appendCertificate({ name: '', issuer: '', date: '', url: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Certificate</Button>
-                </CardContent>
-              </Card>
             </TabsContent>
           </Tabs>
 

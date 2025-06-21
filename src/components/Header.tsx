@@ -9,8 +9,6 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
   { name: "Tentang", href: "#about" },
-  { name: "Pendidikan", href: "#education" },
-  { name: "Sertifikat", href: "#certificates" },
   { name: "Keahlian", href: "#skills" },
   { name: "Proyek", href: "#projects" },
 ];
