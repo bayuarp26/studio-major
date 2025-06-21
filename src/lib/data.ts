@@ -19,38 +19,51 @@ const defaultPortfolioData: PortfolioData = {
         email: "mailto:wahyu.pratomo@example.com",
         linkedin: "https://linkedin.com/in/wahyu-pratomo"
     },
-    skills: ["SEO Analysis", "Content Strategy", "Social Media Marketing", "Google Analytics", "Campaign Management"],
+    skills: [
+        "Digital Marketing Strategy",
+        "SEO (Search Engine Optimization)",
+        "Content Creation & Marketing",
+        "Social Media Management",
+        "Data Analysis",
+        "Google Ads & Analytics"
+    ],
     projects: [
         {
-            title: "Sample Project: Digital Campaign",
+            title: "Peningkatan SEO Situs E-commerce",
             imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "marketing campaign",
-            description: "Managed a full-cycle digital marketing campaign, resulting in a 40% increase in lead generation.",
-            details: "Strategy, content creation, ad spend management, and performance analysis.",
-            tags: ["Marketing", "Lead Gen"]
+            imageHint: "seo analytics",
+            description: "Meningkatkan peringkat pencarian organik sebesar 40% dalam 6 bulan.",
+            details: "Melakukan riset kata kunci, mengoptimalkan konten, dan membangun backlink berkualitas tinggi.",
+            tags: ["SEO", "E-commerce", "Content Marketing"]
         },
         {
-            title: "Sample Project: SEO Overhaul",
+            title: "Kampanye Iklan Media Sosial",
             imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "website analytics",
-            description: "Executed a complete SEO overhaul for a client website, improving organic search ranking for key terms.",
-            details: "Keyword research, on-page optimization, backlink building, and technical SEO.",
-            tags: ["SEO", "Analytics"]
+            imageHint: "social media",
+            description: "Menghasilkan ROI 300% dari kampanye iklan berbayar di platform Meta.",
+            details: "Menargetkan audiens yang tepat, membuat iklan yang menarik, dan menganalisis metrik kinerja.",
+            tags: ["Social Media", "Advertising", "Meta Ads"]
         }
     ],
     education: [
         {
-            degree: 'Bachelor of Economics',
-            school: 'University of Gadjah Mada',
-            period: '2015 - 2019'
+            degree: "Sarjana Komunikasi",
+            school: "Universitas Gadjah Mada",
+            period: "2015 - 2019"
         }
     ],
     certificates: [
         {
-            name: 'Google Ads Search Certification',
-            issuer: 'Google',
-            date: 'Issued Jun 2023',
-            url: 'https://linkedin.com'
+            name: "Google Analytics Individual Qualification",
+            issuer: "Google",
+            date: "2023",
+            url: "#"
+        },
+        {
+            name: "HubSpot Content Marketing Certification",
+            issuer: "HubSpot Academy",
+            date: "2022",
+            url: "#"
         }
     ]
 };
@@ -59,25 +72,6 @@ const getDb = async () => {
     const client = await clientPromise;
     return client.db(DB_NAME);
 };
-
-// Processes the main data document, excluding array-based content
-const processMainData = (data: any): Omit<PortfolioData, 'projects' | 'skills' | 'education' | 'certificates'> => {
-    const { _id, docId, ...rest } = data;
-
-    // Separate default data for easier merging
-    const { projects, skills, education, certificates, ...defaultMainData } = defaultPortfolioData;
-
-    const processedData = {
-        ...defaultMainData,
-        ...rest,
-        contact: {
-            ...defaultMainData.contact,
-            ...(rest.contact || {}),
-        },
-    };
-    
-    return processedData;
-}
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
     try {
@@ -109,9 +103,26 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
              throw new Error('Failed to retrieve data after initialization.');
         }
 
-        // Fetch all data from respective collections
-        const mainData = processMainData(mainDataDoc);
+        // Process main data, combining with defaults for safety
+        const { _id, docId, ...dbMainData } = mainDataDoc;
+        const { 
+            projects: defaultProjects, 
+            skills: defaultSkills, 
+            education: defaultEducation, 
+            certificates: defaultCertificates, 
+            ...defaultMainData 
+        } = defaultPortfolioData;
 
+        const mainData = {
+            ...defaultMainData,
+            ...dbMainData,
+            contact: {
+                ...defaultMainData.contact,
+                ...(dbMainData.contact || {}),
+            },
+        };
+
+        // Fetch all array data from respective collections
         const projectsFromDb = await projectsCollection.find({}).toArray();
         const projects = projectsFromDb.map(p => { const { _id, ...projectData } = p; return projectData as Project; });
 
@@ -127,6 +138,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         return { ...mainData, projects, skills, education, certificates };
     } catch (error) {
         console.error('Error fetching data from MongoDB:', error);
+        // On error, return the default data to avoid crashing the app.
         return defaultPortfolioData;
     }
 };
@@ -142,32 +154,38 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
         
         const { projects, skills, education, certificates, ...mainData } = data;
 
-        // Update main content document
+        // Update main content document, explicitly unsetting the array fields
+        // to ensure they are not stored in the 'content' collection.
         await contentCollection.updateOne(
             { docId: DOC_ID },
-            { $set: mainData },
+            { 
+                $set: mainData,
+                $unset: {
+                    projects: "",
+                    skills: "",
+                    education: "",
+                    certificates: ""
+                }
+            },
             { upsert: true }
         );
 
-        // Update projects collection
+        // For array collections, we clear and re-insert.
         await projectsCollection.deleteMany({});
         if (projects && projects.length > 0) {
             await projectsCollection.insertMany(projects);
         }
 
-        // Update skills collection
         await skillsCollection.deleteMany({});
         if (skills && skills.length > 0) {
             await skillsCollection.insertMany(skills.map(name => ({ name })));
         }
 
-        // Update education collection
         await educationCollection.deleteMany({});
         if (education && education.length > 0) {
             await educationCollection.insertMany(education);
         }
 
-        // Update certificates collection
         await certificatesCollection.deleteMany({});
         if (certificates && certificates.length > 0) {
             await certificatesCollection.insertMany(certificates);
