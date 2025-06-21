@@ -152,6 +152,8 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
 
 
   const onSubmit = async (data: FormValues) => {
+    // Sanitize and structure the data to be sent to the server.
+    // This prevents sending extra fields like `id` from useFieldArray.
     const portfolioDataToSave: PortfolioData = {
       name: data.name,
       title: data.title,
@@ -170,10 +172,9 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
         imageHint: p.imageHint || '',
         description: p.description,
         details: p.details,
-        // Ensure tags are always an array of strings
         tags: typeof p.tags === 'string' 
             ? p.tags.split(',').map(tag => tag.trim()).filter(Boolean) 
-            : (Array.isArray(p.tags) ? p.tags : [])
+            : []
       })),
       education: data.education.map(e => ({
         degree: e.degree,
@@ -568,5 +569,3 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     </>
   );
 }
-
-    
