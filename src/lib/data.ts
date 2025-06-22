@@ -195,50 +195,44 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
     await ensureDbInitialized();
     const db = await getDb();
-    const client = await clientPromise;
     
-    // The incoming 'data' is now trusted to be a clean payload from AdminForm.tsx.
+    // The incoming 'data' is trusted to be a clean payload from AdminForm.tsx.
     const { projects, education, certificates, skills, tools, ...mainContentData } = data;
     
-    const session = client.startSession();
-
     try {
-        await session.withTransaction(async () => {
-            // Update the main document with general info
-            await db.collection(CONTENT_COLLECTION_NAME).updateOne(
-                { _id: MAIN_DOC_ID },
-                { $set: mainContentData },
-                { upsert: true, session }
-            );
+        // Helper function to overwrite an entire collection with new data.
+        // This is a robust way to handle updates for these arrays.
+        const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
+            const collection = db.collection(collectionName);
+            await collection.deleteMany({}); // Delete all existing documents
+            if (items && items.length > 0) {
+                const documentsToInsert = isSimpleArray 
+                    ? items.map(name => ({ name })) 
+                    : items.map(item => ({ ...item })); // Data is already clean from AdminForm
 
-            // Helper function to overwrite an entire collection with new data.
-            // This is the most robust way to handle updates for these arrays.
-            const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
-                const collection = db.collection(collectionName);
-                await collection.deleteMany({}, { session });
-                if (items && items.length > 0) {
-                    const documentsToInsert = isSimpleArray 
-                        ? items.map(name => ({ name })) 
-                        : items.map(item => { return { ...item }; }); // Already clean from AdminForm
-
-                    if (documentsToInsert.length > 0) {
-                        await collection.insertMany(documentsToInsert, { session });
-                    }
+                if (documentsToInsert.length > 0) {
+                    await collection.insertMany(documentsToInsert);
                 }
-            };
-            
-            // Overwrite each related collection with the new, clean data
-            await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
-            await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
-            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
-            await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
-            await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
-        });
+            }
+        };
+
+        // Update main content and all sub-collections sequentially.
+        // If any of these fail, the error will be caught by the block below.
+        await db.collection(CONTENT_COLLECTION_NAME).updateOne(
+            { _id: MAIN_DOC_ID },
+            { $set: mainContentData },
+            { upsert: true }
+        );
+
+        await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
+        await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
+        await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
+        await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
+        await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
     } catch (error) {
-        console.error('Error during MongoDB transaction:', error);
-        throw new Error('Could not update portfolio data due to a database transaction error.');
-    } finally {
-        await session.endSession();
+        console.error('Error during database update operations:', error);
+        // Re-throw a more specific error to be caught by the server action
+        throw new Error('Could not update portfolio data due to a database error.');
     }
 };
 
