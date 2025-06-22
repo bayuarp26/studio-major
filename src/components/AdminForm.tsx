@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PortfolioData, EducationItem, Certificate, Project } from '@/lib/types';
+import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
@@ -575,5 +575,3 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     </>
   );
 }
-
-    
