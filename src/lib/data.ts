@@ -184,7 +184,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             education: cleanDocs(education),
             certificates: cleanDocs(certificates),
             skills: skillsDocs.map(s => s.name),
-            tools: toolsDocs.map(t => t.name),
+            tools: toolsDocs.map(t => s.name),
         };
     } catch (error) {
         console.error("Failed to get portfolio data, returning default set:", error);
@@ -197,7 +197,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     const db = await getDb();
     const client = await clientPromise;
     
-    // The incoming 'data' is now trusted to be a clean payload from AdminForm.
+    // The incoming 'data' is now trusted to be a clean payload from AdminForm.tsx.
     const { projects, education, certificates, skills, tools, ...mainContentData } = data;
     
     const session = client.startSession();
