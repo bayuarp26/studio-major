@@ -1,7 +1,7 @@
 
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
-import { Collection, Db, MongoClient, WithId } from 'mongodb';
+import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 // --- DATABASE & COLLECTION CONSTANTS ---
@@ -69,7 +69,6 @@ const DEFAULT_DATA: PortfolioData = {
         }
     ]
 };
-
 
 // --- DATABASE CONNECTION & INITIALIZATION ---
 let db: Db;
@@ -143,6 +142,14 @@ const ensureDbInitialized = async () => {
     return initializationPromise;
 };
 
+// --- DATA SERIALIZATION ---
+// Converts MongoDB document to a plain object, turning _id into a string.
+function serializeDoc<T>(doc: WithId<T>): T & { _id: string } {
+    const { _id, ...rest } = doc;
+    return { ...rest, _id: _id.toHexString() } as T & { _id: string };
+}
+
+
 // --- PUBLIC DATA ACCESS FUNCTIONS ---
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
@@ -170,8 +177,6 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             console.error("Main content not found after initialization. Returning default data.");
             return DEFAULT_DATA;
         }
-        
-        const cleanDocs = (docs: WithId<any>[]) => docs.map(({ _id, ...rest }) => rest);
 
         return {
             name: mainContent.name,
@@ -180,9 +185,9 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             contact: mainContent.contact,
             cvUrl: mainContent.cvUrl,
             profilePictureUrl: mainContent.profilePictureUrl,
-            projects: cleanDocs(projects),
-            education: cleanDocs(education),
-            certificates: cleanDocs(certificates),
+            projects: projects.map(serializeDoc),
+            education: education.map(serializeDoc),
+            certificates: certificates.map(serializeDoc),
             skills: skillsDocs.map(s => s.name),
             tools: toolsDocs.map(t => t.name),
         };
@@ -192,57 +197,50 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
     }
 };
 
-export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
-    await ensureDbInitialized();
-    const db = await getDb();
-    const session = client.startSession();
-
-    try {
-        await session.withTransaction(async () => {
-            const { projects, education, certificates, skills, tools, ...mainContentData } = data;
-
-            // 1. Update the main content document
-            await db.collection(CONTENT_COLLECTION_NAME).updateOne(
-                { _id: MAIN_DOC_ID },
-                { $set: mainContentData },
-                { session }
-            );
-
-            // 2. Helper to overwrite an entire collection
-            const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
-                const collection = db.collection(collectionName);
-                await collection.deleteMany({}, { session });
-
-                if (items && items.length > 0) {
-                    const documentsToInsert = isSimpleArray
-                        ? items.map(name => ({ name }))
-                        : items.map(item => ({ ...item })); // Assumes item is already a clean object
-
-                    if (documentsToInsert.length > 0) {
-                        await collection.insertMany(documentsToInsert, { session });
-                    }
-                }
-            };
-
-            // 3. Overwrite all related collections
-            await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
-            await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
-            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
-            await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
-            await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
-        });
-    } catch (error) {
-        console.error('Database transaction failed:', error);
-        // Re-throw the error to be caught by the server action, which will then notify the user.
-        throw new Error('Could not update portfolio data due to a database error.');
-    } finally {
-        await session.endSession();
-    }
-};
-
-
 export const getUser = async (username: string): Promise<WithId<User> | null> => {
     await ensureDbInitialized();
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };
+
+
+// --- NEW GRANULAR UPDATE FUNCTIONS ---
+
+export async function updateMainContent(data: Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>): Promise<void> {
+    const db = await getDb();
+    await db.collection(CONTENT_COLLECTION_NAME).updateOne(
+        { _id: MAIN_DOC_ID },
+        { $set: data }
+    );
+}
+
+export async function updateSimpleCollection(collectionName: 'skills' | 'tools', items: string[]): Promise<void> {
+    const db = await getDb();
+    const collection = db.collection(collectionName);
+    await collection.deleteMany({});
+    if (items && items.length > 0) {
+        await collection.insertMany(items.map(name => ({ name })));
+    }
+}
+
+export async function addDocument<T extends { _id?: string }>(collectionName: string, doc: Omit<T, '_id'>): Promise<T> {
+    const db = await getDb();
+    const result = await db.collection(collectionName).insertOne(doc);
+    const newDoc = await db.collection(collectionName).findOne({ _id: result.insertedId });
+    if (!newDoc) throw new Error("Failed to retrieve new document after insertion.");
+    return serializeDoc(newDoc) as T;
+}
+
+export async function updateDocument<T extends { _id?: string }>(collectionName: string, id: string, doc: T): Promise<void> {
+    const db = await getDb();
+    const { _id, ...dataToUpdate } = doc;
+    await db.collection(collectionName).updateOne(
+        { _id: new ObjectId(id) },
+        { $set: dataToUpdate }
+    );
+}
+
+export async function deleteDocument(collectionName: string, id: string): Promise<void> {
+    const db = await getDb();
+    await db.collection(collectionName).deleteOne({ _id: new ObjectId(id) });
+}
