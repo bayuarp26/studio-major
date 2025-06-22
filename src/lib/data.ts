@@ -17,41 +17,59 @@ const TOOLS_COLLECTION_NAME = 'tools';
 // --- DOCUMENT ID FOR SINGLETONS ---
 const MAIN_DOC_ID = 'main_content';
 
-// --- DEFAULT DATA STRUCTURES ---
 const DEFAULT_DATA: PortfolioData = {
     name: "Wahyu Pratomo",
-    title: "Digital Marketing Specialist & SEO Analyst",
-    about: "I'm a passionate Digital Marketing specialist with a knack for SEO and content strategy. I thrive on data-driven insights to boost online visibility and drive meaningful engagement. Let's connect and create something amazing!",
-    contact: {
-        email: "mailto:wahyu.pratomo@example.com",
-        linkedin: "https://linkedin.com/in/wahyu-pratomo"
-    },
+    title: "Digital Marketing Specialist & Web Developer",
+    about: "Saya seorang spesialis pemasaran digital dengan hasrat untuk teknologi dan pengembangan web. Dengan pengalaman dalam SEO, SEM, dan media sosial, saya membantu merek mencapai potensi online mereka. Saya juga terampil dalam membangun situs web yang responsif dan ramah pengguna.",
     cvUrl: "#",
     profilePictureUrl: "https://placehold.co/400x400.png",
+    contact: {
+        email: "mailto:your.email@example.com",
+        linkedin: "https://www.linkedin.com/in/your-profile/"
+    },
+    skills: ["SEO", "SEM", "Google Analytics", "Content Marketing", "React", "Next.js", "Node.js"],
+    tools: ["Google Ads", "SEMrush", "Ahrefs", "Facebook Ads Manager", "Figma", "VS Code"],
     projects: [
         {
-            title: "Kampanye Pemasaran Digital",
-            description: "Meningkatkan brand awareness dan akuisisi pelanggan untuk klien e-commerce melalui strategi media sosial dan SEO yang komprehensif.",
-            details: "Meningkatkan lalu lintas organik sebesar 40% dalam 6 bulan. Menjalankan kampanye iklan berbayar yang menghasilkan ROI 300%. Mengelola anggaran bulanan sebesar $5.000.",
+            title: "Optimasi SEO untuk E-Commerce",
             imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "marketing campaign",
-            tags: ["Digital Marketing", "SEO", "Social Media"]
+            imageHint: "seo analytics",
+            description: "Meningkatkan peringkat pencarian organik sebesar 200% untuk klien e-commerce terkemuka.",
+            details: "Melakukan riset kata kunci, optimasi on-page dan off-page, serta membangun backlink berkualitas.",
+            tags: ["SEO", "E-commerce"]
         },
+        {
+            title: "Aplikasi Web Portofolio",
+            imageUrl: "https://placehold.co/600x400.png",
+            imageHint: "web development code",
+            description: "Membangun aplikasi portofolio pribadi menggunakan Next.js dan Tailwind CSS.",
+            details: "Fitur termasuk desain responsif, sistem manajemen konten (CMS) kustom, dan integrasi API.",
+            tags: ["Next.js", "React", "Tailwind CSS"]
+        }
     ],
     education: [
-        { degree: "S1 Ilmu Komunikasi", school: "Universitas Gadjah Mada", period: "2018 - 2022" }
+        {
+            degree: "Sarjana Ilmu Komputer",
+            school: "Universitas Teknologi",
+            period: "2018 - 2022"
+        }
     ],
     certificates: [
-        { name: "Google Analytics for Beginners", issuer: "Google", date: "Jan 2023", url: "#" }
-    ],
-    skills: [
-        "Digital marketing", "Manajemen Proyek", "Ads Desain", "Kolaborasi Tim",
-        "SEO Specialist", "Social Media Specialist", "Content Ads Creation"
-    ],
-    tools: [
-        "Social Blade", "Canva", "Google Analytics", "Meta Business Suite", "Instagram Insights", "Figma"
+        {
+            name: "Google Analytics Individual Qualification",
+            issuer: "Google",
+            date: "2023",
+            url: "#"
+        },
+        {
+            name: "Certified Full-Stack Web Developer",
+            issuer: "Dicoding",
+            date: "2022",
+            url: "#"
+        }
     ]
 };
+
 
 // --- DATABASE CONNECTION & INITIALIZATION ---
 let db: Db;
@@ -199,7 +217,11 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
-                    const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items;
+                    // Ensure documents don't have _id field before insertion
+                    const documentsToInsert = isSimpleArray 
+                        ? items.map(name => ({ name })) 
+                        : items.map(item => { const {_id, ...rest} = item as any; return rest; });
+
                     if (documentsToInsert.length > 0) {
                         await collection.insertMany(documentsToInsert, { session });
                     }
