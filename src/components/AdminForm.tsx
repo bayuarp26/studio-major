@@ -12,6 +12,8 @@ import {
   addEducation, updateEducation, deleteEducation,
   addCertificate, updateCertificate, deleteCertificate
 } from '@/lib/actions';
+import { useRouter } from 'next/navigation';
+import { logout } from '@/lib/auth';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
@@ -76,10 +78,10 @@ type CertificateDialogValues = z.infer<typeof certificateSchema>;
 
 interface AdminFormProps {
   initialData: PortfolioData;
-  onLogout: () => void;
 }
 
-export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
+export default function AdminForm({ initialData }: AdminFormProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -134,6 +136,15 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
   const educationDialogForm = useForm<EducationDialogValues>({ resolver: zodResolver(educationSchema) });
   const certificateDialogForm = useForm<CertificateDialogValues>({ resolver: zodResolver(certificateSchema) });
 
+
+  const handleLogout = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
+    await logout();
+    router.push('/');
+    router.refresh();
+  };
 
   const onGeneralSubmit = (data: FormValues) => {
     startTransition(async () => {
@@ -344,7 +355,7 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
           <h1 className="text-4xl font-bold text-primary">Pengaturan Admin</h1>
           <p className="text-muted-foreground">Kelola konten portofolio Anda di sini.</p>
         </div>
-        <Button variant="outline" onClick={onLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
+        <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
       </div>
 
       <Form {...form}>
