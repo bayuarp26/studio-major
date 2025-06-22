@@ -29,8 +29,7 @@ export interface Certificate {
 }
 
 // DEFINITIVE FIX: The data types now strictly represent the database schema.
-// The optional 'id' from react-hook-form is removed, enforcing that only
-// clean data is used throughout the application.
+// This enforces that only clean data is used throughout the application.
 export interface PortfolioData {
   name: string;
   title: string;
@@ -54,5 +53,3 @@ export interface SessionPayload {
   username: string;
   expiresAt: Date;
 }
-
-    

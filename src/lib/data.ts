@@ -198,7 +198,6 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
     const client = await clientPromise;
     
     // The incoming 'data' is now trusted to be a clean payload from AdminForm.
-    // This simplifies the logic here significantly.
     const { projects, education, certificates, skills, tools, ...mainContentData } = data;
     
     const session = client.startSession();
@@ -213,14 +212,14 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
             );
 
             // Helper function to overwrite an entire collection with new data.
+            // This is the most robust way to handle updates for these arrays.
             const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
                 const collection = db.collection(collectionName);
                 await collection.deleteMany({}, { session });
                 if (items && items.length > 0) {
-                    // Ensure documents don't have _id field before insertion
                     const documentsToInsert = isSimpleArray 
                         ? items.map(name => ({ name })) 
-                        : items.map(item => { const {_id, ...rest} = item as any; return rest; });
+                        : items.map(item => { return { ...item }; }); // Already clean from AdminForm
 
                     if (documentsToInsert.length > 0) {
                         await collection.insertMany(documentsToInsert, { session });
@@ -228,7 +227,7 @@ export const updatePortfolioData = async (data: PortfolioData): Promise<void> =>
                 }
             };
             
-            // Overwrite each related collection
+            // Overwrite each related collection with the new, clean data
             await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
             await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
             await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
@@ -248,5 +247,3 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
 };
-
-    
