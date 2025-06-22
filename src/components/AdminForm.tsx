@@ -138,12 +138,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
 
   const handleLogout = async () => {
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-    }
     await logout();
     router.push('/');
-    router.refresh();
   };
 
   const onGeneralSubmit = (data: FormValues) => {
@@ -202,7 +198,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       const result = data._id ? await updateProject(cleanData as Project) : await addProject(cleanData);
       if (result.success) {
         if (data._id && editingProjectIndex !== null) {
-          updateProjectField(editingProjectIndex, cleanData);
+          updateProjectField(editingProjectIndex, cleanData as Project);
         } else if (result.data) {
           appendProject(result.data);
         }
@@ -246,7 +242,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       const result = data._id ? await updateEducation(data as EducationItem) : await addEducation(data);
        if (result.success) {
         if (data._id && editingEducationIndex !== null) {
-          updateEducationField(editingEducationIndex, data);
+          updateEducationField(editingEducationIndex, data as EducationItem);
         } else if (result.data) {
           appendEducation(result.data);
         }
@@ -289,7 +285,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       const result = data._id ? await updateCertificate(cleanData as Certificate) : await addCertificate(cleanData);
       if (result.success) {
         if (data._id && editingCertificateIndex !== null) {
-          updateCertificateField(editingCertificateIndex, cleanData);
+          updateCertificateField(editingCertificateIndex, cleanData as Certificate);
         } else if (result.data) {
           appendCertificate(result.data);
         }
