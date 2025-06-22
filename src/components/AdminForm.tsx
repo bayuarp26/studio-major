@@ -26,7 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench, GraduationCap, Award } from 'lucide-react';
+import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 
