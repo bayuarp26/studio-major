@@ -7,6 +7,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
+import { savePortfolioData } from '@/lib/actions';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
@@ -155,9 +156,8 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     
-    // DEFINITIVE FIX: Create a clean payload, manually picking fields.
-    // This is the single source of truth for sanitizing data before sending it to the server.
-    // This prevents react-hook-form's internal 'id' from ever reaching the backend.
+    // THE DEFINITIVE FIX: Create a clean payload object from the form data.
+    // This manually reconstructs the data, ensuring no unwanted internal fields (like `id` from `useFieldArray`) are included.
     const cleanPayload: PortfolioData = {
         name: data.name,
         title: data.title,
@@ -193,34 +193,23 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
         })),
     };
     
-    try {
-      const response = await fetch('/api/portfolio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cleanPayload),
-      });
+    const result = await savePortfolioData(cleanPayload);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save data');
-      }
-
+    if (result.success) {
       toast({
         title: 'Update Successful',
-        description: 'Portfolio information has been updated.',
+        description: result.message,
       });
       router.refresh();
-    } catch (error) {
-      console.error(error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    } else {
       toast({
         variant: 'destructive',
         title: 'Update Failed',
-        description: `Could not save portfolio data. ${errorMessage}`,
+        description: result.message,
       });
-    } finally {
-        setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
 
