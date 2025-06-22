@@ -3,6 +3,7 @@ import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
 import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
+import { unstable_noStore as noStore } from 'next/cache';
 
 // --- DATABASE & COLLECTION CONSTANTS ---
 const DB_NAME = 'portfolioDB';
@@ -85,6 +86,7 @@ function serializeDoc<T>(doc: WithId<T>): T & { _id: string } {
 // --- PUBLIC DATA ACCESS FUNCTIONS ---
 
 export const getPortfolioData = async (): Promise<PortfolioData> => {
+    noStore();
     await ensureDbInitialized();
     const db = await getDb();
     
