@@ -195,46 +195,51 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 export const updatePortfolioData = async (data: PortfolioData): Promise<void> => {
     await ensureDbInitialized();
     const db = await getDb();
-    
-    // The incoming 'data' is trusted to be a clean payload from AdminForm.tsx.
-    const { projects, education, certificates, skills, tools, ...mainContentData } = data;
-    
+    const session = client.startSession();
+
     try {
-        // Helper function to overwrite an entire collection with new data.
-        // This is a robust way to handle updates for these arrays.
-        const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
-            const collection = db.collection(collectionName);
-            await collection.deleteMany({}); // Delete all existing documents
-            if (items && items.length > 0) {
-                const documentsToInsert = isSimpleArray 
-                    ? items.map(name => ({ name })) 
-                    : items.map(item => ({ ...item })); // Data is already clean from AdminForm
+        await session.withTransaction(async () => {
+            const { projects, education, certificates, skills, tools, ...mainContentData } = data;
 
-                if (documentsToInsert.length > 0) {
-                    await collection.insertMany(documentsToInsert);
+            // 1. Update the main content document
+            await db.collection(CONTENT_COLLECTION_NAME).updateOne(
+                { _id: MAIN_DOC_ID },
+                { $set: mainContentData },
+                { session }
+            );
+
+            // 2. Helper to overwrite an entire collection
+            const overwriteCollection = async (collectionName: string, items: any[], isSimpleArray = false) => {
+                const collection = db.collection(collectionName);
+                await collection.deleteMany({}, { session });
+
+                if (items && items.length > 0) {
+                    const documentsToInsert = isSimpleArray
+                        ? items.map(name => ({ name }))
+                        : items.map(item => ({ ...item })); // Assumes item is already a clean object
+
+                    if (documentsToInsert.length > 0) {
+                        await collection.insertMany(documentsToInsert, { session });
+                    }
                 }
-            }
-        };
+            };
 
-        // Update main content and all sub-collections sequentially.
-        // If any of these fail, the error will be caught by the block below.
-        await db.collection(CONTENT_COLLECTION_NAME).updateOne(
-            { _id: MAIN_DOC_ID },
-            { $set: mainContentData },
-            { upsert: true }
-        );
-
-        await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
-        await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
-        await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
-        await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
-        await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
+            // 3. Overwrite all related collections
+            await overwriteCollection(PROJECTS_COLLECTION_NAME, projects);
+            await overwriteCollection(EDUCATION_COLLECTION_NAME, education);
+            await overwriteCollection(CERTIFICATES_COLLECTION_NAME, certificates);
+            await overwriteCollection(SKILLS_COLLECTION_NAME, skills, true);
+            await overwriteCollection(TOOLS_COLLECTION_NAME, tools, true);
+        });
     } catch (error) {
-        console.error('Error during database update operations:', error);
-        // Re-throw a more specific error to be caught by the server action
+        console.error('Database transaction failed:', error);
+        // Re-throw the error to be caught by the server action, which will then notify the user.
         throw new Error('Could not update portfolio data due to a database error.');
+    } finally {
+        await session.endSession();
     }
 };
+
 
 export const getUser = async (username: string): Promise<WithId<User> | null> => {
     await ensureDbInitialized();
