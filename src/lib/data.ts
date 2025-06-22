@@ -59,26 +59,12 @@ const seedAdminUser = async (db: Db) => {
     }
 };
 
-const seedEmptyContent = async (db: Db) => {
-    const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
-    const mainContentExists = await contentCollection.countDocuments({ _id: MAIN_DOC_ID }) > 0;
-
-    if (!mainContentExists) {
-        console.log("Main content not found, seeding empty data structure...");
-        const { projects, education, certificates, skills, tools, ...emptyMainContent } = EMPTY_DATA;
-        
-        await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...emptyMainContent });
-        console.log("Empty data structure seeded successfully.");
-    }
-};
-
 const ensureDbInitialized = async () => {
     if (!initializationPromise) {
         initializationPromise = (async () => {
             try {
                 const db = await getDb();
                 await seedAdminUser(db);
-                await seedEmptyContent(db);
             } catch (error) {
                 console.error("Critical error during database initialization:", error);
                 initializationPromise = null; 
@@ -104,25 +90,36 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
     
     try {
         const mainContentCollection = db.collection<Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>>(CONTENT_COLLECTION_NAME);
+        
+        let mainContent = await mainContentCollection.findOne({ _id: MAIN_DOC_ID });
+
+        // If main content doesn't exist, create it on the fly and re-fetch it.
+        // This is a robust way to handle the very first run of the application.
+        if (!mainContent) {
+            console.warn("Main content not found. Seeding and re-fetching.");
+            const { projects, education, certificates, skills, tools, ...emptyMainContent } = EMPTY_DATA;
+            await mainContentCollection.insertOne({ _id: MAIN_DOC_ID, ...emptyMainContent });
+            mainContent = await mainContentCollection.findOne({ _id: MAIN_DOC_ID });
+            
+            if (!mainContent) {
+                console.error("FATAL: Could not create or find main content after seeding. Returning empty data.");
+                return EMPTY_DATA;
+            }
+        }
+        
         const projectsCollection = db.collection<Project>(PROJECTS_COLLECTION_NAME);
         const educationCollection = db.collection<EducationItem>(EDUCATION_COLLECTION_NAME);
         const certificatesCollection = db.collection<Certificate>(CERTIFICATES_COLLECTION_NAME);
         const skillsCollection = db.collection<{ name: string }>(SKILLS_COLLECTION_NAME);
         const toolsCollection = db.collection<{ name: string }>(TOOLS_COLLECTION_NAME);
 
-        const [mainContent, projects, education, certificates, skillsDocs, toolsDocs] = await Promise.all([
-            mainContentCollection.findOne({ _id: MAIN_DOC_ID }),
+        const [projects, education, certificates, skillsDocs, toolsDocs] = await Promise.all([
             projectsCollection.find({}).sort({_id: -1}).toArray(),
             educationCollection.find({}).sort({_id: -1}).toArray(),
             certificatesCollection.find({}).sort({_id: -1}).toArray(),
             skillsCollection.find({}).toArray(),
             toolsCollection.find({}).toArray(),
         ]);
-
-        if (!mainContent) {
-            console.warn("Main content not found after initialization. Returning empty data.");
-            return EMPTY_DATA;
-        }
 
         return {
             name: mainContent.name,
