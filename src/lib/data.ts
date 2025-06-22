@@ -184,7 +184,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             education: cleanDocs(education),
             certificates: cleanDocs(certificates),
             skills: skillsDocs.map(s => s.name),
-            tools: toolsDocs.map(t => s.name),
+            tools: toolsDocs.map(t => t.name),
         };
     } catch (error) {
         console.error("Failed to get portfolio data, returning default set:", error);
