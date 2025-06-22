@@ -5,7 +5,7 @@ export interface Contact {
 }
 
 export interface Project {
-  _id?: string; // Add optional _id for identifying documents
+  _id?: string;
   title: string;
   imageUrl: string;
   imageHint: string;
@@ -15,14 +15,14 @@ export interface Project {
 }
 
 export interface EducationItem {
-  _id?: string; // Add optional _id for identifying documents
+  _id?: string;
   degree: string;
   school: string;
   period: string;
 }
 
 export interface Certificate {
-  _id?: string; // Add optional _id for identifying documents
+  _id?: string;
   name: string;
   issuer: string;
   date: string;

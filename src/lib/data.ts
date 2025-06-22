@@ -31,6 +31,7 @@ const DEFAULT_DATA: PortfolioData = {
     tools: ["Google Ads", "SEMrush", "Ahrefs", "Facebook Ads Manager", "Figma", "VS Code"],
     projects: [
         {
+            _id: new ObjectId().toHexString(),
             title: "Optimasi SEO untuk E-Commerce",
             imageUrl: "https://placehold.co/600x400.png",
             imageHint: "seo analytics",
@@ -39,6 +40,7 @@ const DEFAULT_DATA: PortfolioData = {
             tags: ["SEO", "E-commerce"]
         },
         {
+            _id: new ObjectId().toHexString(),
             title: "Aplikasi Web Portofolio",
             imageUrl: "https://placehold.co/600x400.png",
             imageHint: "web development code",
@@ -49,6 +51,7 @@ const DEFAULT_DATA: PortfolioData = {
     ],
     education: [
         {
+            _id: new ObjectId().toHexString(),
             degree: "Sarjana Ilmu Komputer",
             school: "Universitas Teknologi",
             period: "2018 - 2022"
@@ -56,12 +59,14 @@ const DEFAULT_DATA: PortfolioData = {
     ],
     certificates: [
         {
+            _id: new ObjectId().toHexString(),
             name: "Google Analytics Individual Qualification",
             issuer: "Google",
             date: "2023",
             url: "#"
         },
         {
+            _id: new ObjectId().toHexString(),
             name: "Certified Full-Stack Web Developer",
             issuer: "Dicoding",
             date: "2022",
@@ -105,13 +110,25 @@ const seedDefaultContent = async (db: Db) => {
         
         await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...defaultMainContent });
 
-        const populateIfEmpty = async (collectionName: string, items: any[], isSimpleArray = false) => {
+        const populateIfEmpty = async (collectionName: string, items: any[]) => {
             const collection = db.collection(collectionName);
             const count = await collection.countDocuments();
             if (count === 0 && items.length > 0) {
-                const documentsToInsert = isSimpleArray ? items.map(name => ({ name })) : items.map(d => ({ ...d }));
-                if (documentsToInsert.length > 0) {
-                    await collection.insertMany(documentsToInsert);
+                // Ensure we don't insert our own string _id during seeding
+                const docsToInsert = items.map(({ _id, ...rest }) => rest);
+                if (docsToInsert.length > 0) {
+                    await collection.insertMany(docsToInsert);
+                }
+            }
+        };
+        
+        const populateSimpleIfEmpty = async (collectionName: string, items: string[]) => {
+            const collection = db.collection(collectionName);
+            const count = await collection.countDocuments();
+            if (count === 0 && items.length > 0) {
+                const docsToInsert = items.map(name => ({ name }));
+                 if (docsToInsert.length > 0) {
+                    await collection.insertMany(docsToInsert);
                 }
             }
         };
@@ -119,8 +136,8 @@ const seedDefaultContent = async (db: Db) => {
         await populateIfEmpty(PROJECTS_COLLECTION_NAME, projects);
         await populateIfEmpty(EDUCATION_COLLECTION_NAME, education);
         await populateIfEmpty(CERTIFICATES_COLLECTION_NAME, certificates);
-        await populateIfEmpty(SKILLS_COLLECTION_NAME, skills, true);
-        await populateIfEmpty(TOOLS_COLLECTION_NAME, tools, true);
+        await populateSimpleIfEmpty(SKILLS_COLLECTION_NAME, skills);
+        await populateSimpleIfEmpty(TOOLS_COLLECTION_NAME, tools);
         console.log("Default content seeded successfully.");
     }
 };
@@ -143,7 +160,6 @@ const ensureDbInitialized = async () => {
 };
 
 // --- DATA SERIALIZATION ---
-// Converts MongoDB document to a plain object, turning _id into a string.
 function serializeDoc<T>(doc: WithId<T>): T & { _id: string } {
     const { _id, ...rest } = doc;
     return { ...rest, _id: _id.toHexString() } as T & { _id: string };
@@ -204,13 +220,14 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
 };
 
 
-// --- NEW GRANULAR UPDATE FUNCTIONS ---
+// --- GRANULAR UPDATE/CRUD FUNCTIONS (for Server Actions) ---
 
 export async function updateMainContent(data: Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>): Promise<void> {
     const db = await getDb();
     await db.collection(CONTENT_COLLECTION_NAME).updateOne(
         { _id: MAIN_DOC_ID },
-        { $set: data }
+        { $set: data },
+        { upsert: true }
     );
 }
 
@@ -223,7 +240,7 @@ export async function updateSimpleCollection(collectionName: 'skills' | 'tools',
     }
 }
 
-export async function addDocument<T extends { _id?: string }>(collectionName: string, doc: Omit<T, '_id'>): Promise<T> {
+export async function addDocument<T extends { _id?: string | ObjectId }>(collectionName: string, doc: Omit<T, '_id'>): Promise<T> {
     const db = await getDb();
     const result = await db.collection(collectionName).insertOne(doc);
     const newDoc = await db.collection(collectionName).findOne({ _id: result.insertedId });
@@ -231,7 +248,7 @@ export async function addDocument<T extends { _id?: string }>(collectionName: st
     return serializeDoc(newDoc) as T;
 }
 
-export async function updateDocument<T extends { _id?: string }>(collectionName: string, id: string, doc: T): Promise<void> {
+export async function updateDocument<T extends { _id?: string | ObjectId }>(collectionName: string, id: string, doc: T): Promise<void> {
     const db = await getDb();
     const { _id, ...dataToUpdate } = doc;
     await db.collection(collectionName).updateOne(
