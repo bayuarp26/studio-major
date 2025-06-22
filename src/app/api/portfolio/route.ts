@@ -1,10 +1,7 @@
-// This file is intentionally left empty as it's no longer needed.
-// The form submission logic is now handled by a server action in src/lib/actions.ts.
-// The GET endpoint is now handled by getPortfolioData in a server component.
 import { NextResponse } from 'next/server';
 import { getPortfolioData } from '@/lib/data';
 
-// GET handler to fetch current portfolio data
+// GET handler to fetch current portfolio data, used by the admin page for initial load.
 export async function GET() {
   try {
     const data = await getPortfolioData();

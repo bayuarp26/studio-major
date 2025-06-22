@@ -68,13 +68,13 @@ type EducationDialogValues = z.infer<typeof educationSchema>;
 type CertificateDialogValues = z.infer<typeof certificateSchema>;
 
 interface AdminFormProps {
+  initialData: PortfolioData;
   onLogout: () => void;
 }
 
-export default function AdminForm({ onLogout }: AdminFormProps) {
+export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const dataFetchedRef = useRef(false);
   
   const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
@@ -85,7 +85,6 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
   const [isCertificateDialogOpen, setCertificateDialogOpen] = useState(false);
   const [editingCertificateIndex, setEditingCertificateIndex] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [newTool, setNewTool] = useState('');
@@ -107,42 +106,20 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
   });
 
   useEffect(() => {
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/portfolio');
-        if (!response.ok) throw new Error('Failed to fetch data');
-        
-        const data: PortfolioData = await response.json();
-        
-        const formValues = {
-          ...data,
-          email: data.contact.email.replace('mailto:', ''),
-          linkedin: data.contact.linkedin || '',
-          skills: data.skills || [],
-          tools: data.tools || [],
-          projects: data.projects.map(p => ({ ...p, tags: (p.tags || []).join(', ') })) || [],
-          education: data.education || [],
-          certificates: data.certificates || [],
-        };
-        form.reset(formValues);
-      } catch (error) {
-        console.error(error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not load portfolio data.',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (initialData) {
+      const formValues = {
+        ...initialData,
+        email: initialData.contact.email.replace('mailto:', ''),
+        linkedin: initialData.contact.linkedin || '',
+        skills: initialData.skills || [],
+        tools: initialData.tools || [],
+        projects: initialData.projects.map(p => ({ ...p, tags: (p.tags || []).join(', ') })) || [],
+        education: initialData.education || [],
+        certificates: initialData.certificates || [],
+      };
+      form.reset(formValues);
+    }
+  }, [initialData, form]);
 
   const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
   const { fields: educationFields, append: appendEducation, remove: removeEducation, update: updateEducation } = useFieldArray({ control: form.control, name: "education" });
@@ -304,14 +281,6 @@ export default function AdminForm({ onLogout }: AdminFormProps) {
     form.setValue('tools', currentTools.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
   return (
     <>
       <div className="flex justify-between items-center mb-8">
