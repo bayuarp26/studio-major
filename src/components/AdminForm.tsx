@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
+import type { PortfolioData } from '@/lib/types';
 import { savePortfolioData } from '@/lib/actions';
 
 import { Badge } from "@/components/ui/badge";

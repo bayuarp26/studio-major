@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { PortfolioData } from './types';
@@ -7,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 
 /**
  * Server action to save the entire portfolio data.
- * @param data The clean portfolio data object.
+ * @param data The clean portfolio data object, guaranteed by AdminForm.tsx.
  * @returns A promise that resolves to an object with success status and a message.
  */
 export async function savePortfolioData(
@@ -19,8 +20,8 @@ export async function savePortfolioData(
       return { success: false, message: 'Authentication required. Please log in again.' };
     }
 
-    // The data is already cleaned in AdminForm.tsx before being passed here.
-    // Now we can confidently update the database.
+    // The data is now guaranteed to be clean because it's constructed manually in AdminForm.tsx.
+    // We can confidently update the database.
     await updatePortfolioData(data);
 
     // Revalidate paths to ensure the main page and admin page show fresh data

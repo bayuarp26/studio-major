@@ -1,6 +1,4 @@
 
-import { WithId } from 'mongodb';
-
 export interface Contact {
   email: string;
   linkedin: string;
@@ -30,6 +28,7 @@ export interface Certificate {
 
 // DEFINITIVE FIX: The data types now strictly represent the database schema.
 // This enforces that only clean data is used throughout the application.
+// No more `id` from react-hook-form.
 export interface PortfolioData {
   name: string;
   title: string;
