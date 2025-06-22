@@ -128,9 +128,9 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     }
   }, [initialData, form]);
 
-  const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProjectField } = useFieldArray({ control: form.control, name: "projects" });
-  const { fields: educationFields, append: appendEducation, remove: removeEducation, update: updateEducationField } = useFieldArray({ control: form.control, name: "education" });
-  const { fields: certificateFields, append: appendCertificate, remove: removeCertificate, update: updateCertificateField } = useFieldArray({ control: form.control, name: "certificates" });
+  const { fields: projectFields } = useFieldArray({ control: form.control, name: "projects" });
+  const { fields: educationFields } = useFieldArray({ control: form.control, name: "education" });
+  const { fields: certificateFields } = useFieldArray({ control: form.control, name: "certificates" });
 
   const projectDialogForm = useForm<ProjectDialogValues>({ resolver: zodResolver(projectSchema) });
   const educationDialogForm = useForm<EducationDialogValues>({ resolver: zodResolver(educationSchema) });
@@ -162,6 +162,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
         if (generalResult.success && skillsResult.success && toolsResult.success) {
             toast({ title: 'Update Successful', description: 'General info, skills, and tools have been saved.' });
+            router.refresh();
         } else {
             toast({
                 variant: 'destructive',
@@ -197,13 +198,9 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     startTransition(async () => {
       const result = data._id ? await updateProject(cleanData as Project) : await addProject(cleanData);
       if (result.success) {
-        if (data._id && editingProjectIndex !== null) {
-          updateProjectField(editingProjectIndex, cleanData as Project);
-        } else if (result.data) {
-          appendProject(result.data);
-        }
         toast({ title: 'Success', description: result.message });
         setProjectDialogOpen(false);
+        router.refresh();
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
@@ -216,8 +213,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     startTransition(async () => {
         const result = await deleteProject(projectId);
         if (result.success) {
-            removeProject(index);
             toast({ title: 'Success', description: result.message });
+            router.refresh();
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.message });
         }
@@ -241,13 +238,9 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     startTransition(async () => {
       const result = data._id ? await updateEducation(data as EducationItem) : await addEducation(data);
        if (result.success) {
-        if (data._id && editingEducationIndex !== null) {
-          updateEducationField(editingEducationIndex, data as EducationItem);
-        } else if (result.data) {
-          appendEducation(result.data);
-        }
         toast({ title: 'Success', description: result.message });
         setEducationDialogOpen(false);
+        router.refresh();
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
@@ -260,8 +253,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     startTransition(async () => {
         const result = await deleteEducation(educationId);
         if (result.success) {
-            removeEducation(index);
             toast({ title: 'Success', description: result.message });
+            router.refresh();
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.message });
         }
@@ -284,13 +277,9 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     startTransition(async () => {
       const result = data._id ? await updateCertificate(cleanData as Certificate) : await addCertificate(cleanData);
       if (result.success) {
-        if (data._id && editingCertificateIndex !== null) {
-          updateCertificateField(editingCertificateIndex, cleanData as Certificate);
-        } else if (result.data) {
-          appendCertificate(result.data);
-        }
         toast({ title: 'Success', description: result.message });
         setCertificateDialogOpen(false);
+        router.refresh();
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
@@ -303,8 +292,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     startTransition(async () => {
         const result = await deleteCertificate(certificateId);
         if (result.success) {
-            removeCertificate(index);
             toast({ title: 'Success', description: result.message });
+            router.refresh();
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.message });
         }
