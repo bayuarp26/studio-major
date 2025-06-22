@@ -5,6 +5,7 @@ export interface Contact {
 }
 
 export interface Project {
+  _id?: string; // Add optional _id for identifying documents
   title: string;
   imageUrl: string;
   imageHint: string;
@@ -14,21 +15,20 @@ export interface Project {
 }
 
 export interface EducationItem {
+  _id?: string; // Add optional _id for identifying documents
   degree: string;
   school: string;
   period: string;
 }
 
 export interface Certificate {
+  _id?: string; // Add optional _id for identifying documents
   name: string;
   issuer: string;
   date: string;
   url: string;
 }
 
-// DEFINITIVE FIX: The data types now strictly represent the database schema.
-// This enforces that only clean data is used throughout the application.
-// No more `id` from react-hook-form.
 export interface PortfolioData {
   name: string;
   title: string;
