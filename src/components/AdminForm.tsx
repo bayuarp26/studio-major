@@ -126,9 +126,9 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
     }
   }, [initialData, form]);
 
-  const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProject } = useFieldArray({ control: form.control, name: "projects" });
-  const { fields: educationFields, append: appendEducation, remove: removeEducation, update: updateEducation } = useFieldArray({ control: form.control, name: "education" });
-  const { fields: certificateFields, append: appendCertificate, remove: removeCertificate, update: updateCertificate } = useFieldArray({ control: form.control, name: "certificates" });
+  const { fields: projectFields, append: appendProject, remove: removeProject, update: updateProjectField } = useFieldArray({ control: form.control, name: "projects" });
+  const { fields: educationFields, append: appendEducation, remove: removeEducation, update: updateEducationField } = useFieldArray({ control: form.control, name: "education" });
+  const { fields: certificateFields, append: appendCertificate, remove: removeCertificate, update: updateCertificateField } = useFieldArray({ control: form.control, name: "certificates" });
 
   const projectDialogForm = useForm<ProjectDialogValues>({ resolver: zodResolver(projectSchema) });
   const educationDialogForm = useForm<EducationDialogValues>({ resolver: zodResolver(educationSchema) });
@@ -159,7 +159,7 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
             toast({
                 variant: 'destructive',
                 title: 'Update Failed',
-                description: [generalResult.message, skillsResult.message, toolsResult.message].filter(m => !m.includes('success')).join(' '),
+                description: [generalResult.message, skillsResult.message, toolsResult.message].filter(m => m && !m.includes('success')).join(' '),
             });
         }
     });
@@ -191,7 +191,7 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
       const result = data._id ? await updateProject(cleanData as Project) : await addProject(cleanData);
       if (result.success) {
         if (data._id && editingProjectIndex !== null) {
-          updateProject(editingProjectIndex, cleanData);
+          updateProjectField(editingProjectIndex, cleanData);
         } else if (result.data) {
           appendProject(result.data);
         }
@@ -235,7 +235,7 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
       const result = data._id ? await updateEducation(data as EducationItem) : await addEducation(data);
        if (result.success) {
         if (data._id && editingEducationIndex !== null) {
-          updateEducation(editingEducationIndex, data);
+          updateEducationField(editingEducationIndex, data);
         } else if (result.data) {
           appendEducation(result.data);
         }
@@ -278,7 +278,7 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
       const result = data._id ? await updateCertificate(cleanData as Certificate) : await addCertificate(cleanData);
       if (result.success) {
         if (data._id && editingCertificateIndex !== null) {
-          updateCertificate(editingCertificateIndex, cleanData);
+          updateCertificateField(editingCertificateIndex, cleanData);
         } else if (result.data) {
           appendCertificate(result.data);
         }
@@ -452,12 +452,6 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
                   <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
                 </CardContent>
-                 <CardFooter>
-                    <Button size="lg" type="submit" disabled={isPending}>
-                      {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                      Save General Info
-                    </Button>
-                </CardFooter>
               </Card>
 
               <Card>
@@ -485,12 +479,6 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter>
-                    <Button onClick={() => onGeneralSubmit(form.getValues())} disabled={isPending}>
-                        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                        Save Skills
-                    </Button>
-                </CardFooter>
               </Card>
 
               <Card>
@@ -518,10 +506,17 @@ export default function AdminForm({ initialData, onLogout }: AdminFormProps) {
                         </div>
                     </div>
                 </CardContent>
+              </Card>
+
+               <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle>Simpan Semua Pengaturan Umum</CardTitle>
+                    <CardDescription>Klik tombol ini untuk menyimpan semua perubahan di tab ini: Info Pribadi, Keahlian, dan Tools.</CardDescription>
+                </CardHeader>
                 <CardFooter>
-                    <Button onClick={() => onGeneralSubmit(form.getValues())} disabled={isPending}>
+                    <Button size="lg" type="submit" disabled={isPending}>
                         {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                        Save Tools
+                        Simpan Pengaturan Umum
                     </Button>
                 </CardFooter>
               </Card>
