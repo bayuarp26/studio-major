@@ -18,13 +18,13 @@ const TOOLS_COLLECTION_NAME = 'tools';
 const MAIN_DOC_ID = 'main_content';
 
 const EMPTY_DATA: PortfolioData = {
-    name: "Your Name",
-    title: "Your Title",
-    about: "A little bit about yourself. You can edit this in the admin panel.",
+    name: "",
+    title: "",
+    about: "",
     cvUrl: "",
     profilePictureUrl: "https://placehold.co/400x400.png",
     contact: {
-        email: "mailto:your.email@example.com",
+        email: "",
         linkedin: ""
     },
     skills: [],
@@ -112,15 +112,15 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 
         const [mainContent, projects, education, certificates, skillsDocs, toolsDocs] = await Promise.all([
             mainContentCollection.findOne({ _id: MAIN_DOC_ID }),
-            projectsCollection.find({}).toArray(),
-            educationCollection.find({}).toArray(),
-            certificatesCollection.find({}).toArray(),
+            projectsCollection.find({}).sort({_id: -1}).toArray(),
+            educationCollection.find({}).sort({_id: -1}).toArray(),
+            certificatesCollection.find({}).sort({_id: -1}).toArray(),
             skillsCollection.find({}).toArray(),
             toolsCollection.find({}).toArray(),
         ]);
 
         if (!mainContent) {
-            console.error("Main content not found after initialization. Returning empty data.");
+            console.warn("Main content not found after initialization. Returning empty data.");
             return EMPTY_DATA;
         }
 
@@ -172,7 +172,7 @@ export async function updateSimpleCollection(collectionName: 'skills' | 'tools',
 
 export async function addDocument<T extends { _id?: string | ObjectId }>(collectionName: string, doc: Omit<T, '_id'>): Promise<T> {
     const db = await getDb();
-    const result = await db.collection(collectionName).insertOne(doc);
+    const result = await db.collection(collectionName).insertOne(doc as any);
     const newDoc = await db.collection(collectionName).findOne({ _id: result.insertedId });
     if (!newDoc) throw new Error("Failed to retrieve new document after insertion.");
     return serializeDoc(newDoc) as T;
