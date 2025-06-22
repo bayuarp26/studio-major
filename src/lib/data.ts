@@ -17,62 +17,21 @@ const TOOLS_COLLECTION_NAME = 'tools';
 // --- DOCUMENT ID FOR SINGLETONS ---
 const MAIN_DOC_ID = 'main_content';
 
-const DEFAULT_DATA: PortfolioData = {
-    name: "Wahyu Pratomo",
-    title: "Digital Marketing Specialist & Web Developer",
-    about: "Saya seorang spesialis pemasaran digital dengan hasrat untuk teknologi dan pengembangan web. Dengan pengalaman dalam SEO, SEM, dan media sosial, saya membantu merek mencapai potensi online mereka. Saya juga terampil dalam membangun situs web yang responsif dan ramah pengguna.",
-    cvUrl: "#",
+const EMPTY_DATA: PortfolioData = {
+    name: "Your Name",
+    title: "Your Title",
+    about: "A little bit about yourself. You can edit this in the admin panel.",
+    cvUrl: "",
     profilePictureUrl: "https://placehold.co/400x400.png",
     contact: {
         email: "mailto:your.email@example.com",
-        linkedin: "https://www.linkedin.com/in/your-profile/"
+        linkedin: ""
     },
-    skills: ["SEO", "SEM", "Google Analytics", "Content Marketing", "React", "Next.js", "Node.js"],
-    tools: ["Google Ads", "SEMrush", "Ahrefs", "Facebook Ads Manager", "Figma", "VS Code"],
-    projects: [
-        {
-            _id: new ObjectId().toHexString(),
-            title: "Optimasi SEO untuk E-Commerce",
-            imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "seo analytics",
-            description: "Meningkatkan peringkat pencarian organik sebesar 200% untuk klien e-commerce terkemuka.",
-            details: "Melakukan riset kata kunci, optimasi on-page dan off-page, serta membangun backlink berkualitas.",
-            tags: ["SEO", "E-commerce"]
-        },
-        {
-            _id: new ObjectId().toHexString(),
-            title: "Aplikasi Web Portofolio",
-            imageUrl: "https://placehold.co/600x400.png",
-            imageHint: "web development code",
-            description: "Membangun aplikasi portofolio pribadi menggunakan Next.js dan Tailwind CSS.",
-            details: "Fitur termasuk desain responsif, sistem manajemen konten (CMS) kustom, dan integrasi API.",
-            tags: ["Next.js", "React", "Tailwind CSS"]
-        }
-    ],
-    education: [
-        {
-            _id: new ObjectId().toHexString(),
-            degree: "Sarjana Ilmu Komputer",
-            school: "Universitas Teknologi",
-            period: "2018 - 2022"
-        }
-    ],
-    certificates: [
-        {
-            _id: new ObjectId().toHexString(),
-            name: "Google Analytics Individual Qualification",
-            issuer: "Google",
-            date: "2023",
-            url: "#"
-        },
-        {
-            _id: new ObjectId().toHexString(),
-            name: "Certified Full-Stack Web Developer",
-            issuer: "Dicoding",
-            date: "2022",
-            url: "#"
-        }
-    ]
+    skills: [],
+    tools: [],
+    projects: [],
+    education: [],
+    certificates: []
 };
 
 // --- DATABASE CONNECTION & INITIALIZATION ---
@@ -100,45 +59,16 @@ const seedAdminUser = async (db: Db) => {
     }
 };
 
-const seedDefaultContent = async (db: Db) => {
+const seedEmptyContent = async (db: Db) => {
     const contentCollection = db.collection(CONTENT_COLLECTION_NAME);
     const mainContentExists = await contentCollection.countDocuments({ _id: MAIN_DOC_ID }) > 0;
 
     if (!mainContentExists) {
-        console.log("Main content not found, seeding default data...");
-        const { projects, education, certificates, skills, tools, ...defaultMainContent } = DEFAULT_DATA;
+        console.log("Main content not found, seeding empty data structure...");
+        const { projects, education, certificates, skills, tools, ...emptyMainContent } = EMPTY_DATA;
         
-        await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...defaultMainContent });
-
-        const populateIfEmpty = async (collectionName: string, items: any[]) => {
-            const collection = db.collection(collectionName);
-            const count = await collection.countDocuments();
-            if (count === 0 && items.length > 0) {
-                // Ensure we don't insert our own string _id during seeding
-                const docsToInsert = items.map(({ _id, ...rest }) => rest);
-                if (docsToInsert.length > 0) {
-                    await collection.insertMany(docsToInsert);
-                }
-            }
-        };
-        
-        const populateSimpleIfEmpty = async (collectionName: string, items: string[]) => {
-            const collection = db.collection(collectionName);
-            const count = await collection.countDocuments();
-            if (count === 0 && items.length > 0) {
-                const docsToInsert = items.map(name => ({ name }));
-                 if (docsToInsert.length > 0) {
-                    await collection.insertMany(docsToInsert);
-                }
-            }
-        };
-
-        await populateIfEmpty(PROJECTS_COLLECTION_NAME, projects);
-        await populateIfEmpty(EDUCATION_COLLECTION_NAME, education);
-        await populateIfEmpty(CERTIFICATES_COLLECTION_NAME, certificates);
-        await populateSimpleIfEmpty(SKILLS_COLLECTION_NAME, skills);
-        await populateSimpleIfEmpty(TOOLS_COLLECTION_NAME, tools);
-        console.log("Default content seeded successfully.");
+        await contentCollection.insertOne({ _id: MAIN_DOC_ID, ...emptyMainContent });
+        console.log("Empty data structure seeded successfully.");
     }
 };
 
@@ -148,7 +78,7 @@ const ensureDbInitialized = async () => {
             try {
                 const db = await getDb();
                 await seedAdminUser(db);
-                await seedDefaultContent(db);
+                await seedEmptyContent(db);
             } catch (error) {
                 console.error("Critical error during database initialization:", error);
                 initializationPromise = null; 
@@ -190,8 +120,8 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         ]);
 
         if (!mainContent) {
-            console.error("Main content not found after initialization. Returning default data.");
-            return DEFAULT_DATA;
+            console.error("Main content not found after initialization. Returning empty data.");
+            return EMPTY_DATA;
         }
 
         return {
@@ -208,8 +138,8 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             tools: toolsDocs.map(t => t.name),
         };
     } catch (error) {
-        console.error("Failed to get portfolio data, returning default set:", error);
-        return DEFAULT_DATA;
+        console.error("Failed to get portfolio data, returning empty set:", error);
+        return EMPTY_DATA;
     }
 };
 
