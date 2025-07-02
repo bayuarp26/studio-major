@@ -9,11 +9,17 @@ function getLocale(request: NextRequest): string | undefined {
   const negotiatorHeaders: Record<string, string> = {};
   request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
-  // @ts-ignore locales are readonly
-  const locales: string[] = i18n.locales;
+  // The 'locales' array from i18n.config is readonly. Create a mutable copy.
+  const locales: string[] = [...i18n.locales];
   const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
-  const locale = matchLocale(languages, locales, i18n.defaultLocale);
-  return locale;
+  
+  try {
+    const locale = matchLocale(languages, locales, i18n.defaultLocale);
+    return locale;
+  } catch (e) {
+    // Fallback to default locale if matching fails for any reason
+    return i18n.defaultLocale;
+  }
 }
 
 export function middleware(request: NextRequest) {
@@ -52,9 +58,12 @@ export function middleware(request: NextRequest) {
   }
 
   // Step 3: If no locale is present, it's a public page that needs redirection.
-  // The matcher in `config` has already excluded static assets like /api, /_next, and images.
   const locale = getLocale(request);
-  request.nextUrl.pathname = `/${locale}${pathname}`;
+  
+  // Construct the new URL carefully to handle the root path correctly.
+  const newPathname = `/${locale}${pathname === '/' ? '' : pathname}`;
+  
+  request.nextUrl.pathname = newPathname;
   
   return NextResponse.redirect(request.nextUrl);
 }

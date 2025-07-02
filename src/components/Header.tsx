@@ -11,7 +11,7 @@ import { useActiveSection } from "@/hooks/use-active-section";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { usePathname } from "next/navigation";
 
-const sectionIds = ["hero", "about", "skills", "tools", "projects", "education", "certificates", "contact"];
+const sectionIds = ["hero", "about", "skills", "projects", "education", "certificates", "contact"];
 
 interface HeaderProps {
   name: string;
@@ -73,8 +73,7 @@ export default function Header({ name, dictionary }: HeaderProps) {
           {navLinks.map((link) => {
             const isActive =
               link.href === `${locale}#${activeSection}` ||
-              (link.href === `${locale}#education` && activeSection === 'certificates') ||
-              (link.href === `${locale}#skills` && activeSection === 'tools');
+              (link.href === `${locale}#education` && activeSection === 'certificates');
             
             return (
               <Link

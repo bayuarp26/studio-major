@@ -33,6 +33,12 @@ export interface Certificate {
   url: string;
 }
 
+export interface SoftwareSkill {
+  _id?: string;
+  name: string;
+  iconUrl: string;
+}
+
 export interface PortfolioData {
   name: string;
   title: string;
@@ -40,11 +46,12 @@ export interface PortfolioData {
   cvUrl: string;
   profilePictureUrl: string;
   contact: Contact;
-  skills: string[];
+  softSkills: string[];
+  hardSkills: string[];
+  softwareSkills: SoftwareSkill[];
   projects: Project[];
   education: EducationItem[];
   certificates: Certificate[];
-  tools: string[];
 }
 
 export interface User {

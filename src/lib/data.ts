@@ -2,7 +2,7 @@
 'use server';
 
 import clientPromise from './mongodb';
-import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
+import type { PortfolioData, Project, EducationItem, Certificate, User, SoftwareSkill } from '@/lib/types';
 import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -12,10 +12,12 @@ const DB_NAME = 'portfolioDB';
 const USERS_COLLECTION_NAME = 'profil_settings';
 const CONTENT_COLLECTION_NAME = 'content';
 const PROJECTS_COLLECTION_NAME = 'projects';
-const SKILLS_COLLECTION_NAME = 'skills';
 const EDUCATION_COLLECTION_NAME = 'education';
 const CERTIFICATES_COLLECTION_NAME = 'certificates';
-const TOOLS_COLLECTION_NAME = 'tools';
+const SOFTSKILLS_COLLECTION_NAME = 'soft_skills';
+const HARDSKILLS_COLLECTION_NAME = 'hard_skills';
+const SOFTWARE_SKILLS_COLLECTION_NAME = 'software_skills';
+
 
 // --- DOCUMENT ID FOR SINGLETONS ---
 const MAIN_DOC_ID = 'main_content';
@@ -30,8 +32,9 @@ const EMPTY_DATA: PortfolioData = {
         email: "",
         linkedin: ""
     },
-    skills: [],
-    tools: [],
+    softSkills: [],
+    hardSkills: [],
+    softwareSkills: [],
     projects: [],
     education: [],
     certificates: []
@@ -89,15 +92,13 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
     const db = await getDb();
     
     try {
-        const mainContentCollection = db.collection<Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>>(CONTENT_COLLECTION_NAME);
+        const mainContentCollection = db.collection<Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'softSkills' | 'hardSkills' | 'softwareSkills'>>(CONTENT_COLLECTION_NAME);
         
         let mainContent = await mainContentCollection.findOne({ _id: MAIN_DOC_ID });
 
-        // If main content doesn't exist, create it on the fly and re-fetch it.
-        // This is a robust way to handle the very first run of the application.
         if (!mainContent) {
             console.warn("Main content not found. Seeding and re-fetching.");
-            const { projects, education, certificates, skills, tools, ...emptyMainContent } = EMPTY_DATA;
+            const { projects, education, certificates, softSkills, hardSkills, softwareSkills, ...emptyMainContent } = EMPTY_DATA;
             await mainContentCollection.insertOne({ _id: MAIN_DOC_ID, ...emptyMainContent });
             mainContent = await mainContentCollection.findOne({ _id: MAIN_DOC_ID });
             
@@ -110,15 +111,17 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
         const projectsCollection = db.collection<Project>(PROJECTS_COLLECTION_NAME);
         const educationCollection = db.collection<EducationItem>(EDUCATION_COLLECTION_NAME);
         const certificatesCollection = db.collection<Certificate>(CERTIFICATES_COLLECTION_NAME);
-        const skillsCollection = db.collection<{ name: string }>(SKILLS_COLLECTION_NAME);
-        const toolsCollection = db.collection<{ name: string }>(TOOLS_COLLECTION_NAME);
+        const softSkillsCollection = db.collection<{ name: string }>(SOFTSKILLS_COLLECTION_NAME);
+        const hardSkillsCollection = db.collection<{ name: string }>(HARDSKILLS_COLLECTION_NAME);
+        const softwareSkillsCollection = db.collection<SoftwareSkill>(SOFTWARE_SKILLS_COLLECTION_NAME);
 
-        const [projects, education, certificates, skillsDocs, toolsDocs] = await Promise.all([
+        const [projects, education, certificates, softSkillsDocs, hardSkillsDocs, softwareSkillsDocs] = await Promise.all([
             projectsCollection.find({}).sort({_id: -1}).toArray(),
             educationCollection.find({}).sort({_id: -1}).toArray(),
             certificatesCollection.find({}).sort({_id: -1}).toArray(),
-            skillsCollection.find({}).toArray(),
-            toolsCollection.find({}).toArray(),
+            softSkillsCollection.find({}).toArray(),
+            hardSkillsCollection.find({}).toArray(),
+            softwareSkillsCollection.find({}).toArray(),
         ]);
 
         return {
@@ -131,8 +134,9 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
             projects: projects.map(serializeDoc),
             education: education.map(serializeDoc),
             certificates: certificates.map(serializeDoc),
-            skills: skillsDocs.map(s => s.name),
-            tools: toolsDocs.map(t => t.name),
+            softSkills: softSkillsDocs.map(s => s.name),
+            hardSkills: hardSkillsDocs.map(s => s.name),
+            softwareSkills: softwareSkillsDocs.map(serializeDoc),
         };
     } catch (error) {
         console.error("Failed to get portfolio data, returning empty set:", error);
@@ -149,7 +153,7 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
 
 // --- GRANULAR UPDATE/CRUD FUNCTIONS (for Server Actions) ---
 
-export async function updateMainContent(data: Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'skills' | 'tools'>): Promise<void> {
+export async function updateMainContent(data: Omit<PortfolioData, 'projects' | 'education' | 'certificates' | 'softSkills' | 'hardSkills' | 'softwareSkills'>): Promise<void> {
     const db = await getDb();
     await db.collection(CONTENT_COLLECTION_NAME).updateOne(
         { _id: MAIN_DOC_ID },
@@ -158,7 +162,7 @@ export async function updateMainContent(data: Omit<PortfolioData, 'projects' | '
     );
 }
 
-export async function updateSimpleCollection(collectionName: 'skills' | 'tools', items: string[]): Promise<void> {
+export async function updateSimpleCollection(collectionName: 'soft_skills' | 'hard_skills', items: string[]): Promise<void> {
     const db = await getDb();
     const collection = db.collection(collectionName);
     await collection.deleteMany({});

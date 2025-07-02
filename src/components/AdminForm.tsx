@@ -5,12 +5,13 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
+import type { PortfolioData, Project, EducationItem, Certificate, SoftwareSkill } from '@/lib/types';
 import {
-  saveGeneralInfo, saveSkills, saveTools,
+  saveGeneralInfo, saveSoftSkills, saveHardSkills,
   addProject, updateProject, deleteProject,
   addEducation, updateEducation, deleteEducation,
-  addCertificate, updateCertificate, deleteCertificate
+  addCertificate, updateCertificate, deleteCertificate,
+  addSoftwareSkill, updateSoftwareSkill, deleteSoftwareSkill
 } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/lib/auth';
@@ -25,9 +26,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench, Briefcase, GraduationCap, Award, Settings2 } from 'lucide-react';
+import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench, Briefcase, GraduationCap, Award, Settings2, Cpu } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
+import Image from "next/image";
+
+const softwareSkillSchema = z.object({
+  _id: z.string().optional(),
+  name: z.string().min(1, 'Skill name is required'),
+  iconUrl: z.string().min(1, 'Icon is required'),
+});
 
 const projectSchema = z.object({
   _id: z.string().optional(),
@@ -57,7 +65,6 @@ const certificateSchema = z.object({
   url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 
-// This schema ONLY validates the fields in the "Settings" tab.
 const generalSettingsSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   title: z.string().min(5, 'Title is required'),
@@ -66,15 +73,16 @@ const generalSettingsSchema = z.object({
   cvUrl: z.string().min(1, 'CV URL/File Path is required'),
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
-  skills: z.array(z.string()).min(1, 'At least one skill is required'),
-  tools: z.array(z.string()).min(1, 'At least one tool is required'),
+  softSkills: z.array(z.string()),
+  hardSkills: z.array(z.string()),
 });
 
 type GeneralSettingsFormValues = z.infer<typeof generalSettingsSchema>;
+type SoftwareSkillDialogValues = z.infer<typeof softwareSkillSchema>;
 type ProjectDialogValues = z.infer<typeof projectSchema>;
 type EducationDialogValues = z.infer<typeof educationSchema>;
 type CertificateDialogValues = z.infer<typeof certificateSchema>;
-type AdminView = 'projects' | 'education' | 'certificates' | 'settings';
+type AdminView = 'projects' | 'education' | 'certificates' | 'softwareSkills' | 'settings';
 
 interface AdminFormProps {
   initialData: PortfolioData;
@@ -94,11 +102,13 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
   const [isCertificateDialogOpen, setCertificateDialogOpen] = useState(false);
   const [editingCertificateIndex, setEditingCertificateIndex] = useState<number | null>(null);
-
-  const [newSkill, setNewSkill] = useState('');
-  const [newTool, setNewTool] = useState('');
   
-  // The main form now only manages and validates General Settings.
+  const [isSoftwareSkillDialogOpen, setSoftwareSkillDialogOpen] = useState(false);
+  const [editingSoftwareSkillIndex, setEditingSoftwareSkillIndex] = useState<number | null>(null);
+
+  const [newSoftSkill, setNewSoftSkill] = useState('');
+  const [newHardSkill, setNewHardSkill] = useState('');
+  
   const form = useForm<GeneralSettingsFormValues>({
     resolver: zodResolver(generalSettingsSchema),
     defaultValues: {
@@ -109,14 +119,15 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       cvUrl: initialData.cvUrl,
       email: initialData.contact.email.replace('mailto:', ''),
       linkedin: initialData.contact.linkedin || '',
-      skills: initialData.skills || [],
-      tools: initialData.tools || [],
+      softSkills: initialData.softSkills || [],
+      hardSkills: initialData.hardSkills || [],
     }
   });
 
   const projectDialogForm = useForm<ProjectDialogValues>({ resolver: zodResolver(projectSchema) });
   const educationDialogForm = useForm<EducationDialogValues>({ resolver: zodResolver(educationSchema) });
   const certificateDialogForm = useForm<CertificateDialogValues>({ resolver: zodResolver(certificateSchema) });
+  const softwareSkillDialogForm = useForm<SoftwareSkillDialogValues>({ resolver: zodResolver(softwareSkillSchema) });
 
 
   const handleLogout = async () => {
@@ -137,19 +148,19 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 linkedin: data.linkedin || '',
             },
         });
-        const skillsPromise = saveSkills(data.skills);
-        const toolsPromise = saveTools(data.tools);
+        const softSkillsPromise = saveSoftSkills(data.softSkills);
+        const hardSkillsPromise = saveHardSkills(data.hardSkills);
 
-        const [generalResult, skillsResult, toolsResult] = await Promise.all([generalPromise, skillsPromise, toolsPromise]);
+        const [generalResult, softSkillsResult, hardSkillsResult] = await Promise.all([generalPromise, softSkillsPromise, hardSkillsPromise]);
 
-        if (generalResult.success && skillsResult.success && toolsResult.success) {
-            toast({ title: 'Update Successful', description: 'General info, skills, and tools have been saved.' });
+        if (generalResult.success && softSkillsResult.success && hardSkillsResult.success) {
+            toast({ title: 'Update Successful', description: 'General info and skills have been saved.' });
             router.refresh();
         } else {
             toast({
                 variant: 'destructive',
                 title: 'Update Failed',
-                description: [generalResult.message, skillsResult.message, toolsResult.message].filter(m => m && !m.includes('success')).join(' '),
+                description: [generalResult.message, softSkillsResult.message, hardSkillsResult.message].filter(m => m && !m.includes('success')).join(' '),
             });
         }
     });
@@ -264,7 +275,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const handleCertificateDialogSubmit = (data: CertificateDialogValues) => {
      const cleanData = { 
         ...data, 
-        imageUrl: data.imageUrl || 'https://placehold.co/800x600.png',
+        imageUrl: data.imageUrl || 'https://placehold.co/1754x1241.png',
         imageHint: data.imageHint || '',
         url: data.url || '#' 
     };
@@ -293,38 +304,79 @@ export default function AdminForm({ initialData }: AdminFormProps) {
         }
     });
   };
+  
+  // --- Software Skill Handlers ---
+  const openAddSoftwareSkillDialog = () => {
+    setEditingSoftwareSkillIndex(null);
+    softwareSkillDialogForm.reset({ name: '', iconUrl: '' });
+    setSoftwareSkillDialogOpen(true);
+  };
+
+  const openEditSoftwareSkillDialog = (index: number) => {
+    setEditingSoftwareSkillIndex(index);
+    softwareSkillDialogForm.reset(initialData.softwareSkills[index]);
+    setSoftwareSkillDialogOpen(true);
+  };
+
+  const handleSoftwareSkillDialogSubmit = (data: SoftwareSkillDialogValues) => {
+    startTransition(async () => {
+      const result = data._id ? await updateSoftwareSkill(data as SoftwareSkill) : await addSoftwareSkill(data);
+      if (result.success) {
+        toast({ title: 'Success', description: result.message });
+        setSoftwareSkillDialogOpen(false);
+        router.refresh();
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.message });
+      }
+    });
+  };
+
+  const handleRemoveSoftwareSkill = (index: number) => {
+    const skillId = initialData.softwareSkills[index]?._id;
+    if (!skillId) return;
+    startTransition(async () => {
+      const result = await deleteSoftwareSkill(skillId);
+      if (result.success) {
+        toast({ title: 'Success', description: result.message });
+        router.refresh();
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.message });
+      }
+    });
+  };
+
 
   // --- Skill/Tool Handlers ---
-  const handleAddSkill = () => {
-    const trimmedSkill = newSkill.trim();
+  const handleAddSoftSkill = () => {
+    const trimmedSkill = newSoftSkill.trim();
     if (trimmedSkill) {
-      const currentSkills = form.getValues('skills') || [];
+      const currentSkills = form.getValues('softSkills') || [];
       if (!currentSkills.map(s => s.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
-        form.setValue('skills', [...currentSkills, trimmedSkill], { shouldValidate: true, shouldDirty: true });
+        form.setValue('softSkills', [...currentSkills, trimmedSkill], { shouldValidate: true, shouldDirty: true });
       }
-      setNewSkill('');
+      setNewSoftSkill('');
     }
   };
 
-  const handleRemoveSkill = (indexToRemove: number) => {
-    const currentSkills = form.getValues('skills');
-    form.setValue('skills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
+  const handleRemoveSoftSkill = (indexToRemove: number) => {
+    const currentSkills = form.getValues('softSkills');
+    form.setValue('softSkills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
   };
 
-  const handleAddTool = () => {
-    const trimmedTool = newTool.trim();
-    if (trimmedTool) {
-      const currentTools = form.getValues('tools') || [];
-      if (!currentTools.map(t => t.toLowerCase()).includes(trimmedTool.toLowerCase())) {
-        form.setValue('tools', [...currentTools, trimmedTool], { shouldValidate: true, shouldDirty: true });
+  const handleAddHardSkill = () => {
+    const trimmedSkill = newHardSkill.trim();
+    if (trimmedSkill) {
+      const currentSkills = form.getValues('hardSkills') || [];
+      if (!currentSkills.map(t => t.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
+        form.setValue('hardSkills', [...currentSkills, trimmedSkill], { shouldValidate: true, shouldDirty: true });
       }
-      setNewTool('');
+      setNewHardSkill('');
     }
   };
 
-  const handleRemoveTool = (indexToRemove: number) => {
-    const currentTools = form.getValues('tools');
-    form.setValue('tools', currentTools.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
+  const handleRemoveHardSkill = (indexToRemove: number) => {
+    const currentSkills = form.getValues('hardSkills');
+    form.setValue('hardSkills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
   };
   
   const NavButton = ({ active, onClick, icon: Icon, children }: { active: boolean, onClick: () => void, icon: React.ElementType, children: React.ReactNode }) => (
@@ -351,6 +403,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                <NavButton active={view === 'projects'} onClick={() => setView('projects')} icon={Briefcase}>Projects</NavButton>
                <NavButton active={view === 'education'} onClick={() => setView('education')} icon={GraduationCap}>Education</NavButton>
                <NavButton active={view === 'certificates'} onClick={() => setView('certificates')} icon={Award}>Certificates</NavButton>
+               <NavButton active={view === 'softwareSkills'} onClick={() => setView('softwareSkills')} icon={Cpu}>Software Skills</NavButton>
                <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings2}>Settings</NavButton>
             </nav>
             <div className="text-xs text-muted-foreground p-2">
@@ -443,6 +496,36 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                   </CardContent>
                 </Card>
               )}
+              
+              {view === 'softwareSkills' && (
+                  <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div><CardTitle>Manage Software Skills</CardTitle><CardDescription>Add, edit, or remove your software skills.</CardDescription></div>
+                    <Button type="button" onClick={openAddSoftwareSkillDialog}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader><TableRow><TableHead className="w-[80px]">Icon</TableHead><TableHead>Skill Name</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {initialData.softwareSkills.length === 0 ? (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No software skills yet.</TableCell></TableRow>
+                        ) : initialData.softwareSkills.map((skill, index) => (
+                          <TableRow key={skill._id || index}>
+                            <TableCell>
+                                <Image src={skill.iconUrl} alt={skill.name} width={40} height={40} className="rounded-md object-contain" />
+                            </TableCell>
+                            <TableCell className="font-medium">{skill.name}</TableCell>
+                            <TableCell className="text-right space-x-2">
+                              <Button type="button" variant="outline" size="icon" onClick={() => openEditSoftwareSkillDialog(index)}><Edit className="h-4 w-4" /></Button>
+                              <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveSoftwareSkill(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
 
               {view === 'settings' && (
                 <div className="space-y-8">
@@ -461,22 +544,21 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
                   <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle>Manage Main Skills</CardTitle></div>
-                        <CardDescription>Add or remove skills displayed on the main page.</CardDescription>
+                        <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle>Manage Soft Skills</CardTitle></div>
                     </CardHeader>
                     <CardContent>
-                        <Label htmlFor="new-skill">New Skill Name</Label>
+                        <Label htmlFor="new-soft-skill">New Soft Skill</Label>
                         <div className="flex gap-2 mt-2 mb-4">
-                            <Input id="new-skill" placeholder="e.g., SEO Specialist" value={newSkill} onChange={(e) => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(); } }}/>
-                            <Button type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
+                            <Input id="new-soft-skill" placeholder="e.g., Public Speaking" value={newSoftSkill} onChange={(e) => setNewSoftSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSoftSkill(); } }}/>
+                            <Button type="button" onClick={handleAddSoftSkill} disabled={!newSoftSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
                         </div>
                         <div className="space-y-2">
                             <Label>Current Skills:</Label>
                             <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
-                            {form.watch('skills')?.map((skill, index) => (
+                            {form.watch('softSkills')?.map((skill, index) => (
                                 <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
                                 {skill}
-                                <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                <button type="button" onClick={() => handleRemoveSoftSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
                                     <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
                                 </button>
                                 </Badge>
@@ -488,23 +570,22 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
                   <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><CardTitle>Manage Tools</CardTitle></div>
-                        <CardDescription>Add or remove tools displayed on the main page.</CardDescription>
+                        <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><CardTitle>Manage Hard Skills</CardTitle></div>
                     </CardHeader>
                     <CardContent>
-                        <Label htmlFor="new-tool">New Tool Name</Label>
+                        <Label htmlFor="new-hard-skill">New Hard Skill</Label>
                         <div className="flex gap-2 mt-2 mb-4">
-                            <Input id="new-tool" placeholder="e.g., Figma" value={newTool} onChange={(e) => setNewTool(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTool(); } }}/>
-                            <Button type="button" onClick={handleAddTool} disabled={!newTool.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
+                            <Input id="new-hard-skill" placeholder="e.g., UI/UX Design" value={newHardSkill} onChange={(e) => setNewHardSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddHardSkill(); } }}/>
+                            <Button type="button" onClick={handleAddHardSkill} disabled={!newHardSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
                         </div>
                         <div className="space-y-2">
-                            <Label>Current Tools:</Label>
+                            <Label>Current Skills:</Label>
                             <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
-                            {form.watch('tools')?.map((tool, index) => (
-                                <Badge key={`${tool}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
-                                {tool}
-                                <button type="button" onClick={() => handleRemoveTool(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
-                                    <span className="sr-only">Remove {tool}</span><Trash2 className="h-3.5 w-3.5" />
+                            {form.watch('hardSkills')?.map((skill, index) => (
+                                <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                {skill}
+                                <button type="button" onClick={() => handleRemoveHardSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                    <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
                                 </button>
                                 </Badge>
                             ))}
@@ -515,13 +596,13 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
                   <Card className="mt-6 bg-secondary/30">
                     <CardHeader>
-                        <CardTitle>Save General Settings</CardTitle>
-                        <CardDescription>Click this to save all changes in this tab: Personal Info, Skills, and Tools.</CardDescription>
+                        <CardTitle>Save All Settings</CardTitle>
+                        <CardDescription>Click this to save all changes in this tab: Personal Info, Soft Skills, and Hard Skills.</CardDescription>
                     </CardHeader>
                     <CardFooter>
                         <Button size="lg" type="submit" disabled={isPending}>
                             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                            Save General Settings
+                            Save All Settings
                         </Button>
                     </CardFooter>
                   </Card>
@@ -588,7 +669,26 @@ export default function AdminForm({ initialData }: AdminFormProps) {
               <FormField control={certificateDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="issuer" render={({ field }) => (<FormItem><FormLabel>Issuer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="date" render={({ field }) => (<FormItem><FormLabel>Date Issued</FormLabel><FormControl><Input placeholder="e.g., Jan 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>Verification URL (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>Verification URL (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage>)} />
+              <DialogFooter>
+                <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                <Button type="submit" disabled={isPending}>
+                    {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : 'Save'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Software Skill Dialog */}
+      <Dialog open={isSoftwareSkillDialogOpen} onOpenChange={setSoftwareSkillDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editingSoftwareSkillIndex !== null ? 'Edit Software Skill' : 'Add Software Skill'}</DialogTitle></DialogHeader>
+          <Form {...softwareSkillDialogForm}>
+            <form onSubmit={softwareSkillDialogForm.handleSubmit(handleSoftwareSkillDialogSubmit)} className="space-y-4 py-4">
+              <FormField control={softwareSkillDialogForm.control} name="name" render={({ field }) => (<FormItem><FormLabel>Skill Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={softwareSkillDialogForm.control} name="iconUrl" render={({ field }) => (<FormItem><FormLabel>Icon</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isPending}>

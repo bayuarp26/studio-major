@@ -15,11 +15,10 @@
     "title": "About Me"
   },
   "skills": {
-    "title": "Main Skills"
-  },
-  "tools": {
-    "title": "Tools I Use",
-    "description": "Some of the tools I master to support analysis and digital marketing strategies."
+    "title": "Skill",
+    "softSkills": "Soft Skills",
+    "hardSkills": "Hard Skills",
+    "softwareSkills": "Software Skills"
   },
   "projects": {
     "title": "Portfolio Projects",
