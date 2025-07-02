@@ -21,6 +21,15 @@ async function checkAuth() {
     return session;
 }
 
+function revalidatePublicPaths() {
+    revalidatePath('/profile');
+    revalidatePath('/skills');
+    revalidatePath('/projects');
+    revalidatePath('/certificates');
+    revalidatePath('/contact');
+    revalidatePath('/admin/dashboard');
+}
+
 // --- Generic Success/Error Response ---
 type ActionResponse<T = any> = {
     success: boolean;
@@ -37,8 +46,7 @@ export async function saveGeneralInfo(
     try {
         await checkAuth();
         await updateMainContent(data);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'General info updated successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -50,8 +58,7 @@ export async function saveSkills(skills: string[]): Promise<ActionResponse> {
     try {
         await checkAuth();
         await updateSimpleCollection('skills', skills);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Skills updated successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -63,8 +70,7 @@ export async function saveTools(tools: string[]): Promise<ActionResponse> {
     try {
         await checkAuth();
         await updateSimpleCollection('tools', tools);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Tools updated successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -78,8 +84,7 @@ export async function addProject(project: Omit<Project, '_id'>): Promise<ActionR
     try {
         await checkAuth();
         const newProject = await addDocument('projects', project);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Project added successfully!', data: newProject };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -92,8 +97,7 @@ export async function updateProject(project: Project): Promise<ActionResponse> {
         await checkAuth();
         if (!project._id) throw new Error("Project ID is missing for update.");
         await updateDocument('projects', project._id, project);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Project updated successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -105,8 +109,7 @@ export async function deleteProject(id: string): Promise<ActionResponse> {
     try {
         await checkAuth();
         await deleteDocument('projects', id);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Project deleted successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -121,8 +124,7 @@ export async function addEducation(education: Omit<EducationItem, '_id'>): Promi
     try {
         await checkAuth();
         const newEducation = await addDocument('education', education);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Education added successfully!', data: newEducation };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -135,8 +137,7 @@ export async function updateEducation(education: EducationItem): Promise<ActionR
         await checkAuth();
         if (!education._id) throw new Error("Education ID is missing for update.");
         await updateDocument('education', education._id, education);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Education updated successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -148,8 +149,7 @@ export async function deleteEducation(id: string): Promise<ActionResponse> {
     try {
         await checkAuth();
         await deleteDocument('education', id);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Education deleted successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -163,8 +163,7 @@ export async function addCertificate(certificate: Omit<Certificate, '_id'>): Pro
     try {
         await checkAuth();
         const newCertificate = await addDocument('certificates', certificate);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Certificate added successfully!', data: newCertificate };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -177,8 +176,7 @@ export async function updateCertificate(certificate: Certificate): Promise<Actio
         await checkAuth();
         if (!certificate._id) throw new Error("Certificate ID is missing for update.");
         await updateDocument('certificates', certificate._id, certificate);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Certificate updated successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -190,8 +188,7 @@ export async function deleteCertificate(id: string): Promise<ActionResponse> {
     try {
         await checkAuth();
         await deleteDocument('certificates', id);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        revalidatePublicPaths();
         return { success: true, message: 'Certificate deleted successfully!' };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
