@@ -2,10 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, X } from 'lucide-react';
+import { UploadCloud, X, FileImage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 interface ImageUploadProps {
   value?: string;
@@ -51,31 +50,27 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     <div
       {...getRootProps()}
       className={cn(
-        'relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-input bg-background p-4 text-center transition-colors hover:border-primary/50',
+        'relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-input bg-background p-4 text-center transition-colors hover:border-primary/50 min-h-[160px]',
         (isDragActive || isDragging) && 'border-primary',
         disabled && 'cursor-not-allowed opacity-50'
       )}
     >
       <input {...getInputProps()} />
       {value ? (
-        <div className="relative h-40 w-full">
-          <Image
-            src={value}
-            alt="Uploaded image"
-            fill
-            style={{ objectFit: 'contain' }}
-            className="rounded-md"
-          />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute -right-2 -top-2 z-10 h-6 w-6 rounded-full"
-            onClick={handleRemoveImage}
-            disabled={disabled}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <div className="flex flex-col items-center justify-center">
+            <FileImage className="h-12 w-12 text-primary" />
+            <p className="mt-2 text-sm font-semibold text-foreground">Foto profil telah diunggah.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Seret atau klik untuk mengganti.</p>
+            <Button
+                type="button"
+                variant="link"
+                size="sm"
+                className="mt-2 text-destructive hover:text-destructive/80"
+                onClick={handleRemoveImage}
+                disabled={disabled}
+            >
+                <X className="mr-1 h-4 w-4" /> Hapus Foto
+            </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center space-y-2 text-muted-foreground">
