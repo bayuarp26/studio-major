@@ -14,7 +14,7 @@ export default function Skills({ skills }: SkillsProps) {
         </div>
         <div className="mt-16 flex flex-wrap justify-center gap-4">
           {skills.map((skill, index) => (
-             <div key={`${skill}-${index}`} className="rounded-lg bg-foreground px-5 py-2.5 font-medium text-primary shadow-md dark:bg-card">
+             <div key={`${skill}-${index}`} className="rounded-lg bg-secondary px-5 py-2.5 font-medium text-secondary-foreground shadow-md dark:bg-card dark:text-primary">
               {skill}
             </div>
           ))}
