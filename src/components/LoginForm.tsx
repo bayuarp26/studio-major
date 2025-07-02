@@ -46,7 +46,6 @@ function LoginFormContent() {
               type="text"
               placeholder="Username"
               required
-              defaultValue="082286514244"
             />
           </div>
           <div className="space-y-2">
@@ -56,9 +55,8 @@ function LoginFormContent() {
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="password"
+                placeholder="Password"
                 required
-                defaultValue="wahyu-58321"
               />
               <Button
                 type="button"
@@ -77,7 +75,7 @@ function LoginFormContent() {
           )}
         </form>
       </CardContent>
-    </Card>
+    </card>
   );
 }
 

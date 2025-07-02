@@ -32,11 +32,6 @@ export default async function LangLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-       <style>{`
-        html {
-            lang: ${params.lang};
-        }
-    `}</style>
       <Header name={portfolioData.name} dictionary={dictionary} />
       <main className="flex-grow">
         {children}
