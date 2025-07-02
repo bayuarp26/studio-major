@@ -1,8 +1,10 @@
 
 import { getPortfolioData } from "@/lib/data";
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const revalidate = 86400; // Revalidate every 24 hours
 
@@ -44,6 +46,11 @@ export default async function ProjectsPage() {
                   ))}
                 </div>
               </CardContent>
+              <CardFooter className="justify-end p-6 pt-0">
+                <Button asChild variant="outline">
+                  <Link href="#">Lihat Detail</Link>
+                </Button>
+              </CardFooter>
             </Card>
           ))}
         </div>

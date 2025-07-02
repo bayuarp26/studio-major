@@ -1,7 +1,9 @@
 
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface Project {
   title: string;
@@ -18,7 +20,7 @@ interface ProjectsProps {
 
 export default function Projects({ projects }: ProjectsProps) {
   return (
-    <section id="projects" className="py-24 sm:py-32 bg-secondary">
+    <section id="projects" className="bg-secondary py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
@@ -52,6 +54,11 @@ export default function Projects({ projects }: ProjectsProps) {
                   ))}
                 </div>
               </CardContent>
+              <CardFooter className="justify-end p-6 pt-0">
+                <Button asChild variant="outline">
+                  <Link href="#">Lihat Detail</Link>
+                </Button>
+              </CardFooter>
             </Card>
           ))}
         </div>
