@@ -50,6 +50,9 @@ const educationSchema = z.object({
 const certificateSchema = z.object({
   _id: z.string().optional(),
   name: z.string().min(1, 'Certificate name is required'),
+  description: z.string().min(1, 'Description is required'),
+  imageUrl: z.string().optional(),
+  imageHint: z.string().optional(),
   issuer: z.string().min(1, 'Issuer is required'),
   date: z.string().min(1, 'Date is required'),
   url: z.string().url('Invalid URL').optional().or(z.literal('')),
@@ -245,16 +248,27 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   // --- Certificate Handlers ---
   const openAddCertificateDialog = () => {
     setEditingCertificateIndex(null);
-    certificateDialogForm.reset({ name: '', issuer: '', date: '', url: '' });
+    certificateDialogForm.reset({ name: '', description: '', imageUrl: '', imageHint: '', issuer: '', date: '', url: '' });
     setCertificateDialogOpen(true);
   };
   const openEditCertificateDialog = (index: number) => {
     setEditingCertificateIndex(index);
-    certificateDialogForm.reset(initialData.certificates[index]);
+    const cert = initialData.certificates[index];
+    certificateDialogForm.reset({
+        ...cert,
+        description: cert.description || '',
+        imageUrl: cert.imageUrl || '',
+        imageHint: cert.imageHint || ''
+    });
     setCertificateDialogOpen(true);
   };
   const handleCertificateDialogSubmit = (data: CertificateDialogValues) => {
-     const cleanData = { ...data, url: data.url || '#' };
+     const cleanData = { 
+        ...data, 
+        imageUrl: data.imageUrl || 'https://placehold.co/800x600.png',
+        imageHint: data.imageHint || '',
+        url: data.url || '#' 
+    };
     startTransition(async () => {
       const result = data._id ? await updateCertificate(cleanData as Certificate) : await addCertificate(cleanData);
       if (result.success) {
@@ -566,11 +580,14 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
       {/* Certificate Dialog */}
       <Dialog open={isCertificateDialogOpen} onOpenChange={setCertificateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingCertificateIndex !== null ? 'Edit Certificate' : 'Add Certificate'}</DialogTitle></DialogHeader>
           <Form {...certificateDialogForm}>
             <form onSubmit={certificateDialogForm.handleSubmit(handleCertificateDialogSubmit)} className="space-y-4 py-4">
               <FormField control={certificateDialogForm.control} name="name" render={({ field }) => (<FormItem><FormLabel>Certificate Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
+              <FormField control={certificateDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'certificate design'" {...field} /></FormControl><FormDescription>One or two keywords for AI to find a relevant image.</FormDescription><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="issuer" render={({ field }) => (<FormItem><FormLabel>Issuer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="date" render={({ field }) => (<FormItem><FormLabel>Date Issued</FormLabel><FormControl><Input placeholder="e.g., Jan 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>Verification URL (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
