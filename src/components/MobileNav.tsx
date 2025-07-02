@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
+import { usePathname } from "next/navigation";
+
 
 interface MobileNavProps {
   navLinks: { name: string; href: string }[];
@@ -17,6 +19,9 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, name, dictionary }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const locale = `/${pathname.split('/')[1]}`;
+
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -29,7 +34,7 @@ export function MobileNav({ navLinks, name, dictionary }: MobileNavProps) {
       <SheetContent side="right" className="w-[300px] bg-background">
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
-             <Link href="#hero" className="flex items-center" onClick={() => setOpen(false)}>
+             <Link href={`${locale}#hero`} className="flex items-center" onClick={() => setOpen(false)}>
               <span className="font-headline text-2xl font-bold text-primary">
                 {name}
               </span>
@@ -52,7 +57,7 @@ export function MobileNav({ navLinks, name, dictionary }: MobileNavProps) {
           </div>
           <div className="flex items-center justify-between">
             <Button asChild>
-                <Link href="#contact" onClick={() => setOpen(false)}>{dictionary.nav.contactMe}</Link>
+                <Link href={`${locale}#contact`} onClick={() => setOpen(false)}>{dictionary.nav.contactMe}</Link>
             </Button>
             <ThemeToggle />
           </div>

@@ -3,7 +3,8 @@
 // and the root page is now at /src/app/[lang]/page.tsx
 // However, we keep it as a fallback.
 import { redirect } from 'next/navigation';
+import { i18n } from '../i18n.config';
 
 export default function RootPage() {
-  redirect('/profile');
+  redirect(`/${i18n.defaultLocale}`);
 }
