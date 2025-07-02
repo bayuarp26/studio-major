@@ -2,12 +2,19 @@
 import AdminForm from '@/components/AdminForm';
 import { getPortfolioData } from '@/lib/data';
 import type { PortfolioData } from '@/lib/types';
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
-// Middleware akan melindungi rute ini.
-// Kita bisa dengan aman berasumsi sesi valid di sini.
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
+  const session = await getSession();
+  if (!session) {
+    // Jika tidak ada sesi yang valid, paksa redirect ke halaman login.
+    // Ini adalah lapisan keamanan utama kita sekarang.
+    redirect('/admin/login');
+  }
+  
   // Pengambilan data sekarang menjadi satu-satunya tanggung jawab halaman ini.
   const portfolioData = await getPortfolioData();
 

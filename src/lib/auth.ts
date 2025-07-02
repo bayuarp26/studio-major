@@ -60,17 +60,17 @@ export async function logout() {
 // --- SERVER ACTIONS ---
 
 export async function login(formData: FormData) {
-  const values = Object.fromEntries(formData);
-  const parsed = loginSchema.safeParse(values);
-
-  if (!parsed.success) {
-    redirect('/admin/login?error=Invalid username or password.');
-  }
-
-  const { username, password } = parsed.data;
-
   try {
+    const values = Object.fromEntries(formData);
+    const parsed = loginSchema.safeParse(values);
+
+    if (!parsed.success) {
+      redirect('/admin/login?error=Invalid username or password.');
+    }
+
+    const { username, password } = parsed.data;
     const user = await getUser(username);
+
     if (!user || !user.password) {
       redirect('/admin/login?error=Invalid username or password.');
     }
@@ -80,12 +80,20 @@ export async function login(formData: FormData) {
       redirect('/admin/login?error=Invalid username or password.');
     }
 
+    // Credentials are valid, create session
     await createSession(username);
+
   } catch (error) {
+    // This is the important part. If the error is a redirect error, re-throw it.
+    if (error.type === 'NEXT_REDIRECT') {
+      throw error;
+    }
+    
+    // For any other type of error (DB connection, etc.)
     console.error('Login error:', error);
     redirect('/admin/login?error=An internal server error occurred.');
   }
-
-  // If everything is successful, redirect to the dashboard
+  
+  // This is only reached if the try block completes without any error.
   redirect('/admin/dashboard');
 }
