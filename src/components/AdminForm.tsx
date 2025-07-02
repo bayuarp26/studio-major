@@ -532,7 +532,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={projectDialogForm.control} name="link" render={({ field }) => (<FormItem><FormLabel>Project Link</FormLabel><FormControl><Input placeholder="https://example.com" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="link" render={({ field }) => (<FormItem><FormLabel>Project Iframe URL</FormLabel><FormControl><Input placeholder="https://example.com/embed" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isPending}>
