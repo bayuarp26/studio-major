@@ -29,44 +29,37 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle admin authentication and redirection first
-  if (pathname.startsWith('/admin') || pathname === '/login') {
+  const pathnameHasLocale = i18n.locales.some(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
+  
+  const isAuthRoute = pathname.startsWith('/admin') || pathname.startsWith('/login');
+
+
+  if (isAuthRoute) {
     const sessionCookie = request.cookies.get('session')?.value;
-    if (pathname.startsWith('/admin/login') || pathname === '/login') {
-      if (sessionCookie) {
+    // If trying to access login page with a session, redirect to dashboard
+    if ((pathname === '/admin/login' || pathname === '/login') && sessionCookie) {
         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      }
-      // Explicitly redirect /login to /admin/login
-      if (pathname === '/login') {
-         return NextResponse.redirect(new URL('/admin/login', request.url));
-      }
-      return NextResponse.next();
     }
-    if (pathname.startsWith('/admin')) {
-      if (!sessionCookie) {
+    // If trying to access admin pages without a session, redirect to login
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !sessionCookie) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
-      }
+    }
+    // Explicitly redirect /login to /admin/login
+    if (pathname === '/login') {
+       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
     return NextResponse.next();
   }
 
-  // Handle i18n for all other routes
-  const pathnameIsMissingLocale = i18n.locales.every(
-    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
-  );
-
-  // Redirect if there is no locale
-  if (pathnameIsMissingLocale) {
+  // Redirect if there is no locale and it's not an auth route
+  if (!pathnameHasLocale) {
     const locale = getLocale(request);
     
-    // If the root path is requested, redirect to the localized root
-    if (pathname === '/') {
-        return NextResponse.redirect(new URL(`/${locale}`, request.url));
-    }
-    
-    return NextResponse.redirect(
-      new URL(`/${locale}${pathname}`, request.url)
-    );
+    // Prepend the locale to the path
+    const newUrl = new URL(`/${locale}${pathname}`, request.url);
+    return NextResponse.redirect(newUrl);
   }
 
   return NextResponse.next();

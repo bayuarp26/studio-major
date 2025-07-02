@@ -4,7 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Inter } from "next/font/google";
-import { i18n } from '../i18n.config';
+import { i18n } from '../../i18n.config';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
