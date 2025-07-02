@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -102,33 +102,16 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      title: '',
-      about: '',
-      email: '',
-      linkedin: '',
-      skills: [],
-      tools: [],
-      projects: [],
-      education: [],
-      certificates: [],
+      ...initialData,
+      email: initialData.contact.email.replace('mailto:', ''),
+      linkedin: initialData.contact.linkedin || '',
+      skills: initialData.skills || [],
+      tools: initialData.tools || [],
+      projects: initialData.projects || [],
+      education: initialData.education || [],
+      certificates: initialData.certificates || [],
     }
   });
-
-  useEffect(() => {
-    if (initialData) {
-      form.reset({
-        ...initialData,
-        email: initialData.contact.email.replace('mailto:', ''),
-        linkedin: initialData.contact.linkedin || '',
-        skills: initialData.skills || [],
-        tools: initialData.tools || [],
-        projects: initialData.projects || [],
-        education: initialData.education || [],
-        certificates: initialData.certificates || [],
-      });
-    }
-  }, [initialData, form]);
 
   const { fields: projectFields } = useFieldArray({ control: form.control, name: "projects" });
   const { fields: educationFields } = useFieldArray({ control: form.control, name: "education" });
