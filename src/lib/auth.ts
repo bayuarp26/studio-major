@@ -7,6 +7,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { getUser } from '@/lib/data';
 import type { SessionPayload } from '@/lib/types';
+import { redirect } from 'next/navigation';
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY || 'your-super-secret-key-that-is-long-and-secure';
 const COOKIE_NAME = 'session';
@@ -58,31 +59,33 @@ export async function logout() {
 
 // --- SERVER ACTIONS ---
 
-export async function login(prevState: any, formData: FormData) {
-  const parsed = loginSchema.safeParse(Object.fromEntries(formData));
+export async function login(formData: FormData) {
+  const values = Object.fromEntries(formData);
+  const parsed = loginSchema.safeParse(values);
 
   if (!parsed.success) {
-    return { error: 'Invalid username or password.' };
+    redirect('/admin/login?error=Invalid username or password.');
   }
-  
+
   const { username, password } = parsed.data;
 
   try {
     const user = await getUser(username);
     if (!user || !user.password) {
-      return { error: 'Invalid username or password.' };
+      redirect('/admin/login?error=Invalid username or password.');
     }
 
     const passwordsMatch = await bcrypt.compare(password, user.password);
     if (!passwordsMatch) {
-      return { error: 'Invalid username or password.' };
+      redirect('/admin/login?error=Invalid username or password.');
     }
 
     await createSession(username);
-    return { success: true };
-
   } catch (error) {
     console.error('Login error:', error);
-    return { error: 'An internal server error occurred.' };
+    redirect('/admin/login?error=An internal server error occurred.');
   }
+
+  // If everything is successful, redirect to the dashboard
+  redirect('/admin/dashboard');
 }
