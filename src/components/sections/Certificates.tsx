@@ -69,15 +69,16 @@ export default function Certificates({ certificates }: CertificatesProps) {
                 <CarouselItem key={cert._id || index}>
                   <Card className="overflow-hidden border-none shadow-none bg-transparent">
                     <CardContent className="p-0">
-                      <Image
-                        src={cert.imageUrl || 'https://placehold.co/800x600.png'}
-                        alt={cert.name}
-                        width={800}
-                        height={600}
-                        sizes="(min-width: 1024px) 768px, 100vw"
-                        className="w-full h-auto rounded-lg object-cover"
-                        data-ai-hint={cert.imageHint || 'certificate document'}
-                      />
+                      <div className="relative aspect-video w-full rounded-lg bg-muted/40">
+                        <Image
+                          src={cert.imageUrl || 'https://placehold.co/800x600.png'}
+                          alt={cert.name}
+                          fill
+                          sizes="(min-width: 1024px) 768px, 100vw"
+                          className="object-contain"
+                          data-ai-hint={cert.imageHint || 'certificate document'}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 </CarouselItem>
