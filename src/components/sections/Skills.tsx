@@ -1,14 +1,16 @@
+
 interface SkillsProps {
   skills: string[];
+  dictionary: any;
 }
 
-export default function Skills({ skills }: SkillsProps) {
+export default function Skills({ skills, dictionary }: SkillsProps) {
   return (
     <section id="skills" className="bg-background py-24 sm:py-32">
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            Keahlian Utama
+            {dictionary.skills.title}
           </h2>
            <div className="mx-auto mt-2 h-1.5 w-24 bg-primary" />
         </div>

@@ -1,35 +1,59 @@
 
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { i18n } from '../i18n.config';
+import { match as matchLocale } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
 
-const COOKIE_NAME = 'session';
+function getLocale(request: NextRequest): string | undefined {
+  const negotiatorHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const sessionCookie = req.cookies.get(COOKIE_NAME)?.value;
+  // @ts-ignore locales are readonly
+  const locales: string[] = i18n.locales;
+  const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
+  const locale = matchLocale(languages, locales, i18n.defaultLocale);
+  return locale;
+}
 
-  // Jika mencoba mengakses halaman login tetapi SUDAH memiliki cookie,
-  // arahkan ke dasbor. Ini mencegah pengguna yang sudah login melihat halaman login lagi.
-  if (pathname.startsWith('/admin/login') || pathname === '/login') {
-    if (sessionCookie) {
-      return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Handle admin authentication and redirection first
+  if (pathname.startsWith('/admin') || pathname === '/login') {
+    const sessionCookie = request.cookies.get('session')?.value;
+    if (pathname.startsWith('/admin/login') || pathname === '/login') {
+      if (sessionCookie) {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+      return NextResponse.next();
+    }
+    if (pathname.startsWith('/admin')) {
+      if (!sessionCookie) {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
     }
     return NextResponse.next();
   }
-  
-  // Untuk semua rute admin lainnya, periksa apakah cookie sesi ADA.
-  // Kita tidak memverifikasi token di sini untuk menghindari masalah runtime Edge.
-  if (pathname.startsWith('/admin')) {
-    if (!sessionCookie) {
-      // Jika tidak ada cookie, paksa redirect ke halaman login.
-      return NextResponse.redirect(new URL('/admin/login', req.url));
-    }
-  }
 
-  // Izinkan semua permintaan lainnya untuk melanjutkan.
-  return NextResponse.next();
+  // Handle i18n for all other routes
+  const pathnameIsMissingLocale = i18n.locales.every(
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+  );
+
+  // Redirect if there is no locale
+  if (pathnameIsMissingLocale) {
+    const locale = getLocale(request);
+    return NextResponse.redirect(
+      new URL(
+        `/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
+        request.url
+      )
+    );
+  }
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login'],
-}
+  // Matcher ignoring `/_next/` and `/api/`
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+};

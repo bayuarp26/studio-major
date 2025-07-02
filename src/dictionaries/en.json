@@ -1,0 +1,47 @@
+
+{
+  "nav": {
+    "profile": "Profile",
+    "about": "About",
+    "skills": "Skills",
+    "projects": "Projects",
+    "certificates": "Certificates",
+    "contactMe": "Contact Me"
+  },
+  "hero": {
+    "downloadCv": "Download CV"
+  },
+  "about": {
+    "title": "About Me"
+  },
+  "skills": {
+    "title": "Main Skills"
+  },
+  "tools": {
+    "title": "Tools I Use",
+    "description": "Some of the tools I master to support analysis and digital marketing strategies."
+  },
+  "projects": {
+    "title": "Portfolio Projects",
+    "description": "Here are some projects I have worked on to demonstrate my skills.",
+    "viewDetails": "View Details"
+  },
+  "education": {
+    "title": "Education",
+    "description": "My academic journey."
+  },
+  "certificates": {
+    "title": "Certifications/Licenses"
+  },
+  "contact": {
+    "title": "Contact Me",
+    "description": "I am open to new opportunities and collaborations. Feel free to contact me!",
+    "sendEmail": "Send Email"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  },
+  "metadata": {
+    "portfolio": "Portfolio"
+  }
+}

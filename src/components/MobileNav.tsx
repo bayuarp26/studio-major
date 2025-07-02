@@ -12,9 +12,10 @@ import { ThemeToggle } from "./ThemeToggle";
 interface MobileNavProps {
   navLinks: { name: string; href: string }[];
   name: string;
+  dictionary: any;
 }
 
-export function MobileNav({ navLinks, name }: MobileNavProps) {
+export function MobileNav({ navLinks, name, dictionary }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -51,7 +52,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
           </div>
           <div className="flex items-center justify-between">
             <Button asChild>
-                <Link href="#contact" onClick={() => setOpen(false)}>Hubungi Saya</Link>
+                <Link href="#contact" onClick={() => setOpen(false)}>{dictionary.nav.contactMe}</Link>
             </Button>
             <ThemeToggle />
           </div>

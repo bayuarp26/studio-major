@@ -19,9 +19,10 @@ import Autoplay from 'embla-carousel-autoplay';
 
 interface CertificatesProps {
   certificates: Certificate[];
+  dictionary: any;
 }
 
-export default function Certificates({ certificates }: CertificatesProps) {
+export default function Certificates({ certificates, dictionary }: CertificatesProps) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
@@ -52,7 +53,7 @@ export default function Certificates({ certificates }: CertificatesProps) {
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            Sertifikasi/Lisensi
+            {dictionary.certificates.title}
           </h2>
         </div>
         <div className="mt-16 mx-auto max-w-4xl">
@@ -69,7 +70,7 @@ export default function Certificates({ certificates }: CertificatesProps) {
                 <CarouselItem key={cert._id || index}>
                   <Card className="overflow-hidden border-none shadow-none bg-transparent">
                     <CardContent className="p-0">
-                      <div className="relative aspect-video w-full rounded-lg bg-muted/40">
+                      <div className="relative aspect-[16/9] w-full rounded-lg bg-muted/40">
                         <Image
                           src={cert.imageUrl || 'https://placehold.co/800x600.png'}
                           alt={cert.name}

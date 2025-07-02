@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -7,39 +8,36 @@ import { MobileNav } from "./MobileNav";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { useActiveSection } from "@/hooks/use-active-section";
-
-const navLinks = [
-  { name: "Profile", href: "#hero" },
-  { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills" },
-  { name: "Projects", href: "#projects" },
-  { name: "Certificates", href: "#education" },
-];
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const sectionIds = ["hero", "about", "skills", "tools", "projects", "education", "certificates", "contact"];
 
 interface HeaderProps {
   name: string;
+  dictionary: any;
 }
 
-export default function Header({ name }: HeaderProps) {
+export default function Header({ name, dictionary }: HeaderProps) {
   const activeSection = useActiveSection(sectionIds);
   const [showNameInHeader, setShowNameInHeader] = useState(false);
 
+  const navLinks = [
+    { name: dictionary.nav.profile, href: "#hero" },
+    { name: dictionary.nav.about, href: "#about" },
+    { name: dictionary.nav.skills, href: "#skills" },
+    { name: dictionary.nav.projects, href: "#projects" },
+    { name: dictionary.nav.certificates, href: "#education" },
+  ];
+  
   useEffect(() => {
     const heroNameElement = document.getElementById('hero-name');
     if (!heroNameElement) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // When the hero name is NOT intersecting (i.e., scrolled out of view),
-        // we want to show the name in the header.
         setShowNameInHeader(!entry.isIntersecting);
       },
       {
-        // A top margin of -64px means the intersection event fires when the
-        // element is 64px from the top of the viewport, which is exactly
-        // when it goes under our sticky header.
         rootMargin: '-64px 0px 0px 0px',
         threshold: 0,
       }
@@ -47,7 +45,6 @@ export default function Header({ name }: HeaderProps) {
 
     observer.observe(heroNameElement);
 
-    // Cleanup observer on component unmount
     return () => {
       observer.unobserve(heroNameElement);
     };
@@ -90,11 +87,12 @@ export default function Header({ name }: HeaderProps) {
         </nav>
         <div className="flex items-center gap-2">
            <Button asChild className="hidden md:flex">
-            <Link href="#contact">Hubungi Saya</Link>
+            <Link href="#contact">{dictionary.nav.contactMe}</Link>
           </Button>
+          <LanguageSwitcher />
           <ThemeToggle />
           <div className="md:hidden">
-            <MobileNav navLinks={navLinks} name={name} />
+            <MobileNav navLinks={navLinks} name={name} dictionary={dictionary} />
           </div>
         </div>
       </div>

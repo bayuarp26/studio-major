@@ -1,11 +1,13 @@
+
 import Image from 'next/image';
 
 interface AboutProps {
   about: string;
   profilePictureUrl: string;
+  dictionary: any;
 }
 
-export default function About({ about, profilePictureUrl }: AboutProps) {
+export default function About({ about, profilePictureUrl, dictionary }: AboutProps) {
   return (
     <section id="about" className="py-24 sm:py-32 bg-secondary">
       <div className="container">
@@ -23,7 +25,7 @@ export default function About({ about, profilePictureUrl }: AboutProps) {
           </div>
           <div className="lg:col-span-3">
             <h2 className="text-center font-headline text-4xl font-semibold text-primary sm:text-5xl lg:text-left">
-              About Me
+              {dictionary.about.title}
             </h2>
             <p className="mt-6 text-center text-lg leading-relaxed text-foreground/70 lg:text-left">
               {about}

@@ -9,9 +9,10 @@ interface EducationItem {
 
 interface EducationProps {
   education: EducationItem[];
+  dictionary: any;
 }
 
-export default function Education({ education }: EducationProps) {
+export default function Education({ education, dictionary }: EducationProps) {
   if (!education || education.length === 0) return null;
 
   return (
@@ -19,10 +20,10 @@ export default function Education({ education }: EducationProps) {
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            Pendidikan
+            {dictionary.education.title}
           </h2>
           <p className="mt-4 text-lg text-foreground/70">
-            Perjalanan akademis saya.
+            {dictionary.education.description}
           </p>
         </div>
         <div className="relative mt-16 max-w-2xl mx-auto">

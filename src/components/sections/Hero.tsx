@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,10 @@ interface HeroProps {
   title: string;
   cvUrl: string;
   profilePictureUrl: string;
+  dictionary: any;
 }
 
-export default function Hero({ name, title, cvUrl, profilePictureUrl }: HeroProps) {
+export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary }: HeroProps) {
   return (
     <section id="hero" className="bg-background">
       <div className="container grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-2 lg:gap-20">
@@ -25,13 +27,13 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl }: HeroProp
             <Button asChild size="lg">
               <a href={cvUrl} download="CV-Wahyu-Pratomo.pdf">
                 <Download className="mr-2 h-5 w-5" />
-                Unduh CV
+                {dictionary.hero.downloadCv}
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="#contact">
                 <Send className="mr-2 h-5 w-5" />
-                Hubungi Saya
+                {dictionary.nav.contactMe}
               </Link>
             </Button>
           </div>
