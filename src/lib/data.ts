@@ -1,4 +1,6 @@
 
+'use server';
+
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate, User } from '@/lib/types';
 import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
@@ -36,15 +38,11 @@ const EMPTY_DATA: PortfolioData = {
 };
 
 // --- DATABASE CONNECTION & INITIALIZATION ---
-let db: Db;
-let client: MongoClient;
 let initializationPromise: Promise<void> | null = null;
 
-const getDb = async () => {
-    if (db) return db;
-    client = await clientPromise;
-    db = client.db(DB_NAME);
-    return db;
+const getDb = async (): Promise<Db> => {
+    const client: MongoClient = await clientPromise;
+    return client.db(DB_NAME);
 };
 
 const seedAdminUser = async (db: Db) => {
