@@ -1,14 +1,13 @@
 
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { login } from '@/lib/auth';
 
@@ -23,31 +22,10 @@ function SubmitButton() {
   );
 }
 
-export default function LoginForm() {
-  const router = useRouter();
-  const { toast } = useToast();
+function LoginFormContent() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
   const [showPassword, setShowPassword] = useState(false);
-  const [state, formAction] = useActionState(login, undefined);
-
-  useEffect(() => {
-    if (state?.success) {
-      // Membersihkan data login lama yang mungkin ada di local storage
-      if (typeof window !== 'undefined') {
-        localStorage.clear();
-      }
-      toast({
-        title: 'Login Successful',
-        description: 'Redirecting to admin dashboard...',
-      });
-      router.push('/admin/dashboard');
-    } else if (state?.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: state.error,
-      });
-    }
-  }, [state, router, toast]);
 
   return (
     <Card className="w-full max-w-sm">
@@ -59,7 +37,7 @@ export default function LoginForm() {
         <CardDescription>Enter your credentials to manage the portfolio.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form action={login} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
@@ -68,6 +46,7 @@ export default function LoginForm() {
               type="text"
               placeholder="Username"
               required
+              defaultValue="082286514244"
             />
           </div>
           <div className="space-y-2">
@@ -79,6 +58,7 @@ export default function LoginForm() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="password"
                 required
+                defaultValue="wahyu-58321"
               />
               <Button
                 type="button"
@@ -92,11 +72,20 @@ export default function LoginForm() {
             </div>
           </div>
           <SubmitButton />
-          {state?.error && (
-             <p className="text-sm font-medium text-destructive text-center pt-2">{state.error}</p>
+          {error && (
+             <p className="text-sm font-medium text-destructive text-center pt-2">{error}</p>
           )}
         </form>
       </CardContent>
     </Card>
   );
+}
+
+
+export default function LoginForm() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginFormContent />
+        </Suspense>
+    )
 }
