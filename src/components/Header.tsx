@@ -1,7 +1,7 @@
-
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./MobileNav";
 import { cn } from "@/lib/utils";
@@ -24,12 +24,46 @@ interface HeaderProps {
 
 export default function Header({ name }: HeaderProps) {
   const activeSection = useActiveSection(sectionIds);
+  const [showNameInHeader, setShowNameInHeader] = useState(false);
+
+  useEffect(() => {
+    const heroNameElement = document.getElementById('hero-name');
+    if (!heroNameElement) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // When the hero name is NOT intersecting (i.e., scrolled out of view),
+        // we want to show the name in the header.
+        setShowNameInHeader(!entry.isIntersecting);
+      },
+      {
+        // A top margin of -64px means the intersection event fires when the
+        // element is 64px from the top of the viewport, which is exactly
+        // when it goes under our sticky header.
+        rootMargin: '-64px 0px 0px 0px',
+        threshold: 0,
+      }
+    );
+
+    observer.observe(heroNameElement);
+
+    // Cleanup observer on component unmount
+    return () => {
+      observer.unobserve(heroNameElement);
+    };
+  }, []);
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <Link href="#hero" className="mr-6 flex items-center space-x-2">
-          <span className="text-2xl font-bold text-primary">
+          <span
+            className={cn(
+              "text-2xl font-bold text-primary transition-opacity duration-300",
+              showNameInHeader ? "opacity-100" : "opacity-0"
+            )}
+          >
             {name}
           </span>
         </Link>
