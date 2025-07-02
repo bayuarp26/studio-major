@@ -69,11 +69,11 @@ export default function Certificates({ certificates }: CertificatesProps) {
                   <Card className="overflow-hidden border-none shadow-none bg-transparent">
                     <CardContent className="p-0">
                       <Image
-                        src={cert.imageUrl || 'https://placehold.co/800x600.png'}
+                        src={cert.imageUrl || 'https://placehold.co/1754x1241.png'}
                         alt={cert.name}
-                        width={800}
-                        height={600}
-                        className="aspect-video w-full rounded-lg object-cover"
+                        width={1754}
+                        height={1241}
+                        className="w-full rounded-lg object-cover"
                         data-ai-hint={cert.imageHint || 'certificate document'}
                       />
                     </CardContent>
