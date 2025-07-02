@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { PortfolioData, Project, EducationItem, Certificate } from '@/lib/types';
@@ -28,7 +28,6 @@ import { useToast } from '@/hooks/use-toast';
 import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench, Briefcase, GraduationCap, Award, Settings2 } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
-import { cn } from '@/lib/utils';
 
 const projectSchema = z.object({
   _id: z.string().optional(),
@@ -55,8 +54,8 @@ const certificateSchema = z.object({
   url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 
-
-const formSchema = z.object({
+// This schema ONLY validates the fields in the "Settings" tab.
+const generalSettingsSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   title: z.string().min(5, 'Title is required'),
   about: z.string().min(10, 'About section is required'),
@@ -66,12 +65,9 @@ const formSchema = z.object({
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
   skills: z.array(z.string()).min(1, 'At least one skill is required'),
   tools: z.array(z.string()).min(1, 'At least one tool is required'),
-  projects: z.array(projectSchema),
-  education: z.array(educationSchema),
-  certificates: z.array(certificateSchema),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type GeneralSettingsFormValues = z.infer<typeof generalSettingsSchema>;
 type ProjectDialogValues = z.infer<typeof projectSchema>;
 type EducationDialogValues = z.infer<typeof educationSchema>;
 type CertificateDialogValues = z.infer<typeof certificateSchema>;
@@ -98,24 +94,22 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
   const [newSkill, setNewSkill] = useState('');
   const [newTool, setNewTool] = useState('');
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  
+  // The main form now only manages and validates General Settings.
+  const form = useForm<GeneralSettingsFormValues>({
+    resolver: zodResolver(generalSettingsSchema),
     defaultValues: {
-      ...initialData,
+      name: initialData.name,
+      title: initialData.title,
+      about: initialData.about,
+      profilePictureUrl: initialData.profilePictureUrl,
+      cvUrl: initialData.cvUrl,
       email: initialData.contact.email.replace('mailto:', ''),
       linkedin: initialData.contact.linkedin || '',
       skills: initialData.skills || [],
       tools: initialData.tools || [],
-      projects: initialData.projects || [],
-      education: initialData.education || [],
-      certificates: initialData.certificates || [],
     }
   });
-
-  const { fields: projectFields } = useFieldArray({ control: form.control, name: "projects" });
-  const { fields: educationFields } = useFieldArray({ control: form.control, name: "education" });
-  const { fields: certificateFields } = useFieldArray({ control: form.control, name: "certificates" });
 
   const projectDialogForm = useForm<ProjectDialogValues>({ resolver: zodResolver(projectSchema) });
   const educationDialogForm = useForm<EducationDialogValues>({ resolver: zodResolver(educationSchema) });
@@ -127,7 +121,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     router.push('/');
   };
 
-  const onGeneralSubmit = (data: FormValues) => {
+  const onGeneralSubmit = (data: GeneralSettingsFormValues) => {
     startTransition(async () => {
         const generalPromise = saveGeneralInfo({
             name: data.name,
@@ -167,7 +161,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
   const openEditProjectDialog = (index: number) => {
     setEditingProjectIndex(index);
-    const project = form.getValues().projects[index];
+    const project = initialData.projects[index];
     projectDialogForm.reset({ ...project, tags: (project.tags || []).join(', ') });
     setProjectDialogOpen(true);
   };
@@ -193,7 +187,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   };
 
   const handleRemoveProject = (index: number) => {
-    const projectId = form.getValues().projects[index]?._id;
+    const projectId = initialData.projects[index]?._id;
     if (!projectId) return;
     startTransition(async () => {
         const result = await deleteProject(projectId);
@@ -215,7 +209,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
   const openEditEducationDialog = (index: number) => {
     setEditingEducationIndex(index);
-    educationDialogForm.reset(form.getValues().education[index]);
+    educationDialogForm.reset(initialData.education[index]);
     setEducationDialogOpen(true);
   };
 
@@ -233,7 +227,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   };
 
   const handleRemoveEducation = (index: number) => {
-    const educationId = form.getValues().education[index]?._id;
+    const educationId = initialData.education[index]?._id;
     if (!educationId) return;
     startTransition(async () => {
         const result = await deleteEducation(educationId);
@@ -254,7 +248,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   };
   const openEditCertificateDialog = (index: number) => {
     setEditingCertificateIndex(index);
-    certificateDialogForm.reset(form.getValues().certificates[index]);
+    certificateDialogForm.reset(initialData.certificates[index]);
     setCertificateDialogOpen(true);
   };
   const handleCertificateDialogSubmit = (data: CertificateDialogValues) => {
@@ -272,7 +266,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   };
 
   const handleRemoveCertificate = (index: number) => {
-    const certificateId = form.getValues().certificates[index]?._id;
+    const certificateId = initialData.certificates[index]?._id;
     if (!certificateId) return;
     startTransition(async () => {
         const result = await deleteCertificate(certificateId);
@@ -362,11 +356,11 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                     <Table>
                       <TableHeader><TableRow><TableHead>Project Title</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
                       <TableBody>
-                        {projectFields.length === 0 ? (
+                        {initialData.projects.length === 0 ? (
                           <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground h-24">No projects yet.</TableCell></TableRow>
-                        ) : projectFields.map((field, index) => (
-                          <TableRow key={field.id}>
-                            <TableCell className="font-medium">{form.watch(`projects.${index}.title`)}</TableCell>
+                        ) : initialData.projects.map((project, index) => (
+                          <TableRow key={project._id || index}>
+                            <TableCell className="font-medium">{project.title}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditProjectDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveProject(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -389,12 +383,12 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                     <Table>
                       <TableHeader><TableRow><TableHead>Degree & Major</TableHead><TableHead>School</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
                       <TableBody>
-                      {educationFields.length === 0 ? (
+                      {initialData.education.length === 0 ? (
                           <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No education history yet.</TableCell></TableRow>
-                        ) : educationFields.map((field, index) => (
-                          <TableRow key={field.id}>
-                            <TableCell className="font-medium">{form.watch(`education.${index}.degree`)}</TableCell>
-                            <TableCell>{form.watch(`education.${index}.school`)}</TableCell>
+                        ) : initialData.education.map((edu, index) => (
+                          <TableRow key={edu._id || index}>
+                            <TableCell className="font-medium">{edu.degree}</TableCell>
+                            <TableCell>{edu.school}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditEducationDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveEducation(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -417,12 +411,12 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                     <Table>
                       <TableHeader><TableRow><TableHead>Certificate Name</TableHead><TableHead>Issuer</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
                       <TableBody>
-                        {certificateFields.length === 0 ? (
+                        {initialData.certificates.length === 0 ? (
                           <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No certificates yet.</TableCell></TableRow>
-                        ) : certificateFields.map((field, index) => (
-                          <TableRow key={field.id}>
-                            <TableCell className="font-medium">{form.watch(`certificates.${index}.name`)}</TableCell>
-                            <TableCell>{form.watch(`certificates.${index}.issuer`)}</TableCell>
+                        ) : initialData.certificates.map((cert, index) => (
+                          <TableRow key={cert._id || index}>
+                            <TableCell className="font-medium">{cert.name}</TableCell>
+                            <TableCell>{cert.issuer}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditCertificateDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveCertificate(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -590,5 +584,3 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     </>
   );
 }
-
-    
