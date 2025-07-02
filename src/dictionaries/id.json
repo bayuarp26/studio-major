@@ -1,0 +1,47 @@
+
+{
+  "nav": {
+    "profile": "Profil",
+    "about": "Tentang",
+    "skills": "Keahlian",
+    "projects": "Proyek",
+    "certificates": "Sertifikat",
+    "contactMe": "Hubungi Saya"
+  },
+  "hero": {
+    "downloadCv": "Unduh CV"
+  },
+  "about": {
+    "title": "Tentang Saya"
+  },
+  "skills": {
+    "title": "Keahlian Utama"
+  },
+  "tools": {
+    "title": "Tools yang Digunakan",
+    "description": "Beberapa tools yang saya kuasai untuk mendukung analisis dan strategi digital marketing."
+  },
+  "projects": {
+    "title": "Proyek Portofolio",
+    "description": "Berikut adalah beberapa proyek yang telah saya kerjakan untuk menunjukkan keahlian saya.",
+    "viewDetails": "Lihat Detail"
+  },
+  "education": {
+    "title": "Pendidikan",
+    "description": "Perjalanan akademis saya."
+  },
+  "certificates": {
+    "title": "Sertifikasi/Lisensi"
+  },
+  "contact": {
+    "title": "Contact Me",
+    "description": "Saya terbuka untuk peluang dan kolaborasi baru. Jangan ragu untuk menghubungi saya!",
+    "sendEmail": "Kirim Email"
+  },
+  "footer": {
+    "rights": "Hak cipta dilindungi."
+  },
+  "metadata": {
+    "portfolio": "Portofolio"
+  }
+}

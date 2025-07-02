@@ -4,9 +4,10 @@ import { CheckCircle } from "lucide-react";
 
 interface ToolsProps {
   tools: string[];
+  dictionary: any;
 }
 
-export default function Tools({ tools }: ToolsProps) {
+export default function Tools({ tools, dictionary }: ToolsProps) {
   if (!tools || tools.length === 0) return null;
 
   return (
@@ -14,10 +15,10 @@ export default function Tools({ tools }: ToolsProps) {
       <div className="container">
         <div className="text-center">
           <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            Tools yang Digunakan
+            {dictionary.tools.title}
           </h2>
           <p className="mt-4 text-lg text-foreground/70 max-w-2xl mx-auto">
-            Beberapa tools yang saya kuasai untuk mendukung analisis dan strategi digital marketing.
+            {dictionary.tools.description}
           </p>
         </div>
         <Card className="mt-16 max-w-3xl mx-auto bg-card">
@@ -36,4 +37,3 @@ export default function Tools({ tools }: ToolsProps) {
     </section>
   );
 }
-
