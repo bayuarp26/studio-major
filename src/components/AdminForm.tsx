@@ -264,7 +264,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const handleCertificateDialogSubmit = (data: CertificateDialogValues) => {
      const cleanData = { 
         ...data, 
-        imageUrl: data.imageUrl || 'https://placehold.co/1754x1241.png',
+        imageUrl: data.imageUrl || 'https://placehold.co/800x600.png',
         imageHint: data.imageHint || '',
         url: data.url || '#' 
     };
