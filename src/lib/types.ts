@@ -25,6 +25,9 @@ export interface EducationItem {
 export interface Certificate {
   _id?: string;
   name: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
   issuer: string;
   date: string;
   url: string;
