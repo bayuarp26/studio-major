@@ -18,6 +18,16 @@ function getLocale(request: NextRequest): string | undefined {
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  
+  // Skip middleware for API routes, static files, and images
+  if (
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next/static') ||
+    pathname.startsWith('/_next/image') ||
+    pathname.endsWith('.ico')
+  ) {
+    return NextResponse.next();
+  }
 
   // Handle admin authentication and redirection first
   if (pathname.startsWith('/admin') || pathname === '/login') {
@@ -25,6 +35,10 @@ export function middleware(request: NextRequest) {
     if (pathname.startsWith('/admin/login') || pathname === '/login') {
       if (sessionCookie) {
         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+      // Explicitly redirect /login to /admin/login
+      if (pathname === '/login') {
+         return NextResponse.redirect(new URL('/admin/login', request.url));
       }
       return NextResponse.next();
     }
@@ -44,13 +58,18 @@ export function middleware(request: NextRequest) {
   // Redirect if there is no locale
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
+    
+    // If the root path is requested, redirect to the localized root
+    if (pathname === '/') {
+        return NextResponse.redirect(new URL(`/${locale}`, request.url));
+    }
+    
     return NextResponse.redirect(
-      new URL(
-        `/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
-        request.url
-      )
+      new URL(`/${locale}${pathname}`, request.url)
     );
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
