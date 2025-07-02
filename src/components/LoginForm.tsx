@@ -75,7 +75,7 @@ function LoginFormContent() {
           )}
         </form>
       </CardContent>
-    </card>
+    </Card>
   );
 }
 
