@@ -3,7 +3,6 @@ import { getPortfolioData } from "@/lib/data";
 import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Skills from "@/components/sections/Skills";
-import Tools from "@/components/sections/Tools";
 import Projects from "@/components/sections/Projects";
 import Education from "@/components/sections/Education";
 import Certificates from "@/components/sections/Certificates";
@@ -29,8 +28,12 @@ export default async function ProfilePage({ params: { lang } }: { params: { lang
         profilePictureUrl={portfolioData.profilePictureUrl} 
         dictionary={dictionary}
       />
-      <Skills skills={portfolioData.skills} dictionary={dictionary} />
-      <Tools tools={portfolioData.tools} dictionary={dictionary} />
+      <Skills 
+        softSkills={portfolioData.softSkills}
+        hardSkills={portfolioData.hardSkills}
+        softwareSkills={portfolioData.softwareSkills}
+        dictionary={dictionary} 
+      />
       <Projects projects={portfolioData.projects} dictionary={dictionary} />
       <Education education={portfolioData.education} dictionary={dictionary} />
       <Certificates certificates={portfolioData.certificates} dictionary={dictionary} />

@@ -15,11 +15,10 @@
     "title": "Tentang Saya"
   },
   "skills": {
-    "title": "Keahlian Utama"
-  },
-  "tools": {
-    "title": "Tools yang Digunakan",
-    "description": "Beberapa tools yang saya kuasai untuk mendukung analisis dan strategi digital marketing."
+    "title": "Keahlian",
+    "softSkills": "Soft Skills",
+    "hardSkills": "Hard Skills",
+    "softwareSkills": "Keahlian Perangkat Lunak"
   },
   "projects": {
     "title": "Proyek Portofolio",
