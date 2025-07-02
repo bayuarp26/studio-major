@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,7 +16,6 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, name }: MobileNavProps) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -30,7 +28,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
       <SheetContent side="right" className="w-[300px] bg-background">
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
-             <Link href="/profile" className="flex items-center" onClick={() => setOpen(false)}>
+             <Link href="#hero" className="flex items-center" onClick={() => setOpen(false)}>
               <span className="font-headline text-2xl font-bold text-primary">
                 {name}
               </span>
@@ -45,10 +43,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className={cn(
-                  "text-lg font-medium transition-colors hover:text-primary",
-                  pathname === link.href ? "text-primary" : "text-foreground/70"
-                )}
+                className={cn("text-lg font-medium text-foreground/70 transition-colors hover:text-primary")}
               >
                 {link.name}
               </Link>
@@ -56,7 +51,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
           </div>
           <div className="flex items-center justify-between">
             <Button asChild>
-                <Link href="/contact" onClick={() => setOpen(false)}>Hubungi Saya</Link>
+                <Link href="#contact" onClick={() => setOpen(false)}>Hubungi Saya</Link>
             </Button>
             <ThemeToggle />
           </div>
