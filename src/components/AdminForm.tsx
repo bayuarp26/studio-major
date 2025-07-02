@@ -24,11 +24,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench } from 'lucide-react';
+import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench, Briefcase, GraduationCap, Award, Settings2 } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
+import { cn } from '@/lib/utils';
 
 const projectSchema = z.object({
   _id: z.string().optional(),
@@ -75,6 +75,7 @@ type FormValues = z.infer<typeof formSchema>;
 type ProjectDialogValues = z.infer<typeof projectSchema>;
 type EducationDialogValues = z.infer<typeof educationSchema>;
 type CertificateDialogValues = z.infer<typeof certificateSchema>;
+type AdminView = 'projects' | 'education' | 'certificates' | 'settings';
 
 interface AdminFormProps {
   initialData: PortfolioData;
@@ -84,6 +85,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [view, setView] = useState<AdminView>('projects');
 
   const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProjectIndex, setEditingProjectIndex] = useState<number | null>(null);
@@ -300,6 +302,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     });
   };
 
+  // --- Skill/Tool Handlers ---
   const handleAddSkill = () => {
     const trimmedSkill = newSkill.trim();
     if (trimmedSkill) {
@@ -331,202 +334,217 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     const currentTools = form.getValues('tools');
     form.setValue('tools', currentTools.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
   };
-
+  
+  const NavButton = ({ active, onClick, icon: Icon, children }: { active: boolean, onClick: () => void, icon: React.ElementType, children: React.ReactNode }) => (
+    <Button variant={active ? 'secondary' : 'ghost'} onClick={onClick} className="w-full justify-start text-base">
+      <Icon className="mr-3 h-5 w-5" />
+      {children}
+    </Button>
+  );
 
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-bold text-primary">Pengaturan Admin</h1>
-          <p className="text-muted-foreground">Kelola konten portofolio Anda di sini.</p>
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Welcome! Manage your portfolio content here.</p>
         </div>
         <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/>Logout</Button>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onGeneralSubmit)} className="space-y-8">
-          <Tabs defaultValue="projects" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="projects">Kelola Proyek</TabsTrigger>
-              <TabsTrigger value="education">Kelola Pendidikan</TabsTrigger>
-              <TabsTrigger value="certificates">Kelola Sertifikat</TabsTrigger>
-              <TabsTrigger value="settings">Pengaturan Umum</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="projects" className="mt-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div><CardTitle>Daftar Proyek</CardTitle><CardDescription>Tambah, edit, atau hapus proyek portofolio Anda.</CardDescription></div>
-                  <Button type="button" onClick={openAddProjectDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Proyek</Button>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Judul Proyek</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {projectFields.length === 0 ? (
-                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">No projects yet.</TableCell></TableRow>
-                      ) : projectFields.map((field, index) => (
-                        <TableRow key={field.id}>
-                          <TableCell className="font-medium">{form.watch(`projects.${index}.title`)}</TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button type="button" variant="outline" size="sm" onClick={() => openEditProjectDialog(index)}><Edit className="h-3 w-3" /></Button>
-                            <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveProject(index)} disabled={isPending}><Trash2 className="h-3 w-3" /></Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
+      <Card className="overflow-hidden">
+        <div className="grid md:grid-cols-[220px_1fr] min-h-[600px]">
+          <div className="flex flex-col justify-between p-4 bg-muted/40 border-r">
+            <nav className="flex flex-col gap-2">
+               <NavButton active={view === 'projects'} onClick={() => setView('projects')} icon={Briefcase}>Projects</NavButton>
+               <NavButton active={view === 'education'} onClick={() => setView('education')} icon={GraduationCap}>Education</NavButton>
+               <NavButton active={view === 'certificates'} onClick={() => setView('certificates')} icon={Award}>Certificates</NavButton>
+               <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings2}>Settings</NavButton>
+            </nav>
+            <div className="text-xs text-muted-foreground p-2">
+                &copy; {new Date().getFullYear()} {form.getValues('name') || 'Portfolio'}
+            </div>
+          </div>
+          <div className="p-6 md:p-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onGeneralSubmit)} className="space-y-8">
 
-            <TabsContent value="education" className="mt-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div><CardTitle>Riwayat Pendidikan</CardTitle><CardDescription>Kelola riwayat pendidikan formal Anda.</CardDescription></div>
-                  <Button type="button" onClick={openAddEducationDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Pendidikan</Button>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Gelar & Jurusan</TableHead><TableHead>Sekolah</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                     {educationFields.length === 0 ? (
-                        <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No education history yet.</TableCell></TableRow>
-                      ) : educationFields.map((field, index) => (
-                        <TableRow key={field.id}>
-                          <TableCell className="font-medium">{form.watch(`education.${index}.degree`)}</TableCell>
-                          <TableCell>{form.watch(`education.${index}.school`)}</TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button type="button" variant="outline" size="sm" onClick={() => openEditEducationDialog(index)}><Edit className="h-3 w-3" /></Button>
-                            <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveEducation(index)} disabled={isPending}><Trash2 className="h-3 w-3" /></Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="certificates" className="mt-6">
-               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div><CardTitle>Daftar Sertifikat</CardTitle><CardDescription>Kelola sertifikat dan pelatihan yang Anda miliki.</CardDescription></div>
-                  <Button type="button" onClick={openAddCertificateDialog}><PlusCircle className="mr-2 h-4 w-4" /> Tambah Sertifikat</Button>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Nama Sertifikat</TableHead><TableHead>Penerbit</TableHead><TableHead className="w-[150px] text-right">Aksi</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {certificateFields.length === 0 ? (
-                        <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No certificates yet.</TableCell></TableRow>
-                      ) : certificateFields.map((field, index) => (
-                        <TableRow key={field.id}>
-                          <TableCell className="font-medium">{form.watch(`certificates.${index}.name`)}</TableCell>
-                          <TableCell>{form.watch(`certificates.${index}.issuer`)}</TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button type="button" variant="outline" size="sm" onClick={() => openEditCertificateDialog(index)}><Edit className="h-3 w-3" /></Button>
-                            <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveCertificate(index)} disabled={isPending}><Trash2 className="h-3 w-3" /></Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="settings" className="mt-6 space-y-6">
-              <Card>
-                <CardHeader><CardTitle>Informasi Pribadi & Kontak</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                   <FormField control={form.control} name="profilePictureUrl" render={({ field }) => (<FormItem><FormLabel>Foto Profil</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending}/></FormControl><FormMessage /></FormItem>)}/>
-                  <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle>Kelola Keahlian Utama</CardTitle></div>
-                    <CardDescription>Tambah atau hapus keahlian yang ditampilkan di halaman utama.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Label htmlFor="new-skill">Nama Keahlian Baru</Label>
-                    <div className="flex gap-2 mt-2 mb-4">
-                        <Input id="new-skill" placeholder="Contoh: SEO Specialist" value={newSkill} onChange={(e) => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(); } }}/>
-                        <Button type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Tambah</Button>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Daftar Keahlian Saat Ini:</Label>
-                        <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
-                        {form.watch('skills')?.map((skill, index) => (
-                            <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
-                            {skill}
-                            <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
-                                <span className="sr-only">Hapus {skill}</span><Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                            </Badge>
+              {view === 'projects' && (
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div><CardTitle>Manage Projects</CardTitle><CardDescription>Add, edit, or remove your portfolio projects.</CardDescription></div>
+                    <Button type="button" onClick={openAddProjectDialog}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Project Title</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {projectFields.length === 0 ? (
+                          <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground h-24">No projects yet.</TableCell></TableRow>
+                        ) : projectFields.map((field, index) => (
+                          <TableRow key={field.id}>
+                            <TableCell className="font-medium">{form.watch(`projects.${index}.title`)}</TableCell>
+                            <TableCell className="text-right space-x-2">
+                              <Button type="button" variant="outline" size="icon" onClick={() => openEditProjectDialog(index)}><Edit className="h-4 w-4" /></Button>
+                              <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveProject(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                        </div>
-                    </div>
-                </CardContent>
-              </Card>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><CardTitle>Kelola Tools</CardTitle></div>
-                    <CardDescription>Tambah atau hapus tools yang ditampilkan di halaman utama.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Label htmlFor="new-tool">Nama Tool Baru</Label>
-                    <div className="flex gap-2 mt-2 mb-4">
-                        <Input id="new-tool" placeholder="Contoh: Figma" value={newTool} onChange={(e) => setNewTool(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTool(); } }}/>
-                        <Button type="button" onClick={handleAddTool} disabled={!newTool.trim()}><PlusCircle className="mr-2 h-4 w-4" />Tambah</Button>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Daftar Tools Saat Ini:</Label>
-                        <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
-                        {form.watch('tools')?.map((tool, index) => (
-                            <Badge key={`${tool}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
-                            {tool}
-                            <button type="button" onClick={() => handleRemoveTool(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
-                                <span className="sr-only">Hapus {tool}</span><Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                            </Badge>
+              {view === 'education' && (
+                 <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div><CardTitle>Manage Education</CardTitle><CardDescription>Manage your formal education history.</CardDescription></div>
+                    <Button type="button" onClick={openAddEducationDialog}><PlusCircle className="mr-2 h-4 w-4" /> Add Education</Button>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Degree & Major</TableHead><TableHead>School</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                      {educationFields.length === 0 ? (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No education history yet.</TableCell></TableRow>
+                        ) : educationFields.map((field, index) => (
+                          <TableRow key={field.id}>
+                            <TableCell className="font-medium">{form.watch(`education.${index}.degree`)}</TableCell>
+                            <TableCell>{form.watch(`education.${index}.school`)}</TableCell>
+                            <TableCell className="text-right space-x-2">
+                              <Button type="button" variant="outline" size="icon" onClick={() => openEditEducationDialog(index)}><Edit className="h-4 w-4" /></Button>
+                              <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveEducation(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
                         ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+
+              {view === 'certificates' && (
+                  <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div><CardTitle>Manage Certificates</CardTitle><CardDescription>Manage your certificates and trainings.</CardDescription></div>
+                    <Button type="button" onClick={openAddCertificateDialog}><PlusCircle className="mr-2 h-4 w-4" /> Add Certificate</Button>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Certificate Name</TableHead><TableHead>Issuer</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {certificateFields.length === 0 ? (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No certificates yet.</TableCell></TableRow>
+                        ) : certificateFields.map((field, index) => (
+                          <TableRow key={field.id}>
+                            <TableCell className="font-medium">{form.watch(`certificates.${index}.name`)}</TableCell>
+                            <TableCell>{form.watch(`certificates.${index}.issuer`)}</TableCell>
+                            <TableCell className="text-right space-x-2">
+                              <Button type="button" variant="outline" size="icon" onClick={() => openEditCertificateDialog(index)}><Edit className="h-4 w-4" /></Button>
+                              <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveCertificate(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+
+              {view === 'settings' && (
+                <div className="space-y-8">
+                  <Card>
+                    <CardHeader><CardTitle>Personal & Contact Info</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <FormField control={form.control} name="profilePictureUrl" render={({ field }) => (<FormItem><FormLabel>Profile Photo</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending}/></FormControl><FormMessage /></FormItem>)}/>
+                      <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle>Manage Main Skills</CardTitle></div>
+                        <CardDescription>Add or remove skills displayed on the main page.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Label htmlFor="new-skill">New Skill Name</Label>
+                        <div className="flex gap-2 mt-2 mb-4">
+                            <Input id="new-skill" placeholder="e.g., SEO Specialist" value={newSkill} onChange={(e) => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(); } }}/>
+                            <Button type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
                         </div>
-                    </div>
-                </CardContent>
-              </Card>
+                        <div className="space-y-2">
+                            <Label>Current Skills:</Label>
+                            <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
+                            {form.watch('skills')?.map((skill, index) => (
+                                <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                {skill}
+                                <button type="button" onClick={() => handleRemoveSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                    <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                                </Badge>
+                            ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                  </Card>
 
-               <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>Simpan Semua Pengaturan Umum</CardTitle>
-                    <CardDescription>Klik tombol ini untuk menyimpan semua perubahan di tab ini: Info Pribadi, Keahlian, dan Tools.</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                    <Button size="lg" type="submit" disabled={isPending}>
-                        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                        Simpan Pengaturan Umum
-                    </Button>
-                </CardFooter>
-              </Card>
+                  <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><CardTitle>Manage Tools</CardTitle></div>
+                        <CardDescription>Add or remove tools displayed on the main page.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Label htmlFor="new-tool">New Tool Name</Label>
+                        <div className="flex gap-2 mt-2 mb-4">
+                            <Input id="new-tool" placeholder="e.g., Figma" value={newTool} onChange={(e) => setNewTool(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTool(); } }}/>
+                            <Button type="button" onClick={handleAddTool} disabled={!newTool.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Current Tools:</Label>
+                            <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
+                            {form.watch('tools')?.map((tool, index) => (
+                                <Badge key={`${tool}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                {tool}
+                                <button type="button" onClick={() => handleRemoveTool(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                    <span className="sr-only">Remove {tool}</span><Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                                </Badge>
+                            ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                  </Card>
 
-            </TabsContent>
-          </Tabs>
-
-        </form>
-      </Form>
+                  <Card className="mt-6 bg-secondary/30">
+                    <CardHeader>
+                        <CardTitle>Save General Settings</CardTitle>
+                        <CardDescription>Click this to save all changes in this tab: Personal Info, Skills, and Tools.</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                        <Button size="lg" type="submit" disabled={isPending}>
+                            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                            Save General Settings
+                        </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              )}
+              </form>
+            </Form>
+          </div>
+        </div>
+      </Card>
 
       {/* Project Dialog */}
       <Dialog open={isProjectDialogOpen} onOpenChange={setProjectDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editingProjectIndex !== null ? 'Edit Proyek' : 'Tambah Proyek Baru'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingProjectIndex !== null ? 'Edit Project' : 'Add New Project'}</DialogTitle></DialogHeader>
           <Form {...projectDialogForm}>
             <form onSubmit={projectDialogForm.handleSubmit(handleProjectDialogSubmit)} className="space-y-4 py-4">
                 <FormField control={projectDialogForm.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -549,12 +567,12 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       {/* Education Dialog */}
       <Dialog open={isEducationDialogOpen} onOpenChange={setEducationDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editingEducationIndex !== null ? 'Edit Pendidikan' : 'Tambah Pendidikan'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingEducationIndex !== null ? 'Edit Education' : 'Add Education'}</DialogTitle></DialogHeader>
           <Form {...educationDialogForm}>
             <form onSubmit={educationDialogForm.handleSubmit(handleEducationDialogSubmit)} className="space-y-4 py-4">
-              <FormField control={educationDialogForm.control} name="degree" render={({ field }) => (<FormItem><FormLabel>Gelar & Jurusan</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={educationDialogForm.control} name="school" render={({ field }) => (<FormItem><FormLabel>Nama Sekolah/Universitas</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={educationDialogForm.control} name="period" render={({ field }) => (<FormItem><FormLabel>Periode</FormLabel><FormControl><Input placeholder="e.g., 2018 - 2022" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={educationDialogForm.control} name="degree" render={({ field }) => (<FormItem><FormLabel>Degree & Major</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={educationDialogForm.control} name="school" render={({ field }) => (<FormItem><FormLabel>School/University Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={educationDialogForm.control} name="period" render={({ field }) => (<FormItem><FormLabel>Period</FormLabel><FormControl><Input placeholder="e.g., 2018 - 2022" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isPending}>
@@ -569,13 +587,13 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       {/* Certificate Dialog */}
       <Dialog open={isCertificateDialogOpen} onOpenChange={setCertificateDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editingCertificateIndex !== null ? 'Edit Sertifikat' : 'Tambah Sertifikat'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingCertificateIndex !== null ? 'Edit Certificate' : 'Add Certificate'}</DialogTitle></DialogHeader>
           <Form {...certificateDialogForm}>
             <form onSubmit={certificateDialogForm.handleSubmit(handleCertificateDialogSubmit)} className="space-y-4 py-4">
-              <FormField control={certificateDialogForm.control} name="name" render={({ field }) => (<FormItem><FormLabel>Nama Sertifikat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={certificateDialogForm.control} name="issuer" render={({ field }) => (<FormItem><FormLabel>Penerbit</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={certificateDialogForm.control} name="date" render={({ field }) => (<FormItem><FormLabel>Tanggal Diperoleh</FormLabel><FormControl><Input placeholder="e.g., Jan 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>URL Verifikasi (Opsional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="name" render={({ field }) => (<FormItem><FormLabel>Certificate Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="issuer" render={({ field }) => (<FormItem><FormLabel>Issuer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="date" render={({ field }) => (<FormItem><FormLabel>Date Issued</FormLabel><FormControl><Input placeholder="e.g., Jan 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>Verification URL (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isPending}>
@@ -589,3 +607,5 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     </>
   );
 }
+
+    
