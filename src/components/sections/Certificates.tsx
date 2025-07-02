@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -69,11 +70,12 @@ export default function Certificates({ certificates }: CertificatesProps) {
                   <Card className="overflow-hidden border-none shadow-none bg-transparent">
                     <CardContent className="p-0">
                       <Image
-                        src={cert.imageUrl || 'https://placehold.co/1754x1241.png'}
+                        src={cert.imageUrl || 'https://placehold.co/800x600.png'}
                         alt={cert.name}
-                        width={1754}
-                        height={1241}
-                        className="w-full rounded-lg object-cover"
+                        width={800}
+                        height={600}
+                        sizes="(min-width: 1024px) 768px, 100vw"
+                        className="w-full h-auto rounded-lg object-cover"
                         data-ai-hint={cert.imageHint || 'certificate document'}
                       />
                     </CardContent>
