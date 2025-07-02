@@ -37,6 +37,7 @@ const projectSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   details: z.string().min(1, 'Details is required'),
   tags: z.union([z.string(), z.array(z.string())]).optional(),
+  link: z.string().url('Invalid URL format').optional().or(z.literal('')),
 });
 
 const educationSchema = z.object({
@@ -155,14 +156,14 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   // --- Project Handlers ---
   const openAddProjectDialog = () => {
     setEditingProjectIndex(null);
-    projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '' });
+    projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '', link: '' });
     setProjectDialogOpen(true);
   };
 
   const openEditProjectDialog = (index: number) => {
     setEditingProjectIndex(index);
     const project = initialData.projects[index];
-    projectDialogForm.reset({ ...project, tags: (project.tags || []).join(', ') });
+    projectDialogForm.reset({ ...project, tags: (project.tags || []).join(', '), link: project.link || '' });
     setProjectDialogOpen(true);
   };
 
@@ -171,7 +172,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
         ...data,
         imageUrl: data.imageUrl || 'https://placehold.co/600x400.png',
         imageHint: data.imageHint || '',
-        tags: typeof data.tags === 'string' ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : (data.tags || [])
+        tags: typeof data.tags === 'string' ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : (data.tags || []),
+        link: data.link || '#'
     };
 
     startTransition(async () => {
@@ -530,6 +532,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={projectDialogForm.control} name="link" render={({ field }) => (<FormItem><FormLabel>Project Link</FormLabel><FormControl><Input placeholder="https://example.com" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isPending}>

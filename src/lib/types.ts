@@ -12,6 +12,7 @@ export interface Project {
   description: string;
   details: string;
   tags: string[];
+  link: string;
 }
 
 export interface EducationItem {

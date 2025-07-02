@@ -47,9 +47,17 @@ export default async function ProjectsPage() {
                 </div>
               </CardContent>
               <CardFooter className="justify-end p-6 pt-0">
-                <Button asChild variant="outline">
-                  <Link href="#">Lihat Detail</Link>
-                </Button>
+                {project.link && project.link !== '#' ? (
+                  <Button asChild variant="outline">
+                    <Link href={project.link} target="_blank" rel="noopener noreferrer">
+                      Lihat Detail
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button variant="outline" disabled>
+                    Lihat Detail
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
