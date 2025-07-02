@@ -8,7 +8,7 @@ import Education from "@/components/sections/Education";
 import Certificates from "@/components/sections/Certificates";
 import Contact from "@/components/sections/Contact";
 import { getDictionary } from '@/lib/dictionaries';
-import type { Locale } from '../../i18n.config';
+import type { Locale } from '../../../i18n.config';
 
 export default async function ProfilePage({ params: { lang } }: { params: { lang: Locale } }) {
   const portfolioData = await getPortfolioData();
