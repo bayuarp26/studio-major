@@ -35,7 +35,6 @@ const projectSchema = z.object({
   imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
-  details: z.string().min(1, 'Details is required'),
   tags: z.union([z.string(), z.array(z.string())]).optional(),
   link: z.string().url('Invalid URL format').optional().or(z.literal('')),
 });
@@ -159,7 +158,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   // --- Project Handlers ---
   const openAddProjectDialog = () => {
     setEditingProjectIndex(null);
-    projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', details: '', tags: '', link: '' });
+    projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', tags: '', link: '' });
     setProjectDialogOpen(true);
   };
 
@@ -544,7 +543,6 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 <FormField control={projectDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
                 <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormDescription>One or two keywords for AI to find a relevant image.</FormDescription><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={projectDialogForm.control} name="details" render={({ field }) => (<FormItem><FormLabel>Details</FormLabel><FormControl><Textarea placeholder="Use new lines for list items" rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="link" render={({ field }) => (<FormItem><FormLabel>Project Link</FormLabel><FormControl><Input placeholder="https://example.com" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
