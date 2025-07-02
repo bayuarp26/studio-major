@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useActionState } from 'react';
@@ -38,7 +39,7 @@ export default function LoginForm() {
         title: 'Login Successful',
         description: 'Redirecting to admin dashboard...',
       });
-      router.push('/admin');
+      router.push('/admin/dashboard');
     } else if (state?.error) {
       toast({
         variant: 'destructive',

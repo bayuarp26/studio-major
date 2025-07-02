@@ -1,11 +1,12 @@
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useActiveSection } from "@/hooks/use-active-section";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -16,10 +17,7 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, name }: MobileNavProps) {
   const [open, setOpen] = useState(false);
-  const allSectionIds = useMemo(() => 
-    ['hero', ...navLinks.map(link => link.href.substring(1)), 'tools', 'contact']
-  , [navLinks]);
-  const activeSection = useActiveSection(allSectionIds);
+  const pathname = usePathname();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -32,13 +30,8 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
       <SheetContent side="right" className="w-[300px] bg-background">
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
-             <Link href="/" className="flex items-center" onClick={() => setOpen(false)}>
-              <span
-                className={cn(
-                  "font-headline text-2xl font-bold text-primary transition-opacity duration-300",
-                  activeSection === 'hero' ? "opacity-0" : "opacity-100"
-                )}
-              >
+             <Link href="/profile" className="flex items-center" onClick={() => setOpen(false)}>
+              <span className="font-headline text-2xl font-bold text-primary">
                 {name}
               </span>
             </Link>
@@ -54,7 +47,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
                 onClick={() => setOpen(false)}
                 className={cn(
                   "text-lg font-medium transition-colors hover:text-primary",
-                  activeSection === link.href.substring(1) ? "text-primary" : "text-foreground/70"
+                  pathname === link.href ? "text-primary" : "text-foreground/70"
                 )}
               >
                 {link.name}
@@ -63,7 +56,7 @@ export function MobileNav({ navLinks, name }: MobileNavProps) {
           </div>
           <div className="flex items-center justify-between">
             <Button asChild>
-                <Link href="#contact" onClick={() => setOpen(false)}>Hubungi Saya</Link>
+                <Link href="/contact" onClick={() => setOpen(false)}>Hubungi Saya</Link>
             </Button>
             <ThemeToggle />
           </div>
