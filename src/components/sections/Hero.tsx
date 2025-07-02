@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl }: HeroProp
     <section id="hero" className="bg-background">
       <div className="container grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-2 lg:gap-20">
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-          <h1 className="font-headline text-5xl font-bold tracking-tight text-primary md:text-7xl">
+          <h1 id="hero-name" className="font-headline text-5xl font-bold tracking-tight text-primary md:text-7xl">
             {name}
           </h1>
           <p className="mt-6 font-body text-lg leading-8 text-foreground/80 md:text-xl">
