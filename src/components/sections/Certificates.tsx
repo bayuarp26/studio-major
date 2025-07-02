@@ -14,6 +14,7 @@ import {
 import type { Certificate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 interface CertificatesProps {
   certificates: Certificate[];
@@ -23,6 +24,10 @@ export default function Certificates({ certificates }: CertificatesProps) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
+
+  const plugin = React.useRef(
+    Autoplay({ delay: 1750, stopOnInteraction: true })
+  );
 
   React.useEffect(() => {
     if (!api) {
@@ -50,7 +55,14 @@ export default function Certificates({ certificates }: CertificatesProps) {
           </h2>
         </div>
         <div className="mt-16 mx-auto max-w-4xl">
-          <Carousel setApi={setApi} className="w-full" opts={{loop: true}}>
+          <Carousel
+            setApi={setApi}
+            className="w-full"
+            opts={{ loop: true }}
+            plugins={[plugin.current]}
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
+          >
             <CarouselContent>
               {certificates.map((cert, index) => (
                 <CarouselItem key={cert._id || index}>
