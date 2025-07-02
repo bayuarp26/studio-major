@@ -73,8 +73,6 @@ const generalSettingsSchema = z.object({
   cvUrl: z.string().min(1, 'CV URL/File Path is required'),
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
-  softSkills: z.array(z.string()),
-  hardSkills: z.array(z.string()),
 });
 
 type GeneralSettingsFormValues = z.infer<typeof generalSettingsSchema>;
@@ -82,7 +80,7 @@ type SoftwareSkillDialogValues = z.infer<typeof softwareSkillSchema>;
 type ProjectDialogValues = z.infer<typeof projectSchema>;
 type EducationDialogValues = z.infer<typeof educationSchema>;
 type CertificateDialogValues = z.infer<typeof certificateSchema>;
-type AdminView = 'projects' | 'education' | 'certificates' | 'softwareSkills' | 'settings';
+type AdminView = 'projects' | 'education' | 'certificates' | 'skills' | 'settings';
 
 interface AdminFormProps {
   initialData: PortfolioData;
@@ -106,6 +104,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const [isSoftwareSkillDialogOpen, setSoftwareSkillDialogOpen] = useState(false);
   const [editingSoftwareSkillIndex, setEditingSoftwareSkillIndex] = useState<number | null>(null);
 
+  const [softSkills, setSoftSkills] = useState<string[]>(initialData.softSkills || []);
+  const [hardSkills, setHardSkills] = useState<string[]>(initialData.hardSkills || []);
   const [newSoftSkill, setNewSoftSkill] = useState('');
   const [newHardSkill, setNewHardSkill] = useState('');
   
@@ -119,8 +119,6 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       cvUrl: initialData.cvUrl,
       email: initialData.contact.email.replace('mailto:', ''),
       linkedin: initialData.contact.linkedin || '',
-      softSkills: initialData.softSkills || [],
-      hardSkills: initialData.hardSkills || [],
     }
   });
 
@@ -135,9 +133,9 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     router.push('/');
   };
 
-  const onGeneralSubmit = (data: GeneralSettingsFormValues) => {
+  const onSettingsSubmit = (data: GeneralSettingsFormValues) => {
     startTransition(async () => {
-        const generalPromise = saveGeneralInfo({
+        const result = await saveGeneralInfo({
             name: data.name,
             title: data.title,
             about: data.about,
@@ -148,19 +146,15 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 linkedin: data.linkedin || '',
             },
         });
-        const softSkillsPromise = saveSoftSkills(data.softSkills);
-        const hardSkillsPromise = saveHardSkills(data.hardSkills);
 
-        const [generalResult, softSkillsResult, hardSkillsResult] = await Promise.all([generalPromise, softSkillsPromise, hardSkillsPromise]);
-
-        if (generalResult.success && softSkillsResult.success && hardSkillsResult.success) {
-            toast({ title: 'Update Successful', description: 'General info and skills have been saved.' });
+        if (result.success) {
+            toast({ title: 'Update Successful', description: 'General settings have been saved.' });
             router.refresh();
         } else {
             toast({
                 variant: 'destructive',
                 title: 'Update Failed',
-                description: [generalResult.message, softSkillsResult.message, hardSkillsResult.message].filter(m => m && !m.includes('success')).join(' '),
+                description: result.message,
             });
         }
     });
@@ -347,36 +341,54 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
 
   // --- Skill/Tool Handlers ---
+  const handleSaveSkills = () => {
+    startTransition(async () => {
+        const softSkillsPromise = saveSoftSkills(softSkills);
+        const hardSkillsPromise = saveHardSkills(hardSkills);
+        const [softSkillsResult, hardSkillsResult] = await Promise.all([softSkillsPromise, hardSkillsPromise]);
+
+        if (softSkillsResult.success && hardSkillsResult.success) {
+            toast({ title: 'Update Successful', description: 'Your skills have been saved.' });
+            router.refresh();
+        } else {
+            const errorMessages = [softSkillsResult.message, hardSkillsResult.message]
+                .filter(m => m && !m.includes('success'))
+                .join(' ');
+            toast({
+                variant: 'destructive',
+                title: 'Update Failed',
+                description: errorMessages || 'An unknown error occurred while saving skills.',
+            });
+        }
+    });
+  };
+  
   const handleAddSoftSkill = () => {
     const trimmedSkill = newSoftSkill.trim();
     if (trimmedSkill) {
-      const currentSkills = form.getValues('softSkills') || [];
-      if (!currentSkills.map(s => s.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
-        form.setValue('softSkills', [...currentSkills, trimmedSkill], { shouldValidate: true, shouldDirty: true });
+      if (!softSkills.map(s => s.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
+        setSoftSkills([...softSkills, trimmedSkill]);
       }
       setNewSoftSkill('');
     }
   };
 
   const handleRemoveSoftSkill = (indexToRemove: number) => {
-    const currentSkills = form.getValues('softSkills');
-    form.setValue('softSkills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
+    setSoftSkills(softSkills.filter((_, index) => index !== indexToRemove));
   };
 
   const handleAddHardSkill = () => {
     const trimmedSkill = newHardSkill.trim();
     if (trimmedSkill) {
-      const currentSkills = form.getValues('hardSkills') || [];
-      if (!currentSkills.map(t => t.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
-        form.setValue('hardSkills', [...currentSkills, trimmedSkill], { shouldValidate: true, shouldDirty: true });
+      if (!hardSkills.map(t => t.toLowerCase()).includes(trimmedSkill.toLowerCase())) {
+        setHardSkills([...hardSkills, trimmedSkill]);
       }
       setNewHardSkill('');
     }
   };
 
   const handleRemoveHardSkill = (indexToRemove: number) => {
-    const currentSkills = form.getValues('hardSkills');
-    form.setValue('hardSkills', currentSkills.filter((_, index) => index !== indexToRemove), { shouldValidate: true, shouldDirty: true });
+    setHardSkills(hardSkills.filter((_, index) => index !== indexToRemove));
   };
   
   const NavButton = ({ active, onClick, icon: Icon, children }: { active: boolean, onClick: () => void, icon: React.ElementType, children: React.ReactNode }) => (
@@ -403,7 +415,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                <NavButton active={view === 'projects'} onClick={() => setView('projects')} icon={Briefcase}>Projects</NavButton>
                <NavButton active={view === 'education'} onClick={() => setView('education')} icon={GraduationCap}>Education</NavButton>
                <NavButton active={view === 'certificates'} onClick={() => setView('certificates')} icon={Award}>Certificates</NavButton>
-               <NavButton active={view === 'softwareSkills'} onClick={() => setView('softwareSkills')} icon={Cpu}>Software Skills</NavButton>
+               <NavButton active={view === 'skills'} onClick={() => setView('skills')} icon={Cpu}>Skills</NavButton>
                <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings2}>Settings</NavButton>
             </nav>
             <div className="text-xs text-muted-foreground p-2">
@@ -412,7 +424,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
           </div>
           <div className="p-6 md:p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onGeneralSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSettingsSubmit)} className="space-y-8">
 
               {view === 'projects' && (
                 <Card>
@@ -497,34 +509,98 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 </Card>
               )}
               
-              {view === 'softwareSkills' && (
-                  <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div><CardTitle>Manage Software Skills</CardTitle><CardDescription>Add, edit, or remove your software skills.</CardDescription></div>
-                    <Button type="button" onClick={openAddSoftwareSkillDialog}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader><TableRow><TableHead className="w-[80px]">Icon</TableHead><TableHead>Skill Name</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
-                      <TableBody>
-                        {initialData.softwareSkills.length === 0 ? (
-                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No software skills yet.</TableCell></TableRow>
-                        ) : initialData.softwareSkills.map((skill, index) => (
-                          <TableRow key={skill._id || index}>
-                            <TableCell>
-                                <Image src={skill.iconUrl} alt={skill.name} width={40} height={40} className="rounded-md object-contain" />
-                            </TableCell>
-                            <TableCell className="font-medium">{skill.name}</TableCell>
-                            <TableCell className="text-right space-x-2">
-                              <Button type="button" variant="outline" size="icon" onClick={() => openEditSoftwareSkillDialog(index)}><Edit className="h-4 w-4" /></Button>
-                              <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveSoftwareSkill(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+              {view === 'skills' && (
+                <div className="space-y-8">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div><CardTitle>Manage Software Skills</CardTitle><CardDescription>Add, edit, or remove your software skills.</CardDescription></div>
+                            <Button type="button" onClick={openAddSoftwareSkillDialog}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader><TableRow><TableHead className="w-[80px]">Icon</TableHead><TableHead>Skill Name</TableHead><TableHead className="w-[150px] text-right">Actions</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {initialData.softwareSkills.length === 0 ? (
+                                    <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No software skills yet.</TableCell></TableRow>
+                                    ) : initialData.softwareSkills.map((skill, index) => (
+                                    <TableRow key={skill._id || index}>
+                                        <TableCell>
+                                            <Image src={skill.iconUrl} alt={skill.name} width={40} height={40} className="rounded-md object-contain" />
+                                        </TableCell>
+                                        <TableCell className="font-medium">{skill.name}</TableCell>
+                                        <TableCell className="text-right space-x-2">
+                                        <Button type="button" variant="outline" size="icon" onClick={() => openEditSoftwareSkillDialog(index)}><Edit className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveSoftwareSkill(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
+                                        </TableCell>
+                                    </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Manage Soft & Hard Skills</CardTitle>
+                            <CardDescription>Add or remove skills that will be displayed in separated lists.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid md:grid-cols-2 gap-8 pt-6">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><h3 className="text-xl font-semibold">Soft Skills</h3></div>
+                                <div>
+                                    <Label htmlFor="new-soft-skill">New Soft Skill</Label>
+                                    <div className="flex gap-2 mt-2">
+                                        <Input id="new-soft-skill" placeholder="e.g., Public Speaking" value={newSoftSkill} onChange={(e) => setNewSoftSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSoftSkill(); } }}/>
+                                        <Button type="button" onClick={handleAddSoftSkill} disabled={!newSoftSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Current Skills:</Label>
+                                    <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
+                                        {softSkills.map((skill, index) => (
+                                            <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                            {skill}
+                                            <button type="button" onClick={() => handleRemoveSoftSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                                <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><h3 className="text-xl font-semibold">Hard Skills</h3></div>
+                                <div>
+                                    <Label htmlFor="new-hard-skill">New Hard Skill</Label>
+                                    <div className="flex gap-2 mt-2">
+                                        <Input id="new-hard-skill" placeholder="e.g., UI/UX Design" value={newHardSkill} onChange={(e) => setNewHardSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddHardSkill(); } }}/>
+                                        <Button type="button" onClick={handleAddHardSkill} disabled={!newHardSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Current Skills:</Label>
+                                    <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
+                                    {hardSkills.map((skill, index) => (
+                                        <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
+                                        {skill}
+                                        <button type="button" onClick={() => handleRemoveHardSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
+                                            <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                        </Badge>
+                                    ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button size="lg" type="button" onClick={handleSaveSkills} disabled={isPending}>
+                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                Save Skills
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
               )}
 
               {view === 'settings' && (
@@ -542,67 +618,15 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle>Manage Soft Skills</CardTitle></div>
-                    </CardHeader>
-                    <CardContent>
-                        <Label htmlFor="new-soft-skill">New Soft Skill</Label>
-                        <div className="flex gap-2 mt-2 mb-4">
-                            <Input id="new-soft-skill" placeholder="e.g., Public Speaking" value={newSoftSkill} onChange={(e) => setNewSoftSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSoftSkill(); } }}/>
-                            <Button type="button" onClick={handleAddSoftSkill} disabled={!newSoftSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Current Skills:</Label>
-                            <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
-                            {form.watch('softSkills')?.map((skill, index) => (
-                                <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
-                                {skill}
-                                <button type="button" onClick={() => handleRemoveSoftSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
-                                    <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                                </Badge>
-                            ))}
-                            </div>
-                        </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2"><Wrench className="h-5 w-5 text-primary" /><CardTitle>Manage Hard Skills</CardTitle></div>
-                    </CardHeader>
-                    <CardContent>
-                        <Label htmlFor="new-hard-skill">New Hard Skill</Label>
-                        <div className="flex gap-2 mt-2 mb-4">
-                            <Input id="new-hard-skill" placeholder="e.g., UI/UX Design" value={newHardSkill} onChange={(e) => setNewHardSkill(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddHardSkill(); } }}/>
-                            <Button type="button" onClick={handleAddHardSkill} disabled={!newHardSkill.trim()}><PlusCircle className="mr-2 h-4 w-4" />Add</Button>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Current Skills:</Label>
-                            <div className="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border rounded-md bg-secondary/50">
-                            {form.watch('hardSkills')?.map((skill, index) => (
-                                <Badge key={`${skill}-${index}`} variant="secondary" className="flex items-center gap-2 text-sm pl-3 pr-2 py-1">
-                                {skill}
-                                <button type="button" onClick={() => handleRemoveHardSkill(index)} className="rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-0.5 focus:outline-none focus:ring-1 focus:ring-destructive">
-                                    <span className="sr-only">Remove {skill}</span><Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                                </Badge>
-                            ))}
-                            </div>
-                        </div>
-                    </CardContent>
-                  </Card>
-
                   <Card className="mt-6 bg-secondary/30">
                     <CardHeader>
-                        <CardTitle>Save All Settings</CardTitle>
-                        <CardDescription>Click this to save all changes in this tab: Personal Info, Soft Skills, and Hard Skills.</CardDescription>
+                        <CardTitle>Save Settings</CardTitle>
+                        <CardDescription>Click this to save all changes in this tab: Personal Info & Contact.</CardDescription>
                     </CardHeader>
                     <CardFooter>
                         <Button size="lg" type="submit" disabled={isPending}>
                             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                            Save All Settings
+                            Save Settings
                         </Button>
                     </CardFooter>
                   </Card>
