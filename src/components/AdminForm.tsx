@@ -32,6 +32,19 @@ import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 import Image from "next/image";
 
+// --- Helper to ensure data is in multilingual format ---
+const ensureMultilingual = (field: MultilingualString | string | undefined): MultilingualString => {
+  if (typeof field === 'object' && field !== null && ('id' in field || 'en' in field)) {
+    return { id: (field as MultilingualString).id || '', en: (field as MultilingualString).en || '' };
+  }
+  if (typeof field === 'string') {
+    // Assume existing string is Indonesian, leave English blank for user to fill.
+    return { id: field, en: '' };
+  }
+  return { id: '', en: '' };
+};
+
+
 // --- Reusable Multilingual Form Field ---
 interface MultilingualFormFieldProps {
   form: UseFormReturn<any>;
@@ -171,8 +184,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     resolver: zodResolver(generalSettingsSchema),
     defaultValues: {
       name: initialData.name,
-      title: initialData.title,
-      about: initialData.about,
+      title: ensureMultilingual(initialData.title),
+      about: ensureMultilingual(initialData.about),
       profilePictureUrl: initialData.profilePictureUrl,
       cvUrl: initialData.cvUrl,
       email: initialData.contact.email.replace('mailto:', ''),
@@ -227,7 +240,13 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const openEditProjectDialog = (index: number) => {
     setEditingProjectIndex(index);
     const project = initialData.projects[index];
-    projectDialogForm.reset({ ...project, tags: (project.tags || []).join(', '), link: project.link || '' });
+    projectDialogForm.reset({
+      ...project,
+      title: ensureMultilingual(project.title),
+      description: ensureMultilingual(project.description),
+      tags: (project.tags || []).join(', '),
+      link: project.link || ''
+    });
     setProjectDialogOpen(true);
   };
 
@@ -275,7 +294,12 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
   const openEditEducationDialog = (index: number) => {
     setEditingEducationIndex(index);
-    educationDialogForm.reset(initialData.education[index]);
+    const edu = initialData.education[index];
+    educationDialogForm.reset({
+      ...edu,
+      degree: ensureMultilingual(edu.degree),
+      school: ensureMultilingual(edu.school),
+    });
     setEducationDialogOpen(true);
   };
 
@@ -317,7 +341,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     const cert = initialData.certificates[index];
     certificateDialogForm.reset({
         ...cert,
-        description: cert.description || {id: '', en: ''},
+        name: ensureMultilingual(cert.name),
+        description: ensureMultilingual(cert.description),
         imageUrl: cert.imageUrl || '',
         imageHint: cert.imageHint || ''
     });
@@ -497,7 +522,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                           <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground h-24">No projects yet.</TableCell></TableRow>
                         ) : initialData.projects.map((project, index) => (
                           <TableRow key={project._id || index}>
-                            <TableCell className="font-medium">{project.title.id}</TableCell>
+                            <TableCell className="font-medium">{ensureMultilingual(project.title).id}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditProjectDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveProject(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -524,8 +549,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                           <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No education history yet.</TableCell></TableRow>
                         ) : initialData.education.map((edu, index) => (
                           <TableRow key={edu._id || index}>
-                            <TableCell className="font-medium">{edu.degree.id}</TableCell>
-                            <TableCell>{edu.school.id}</TableCell>
+                            <TableCell className="font-medium">{ensureMultilingual(edu.degree).id}</TableCell>
+                            <TableCell>{ensureMultilingual(edu.school).id}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditEducationDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveEducation(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -552,7 +577,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                           <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No certificates yet.</TableCell></TableRow>
                         ) : initialData.certificates.map((cert, index) => (
                           <TableRow key={cert._id || index}>
-                            <TableCell className="font-medium">{cert.name.id}</TableCell>
+                            <TableCell className="font-medium">{ensureMultilingual(cert.name).id}</TableCell>
                             <TableCell>{cert.issuer}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditCertificateDialog(index)}><Edit className="h-4 w-4" /></Button>
