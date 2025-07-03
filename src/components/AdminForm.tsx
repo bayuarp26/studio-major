@@ -200,7 +200,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/');
+    router.refresh();
   };
 
   const onSettingsSubmit = (data: GeneralSettingsFormValues) => {
