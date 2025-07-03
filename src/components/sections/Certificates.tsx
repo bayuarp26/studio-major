@@ -12,7 +12,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import type { Certificate } from '@/lib/types';
+import type { Certificate, MultilingualString } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
@@ -22,6 +22,16 @@ interface CertificatesProps {
   certificates: Certificate[];
   dictionary: any;
   lang: Locale;
+}
+
+const getText = (field: MultilingualString | string | undefined, lang: Locale, fallback: string = ''): string => {
+  if (typeof field === 'string') {
+    return field;
+  }
+  if (field && typeof field === 'object' && !Array.isArray(field)) {
+    return field[lang] || field.id || fallback;
+  }
+  return fallback;
 }
 
 export default function Certificates({ certificates, dictionary, lang }: CertificatesProps) {
@@ -68,24 +78,27 @@ export default function Certificates({ certificates, dictionary, lang }: Certifi
             onMouseLeave={plugin.current.reset}
           >
             <CarouselContent>
-              {certificates.map((cert, index) => (
-                <CarouselItem key={cert._id || index}>
-                  <Card className="overflow-hidden border-none shadow-none bg-transparent">
-                    <CardContent className="p-0">
-                      <div className="relative aspect-[16/9] w-full rounded-lg bg-muted/40">
-                        <Image
-                          src={cert.imageUrl || 'https://placehold.co/800x600.png'}
-                          alt={cert.name[lang]}
-                          fill
-                          sizes="(min-width: 1024px) 768px, 100vw"
-                          className="object-contain"
-                          data-ai-hint={cert.imageHint || 'certificate document'}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
+              {certificates.map((cert, index) => {
+                const certName = getText(cert.name, lang, 'Untitled Certificate');
+                return (
+                  <CarouselItem key={cert._id || index}>
+                    <Card className="overflow-hidden border-none shadow-none bg-transparent">
+                      <CardContent className="p-0">
+                        <div className="relative aspect-[16/9] w-full rounded-lg bg-muted/40">
+                          <Image
+                            src={cert.imageUrl || 'https://placehold.co/800x600.png'}
+                            alt={certName}
+                            fill
+                            sizes="(min-width: 1024px) 768px, 100vw"
+                            className="object-contain"
+                            data-ai-hint={cert.imageHint || 'certificate document'}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                );
+              })}
             </CarouselContent>
             <div className="hidden sm:block">
               <CarouselPrevious className="absolute left-[-80px] top-1/2 -translate-y-1/2 h-12 w-12 bg-primary/80 hover:bg-primary text-primary-foreground" />
@@ -98,8 +111,8 @@ export default function Certificates({ certificates, dictionary, lang }: Certifi
                 <div className="flex justify-center items-center gap-4">
                     <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollPrev()}><ArrowLeft className="h-5 w-5"/></Button>
                     <div className="flex-grow">
-                        <h3 className="text-2xl font-semibold text-primary">{selectedCert.name[lang]}</h3>
-                        <p className="mt-2 text-foreground/70 max-w-2xl mx-auto">{selectedCert.description[lang]}</p>
+                        <h3 className="text-2xl font-semibold text-primary">{getText(selectedCert.name, lang, 'Untitled Certificate')}</h3>
+                        <p className="mt-2 text-foreground/70 max-w-2xl mx-auto">{getText(selectedCert.description, lang)}</p>
                     </div>
                      <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollNext()}><ArrowRight className="h-5 w-5"/></Button>
                 </div>
