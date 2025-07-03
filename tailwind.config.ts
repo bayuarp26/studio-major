@@ -87,10 +87,21 @@ export default {
             height: '0',
           },
         },
+        'flip-in-x': {
+          '0%': {
+            transform: 'rotateX(90deg)',
+            opacity: '0',
+          },
+          '100%': {
+            transform: 'rotateX(0deg)',
+            opacity: '1',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'flip-in-x': 'flip-in-x 0.6s ease-out',
       },
     },
   },
