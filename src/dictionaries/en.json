@@ -4,6 +4,7 @@
     "profile": "Profile",
     "about": "About",
     "skills": "Skills",
+    "services": "Services",
     "projects": "Projects",
     "certificates": "Certificates",
     "contactMe": "Contact Me"
@@ -19,6 +20,12 @@
     "softSkills": "Soft Skills",
     "hardSkills": "Hard Skills",
     "softwareSkills": "Software Skills"
+  },
+  "services": {
+    "title": "Services",
+    "logoDesign": "Logo Design",
+    "bannerDesign": "Banner Design",
+    "buttonText": "Details"
   },
   "projects": {
     "title": "Portfolio Projects",
