@@ -9,11 +9,15 @@ interface ServicesProps {
 }
 
 export default function Services({ dictionary }: ServicesProps) {
-  const userProvidedLink = "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%2C%20aku%20mau%20kerja%20sama%20untuk%20digital%20marketing%20nih&type=phone_number&app_absent=0";
-
   const servicesData = [
-      { title: dictionary.services.socialMediaSpecialist },
-      { title: dictionary.services.digitalMarketing },
+    {
+      title: dictionary.services.socialMediaSpecialist,
+      link: "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%20Kak%2C%20aku%20mau%20kerja%20sama%20nihh%20dengan%20kakak%20untuk%20Jadi%20Tim%20Sosial%20Media%20Spesialist%20kami%2C%20Apa%20aku%20Boleh%20berdiskusi%20sama%20kakak%20?%20&type=phone_number&app_absent=0",
+    },
+    {
+      title: dictionary.services.digitalMarketing,
+      link: "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%2C%20aku%20mau%20kerja%20sama%20untuk%20digital%20marketing%20nih&type=phone_number&app_absent=0",
+    },
   ];
 
   return (
@@ -33,7 +37,7 @@ export default function Services({ dictionary }: ServicesProps) {
                 </div>
                 <h3 className="text-2xl font-bold text-primary">{service.title}</h3>
                 <Button asChild size="lg" className="rounded-full px-8">
-                  <Link href={userProvidedLink} target="_blank" rel="noopener noreferrer">
+                  <Link href={service.link} target="_blank" rel="noopener noreferrer">
                     {dictionary.services.buttonText}
                   </Link>
                 </Button>
