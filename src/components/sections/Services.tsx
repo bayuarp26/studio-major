@@ -12,8 +12,8 @@ export default function Services({ dictionary }: ServicesProps) {
   const userProvidedLink = "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%2C%20aku%20mau%20kerja%20sama%20untuk%20digital%20marketing%20nih&type=phone_number&app_absent=0";
 
   const servicesData = [
-      { title: dictionary.services.logoDesign },
-      { title: dictionary.services.bannerDesign },
+      { title: dictionary.services.socialMediaSpecialist },
+      { title: dictionary.services.digitalMarketing },
   ];
 
   return (
