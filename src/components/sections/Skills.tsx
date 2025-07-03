@@ -21,11 +21,11 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
           </h2>
         </div>
 
-        <div className="mt-16 space-y-12">
+        <div className="mx-auto mt-16 max-w-5xl space-y-12">
           {/* Soft Skills */}
           {softSkills && softSkills.length > 0 && (
             <div>
-              <h3 className="text-2xl font-semibold tracking-tight">{dictionary.skills.softSkills}</h3>
+              <h3 className="text-center text-2xl font-semibold tracking-tight">{dictionary.skills.softSkills}</h3>
               <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
                 {softSkills.map((skill, index) => (
                   <li key={`soft-${index}`} className="flex items-center gap-3">
@@ -42,7 +42,7 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
           {/* Hard Skills */}
           {hardSkills && hardSkills.length > 0 && (
             <div>
-              <h3 className="text-2xl font-semibold tracking-tight">{dictionary.skills.hardSkills}</h3>
+              <h3 className="text-center text-2xl font-semibold tracking-tight">{dictionary.skills.hardSkills}</h3>
               <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
                 {hardSkills.map((skill, index) => (
                   <li key={`hard-${index}`} className="flex items-center gap-3">
@@ -59,7 +59,7 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
           {/* Software Skills */}
           {softwareSkills && softwareSkills.length > 0 && (
             <div>
-              <h3 className="text-2xl font-semibold tracking-tight">{dictionary.skills.softwareSkills}</h3>
+              <h3 className="text-center text-2xl font-semibold tracking-tight">{dictionary.skills.softwareSkills}</h3>
               <div className="mt-8 grid grid-cols-3 place-items-center gap-x-6 gap-y-10 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7">
                 {softwareSkills.map((skill) => (
                   <div key={skill._id} className="flex flex-col items-center gap-2">
