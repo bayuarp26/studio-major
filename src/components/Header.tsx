@@ -11,7 +11,7 @@ import { useActiveSection } from "@/hooks/use-active-section";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { usePathname } from "next/navigation";
 
-const sectionIds = ["hero", "about", "skills", "projects", "education", "certificates", "contact"];
+const sectionIds = ["hero", "about", "skills", "services", "projects", "education", "certificates", "contact"];
 
 interface HeaderProps {
   name: string;
@@ -30,6 +30,7 @@ export default function Header({ name, dictionary }: HeaderProps) {
     { name: dictionary.nav.profile, href: `${locale}#hero` },
     { name: dictionary.nav.about, href: `${locale}#about` },
     { name: dictionary.nav.skills, href: `${locale}#skills` },
+    { name: dictionary.nav.services, href: `${locale}#services` },
     { name: dictionary.nav.projects, href: `${locale}#projects` },
     { name: dictionary.nav.certificates, href: `${locale}#education` },
   ];

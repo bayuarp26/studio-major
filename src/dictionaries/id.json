@@ -4,6 +4,7 @@
     "profile": "Profil",
     "about": "Tentang",
     "skills": "Keahlian",
+    "services": "Layanan",
     "projects": "Proyek",
     "certificates": "Sertifikat",
     "contactMe": "Hubungi Saya"
@@ -19,6 +20,12 @@
     "softSkills": "Soft Skills",
     "hardSkills": "Hard Skills",
     "softwareSkills": "Keahlian Perangkat Lunak"
+  },
+  "services": {
+    "title": "Layanan",
+    "logoDesign": "Desain logo",
+    "bannerDesign": "Desain Banner",
+    "buttonText": "Selengkapnya"
   },
   "projects": {
     "title": "Proyek Portofolio",
