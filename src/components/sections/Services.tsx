@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
@@ -16,7 +15,7 @@ export default function Services({ dictionary }: ServicesProps) {
     },
     {
       title: dictionary.services.digitalMarketing,
-      link: "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%2C%20aku%20mau%20kerja%20sama%20untuk%20digital%20marketing%20nih&type=phone_number&app_absent=0",
+      link: "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%20kak%2C%20aku%20mau%20kerja%20sama%20dengan%20kakak%20untuk%20jadi%20bagian%20Tim%20digital%20marketing%20kami%20nih%2C%20apa%20aku%20boleh%20berdiskusi%20dengan%20kakak%20%3F&type=phone_number&app_absent=0",
     },
   ];
 
