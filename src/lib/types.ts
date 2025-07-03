@@ -1,4 +1,10 @@
 
+import type { Locale } from '../../i18n.config';
+
+export type MultilingualString = {
+  [key in Locale]: string;
+};
+
 export interface Contact {
   email: string;
   linkedin: string;
@@ -6,10 +12,10 @@ export interface Contact {
 
 export interface Project {
   _id?: string;
-  title: string;
+  title: MultilingualString;
   imageUrl: string;
   imageHint: string;
-  description: string;
+  description: MultilingualString;
   details: string;
   tags: string[];
   link: string;
@@ -17,15 +23,15 @@ export interface Project {
 
 export interface EducationItem {
   _id?: string;
-  degree: string;
-  school: string;
+  degree: MultilingualString;
+  school: MultilingualString;
   period: string;
 }
 
 export interface Certificate {
   _id?: string;
-  name: string;
-  description: string;
+  name: MultilingualString;
+  description: MultilingualString;
   imageUrl: string;
   imageHint: string;
   issuer: string;
@@ -41,8 +47,8 @@ export interface SoftwareSkill {
 
 export interface PortfolioData {
   name: string;
-  title: string;
-  about: string;
+  title: MultilingualString;
+  about: MultilingualString;
   cvUrl: string;
   profilePictureUrl: string;
   contact: Contact;

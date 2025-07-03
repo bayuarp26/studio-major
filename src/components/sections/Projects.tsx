@@ -5,13 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import type { Locale } from '../../../i18n.config';
 
 interface ProjectsProps {
   projects: Project[];
   dictionary: any;
+  lang: Locale;
 }
 
-export default function Projects({ projects, dictionary }: ProjectsProps) {
+export default function Projects({ projects, dictionary, lang }: ProjectsProps) {
   return (
     <section id="projects" className="bg-secondary py-24 sm:py-32">
       <div className="container">
@@ -25,11 +27,11 @@ export default function Projects({ projects, dictionary }: ProjectsProps) {
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, index) => (
-            <Card key={`${project.title}-${index}`} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
+            <Card key={`${project.title[lang]}-${index}`} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
               <div className="aspect-video overflow-hidden">
                  <Image
                   src={project.imageUrl || 'https://placehold.co/600x400.png'}
-                  alt={project.title}
+                  alt={project.title[lang]}
                   width={600}
                   height={400}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -37,8 +39,8 @@ export default function Projects({ projects, dictionary }: ProjectsProps) {
                 />
               </div>
               <CardContent className="flex flex-grow flex-col p-6">
-                <CardTitle className="text-xl font-bold text-primary">{project.title}</CardTitle>
-                <p className="mt-3 flex-grow text-base text-foreground/80">{project.description}</p>
+                <CardTitle className="text-xl font-bold text-primary">{project.title[lang]}</CardTitle>
+                <p className="mt-3 flex-grow text-base text-foreground/80">{project.description[lang]}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {project.tags.map((tag) => (
                     <Badge key={tag} variant="secondary">

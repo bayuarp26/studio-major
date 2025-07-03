@@ -24,8 +24,8 @@ const MAIN_DOC_ID = 'main_content';
 
 const EMPTY_DATA: PortfolioData = {
     name: "",
-    title: "",
-    about: "",
+    title: { id: "Judul Portofolio Anda", en: "Your Portfolio Title" },
+    about: { id: "Tuliskan sesuatu tentang diri Anda di sini.", en: "Write something about yourself here." },
     cvUrl: "",
     profilePictureUrl: "https://placehold.co/400x400.png",
     contact: {

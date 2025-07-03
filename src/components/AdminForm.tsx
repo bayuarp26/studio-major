@@ -2,10 +2,10 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PortfolioData, Project, EducationItem, Certificate, SoftwareSkill } from '@/lib/types';
+import type { PortfolioData, Project, EducationItem, Certificate, SoftwareSkill, MultilingualString } from '@/lib/types';
 import {
   saveGeneralInfo, saveSoftSkills, saveHardSkills,
   addProject, updateProject, deleteProject,
@@ -25,11 +25,69 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, PlusCircle, Trash2, Edit, Loader2, Sparkles, Wrench, Briefcase, GraduationCap, Award, Settings2, Cpu } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { FileUpload } from './FileUpload';
 import Image from "next/image";
+
+// --- Reusable Multilingual Form Field ---
+interface MultilingualFormFieldProps {
+  form: UseFormReturn<any>;
+  name: string;
+  label: string;
+  placeholders: { id: string; en: string };
+  isTextarea?: boolean;
+}
+
+const MultilingualFormField = ({ form, name, label, placeholders, isTextarea = false }: MultilingualFormFieldProps) => {
+  const InputComponent = isTextarea ? Textarea : Input;
+  return (
+    <FormItem>
+      <FormLabel>{label}</FormLabel>
+      <Tabs defaultValue="id" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="id">Indonesia</TabsTrigger>
+          <TabsTrigger value="en">English</TabsTrigger>
+        </TabsList>
+        <TabsContent value="id" className="pt-2">
+          <FormField
+            control={form.control}
+            name={`${name}.id`}
+            render={({ field }) => (
+              <FormItem className="space-y-0">
+                <FormLabel className="sr-only">{label} (Indonesia)</FormLabel>
+                <FormControl><InputComponent placeholder={placeholders.id} {...field} rows={isTextarea ? 5 : undefined} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </TabsContent>
+        <TabsContent value="en" className="pt-2">
+          <FormField
+            control={form.control}
+            name={`${name}.en`}
+            render={({ field }) => (
+              <FormItem className="space-y-0">
+                <FormLabel className="sr-only">{label} (English)</FormLabel>
+                <FormControl><InputComponent placeholder={placeholders.en} {...field} rows={isTextarea ? 5 : undefined} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </TabsContent>
+      </Tabs>
+    </FormItem>
+  );
+};
+
+
+// --- Zod Schemas ---
+const multilingualStringSchema = z.object({
+  id: z.string().min(1, 'Versi Bahasa Indonesia wajib diisi.'),
+  en: z.string().min(1, 'Versi Bahasa Inggris wajib diisi.'),
+});
 
 const softwareSkillSchema = z.object({
   _id: z.string().optional(),
@@ -39,25 +97,25 @@ const softwareSkillSchema = z.object({
 
 const projectSchema = z.object({
   _id: z.string().optional(),
-  title: z.string().min(1, 'Project title is required'),
+  title: multilingualStringSchema,
   imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
-  description: z.string().min(1, 'Description is required'),
+  description: multilingualStringSchema,
   tags: z.union([z.string(), z.array(z.string())]).optional(),
   link: z.string().url('Invalid URL format').optional().or(z.literal('')),
 });
 
 const educationSchema = z.object({
   _id: z.string().optional(),
-  degree: z.string().min(1, 'Degree is required'),
-  school: z.string().min(1, 'School is required'),
+  degree: multilingualStringSchema,
+  school: multilingualStringSchema,
   period: z.string().min(1, 'Period is required'),
 });
 
 const certificateSchema = z.object({
   _id: z.string().optional(),
-  name: z.string().min(1, 'Certificate name is required'),
-  description: z.string().min(1, 'Description is required'),
+  name: multilingualStringSchema,
+  description: multilingualStringSchema,
   imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
   issuer: z.string().min(1, 'Issuer is required'),
@@ -67,8 +125,8 @@ const certificateSchema = z.object({
 
 const generalSettingsSchema = z.object({
   name: z.string().min(2, 'Name is required'),
-  title: z.string().min(5, 'Title is required'),
-  about: z.string().min(10, 'About section is required'),
+  title: multilingualStringSchema,
+  about: multilingualStringSchema,
   profilePictureUrl: z.string().optional(),
   cvUrl: z.string().min(1, 'CV URL/File Path is required'),
   email: z.string().email('Invalid email address'),
@@ -127,7 +185,6 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const certificateDialogForm = useForm<CertificateDialogValues>({ resolver: zodResolver(certificateSchema) });
   const softwareSkillDialogForm = useForm<SoftwareSkillDialogValues>({ resolver: zodResolver(softwareSkillSchema) });
 
-
   const handleLogout = async () => {
     await logout();
     router.push('/');
@@ -163,7 +220,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   // --- Project Handlers ---
   const openAddProjectDialog = () => {
     setEditingProjectIndex(null);
-    projectDialogForm.reset({ title: '', imageUrl: '', imageHint: '', description: '', tags: '', link: '' });
+    projectDialogForm.reset({ title: {id: '', en: ''}, imageUrl: '', imageHint: '', description: {id: '', en: ''}, tags: '', link: '' });
     setProjectDialogOpen(true);
   };
 
@@ -212,7 +269,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   // --- Education Handlers ---
   const openAddEducationDialog = () => {
     setEditingEducationIndex(null);
-    educationDialogForm.reset({ degree: '', school: '', period: '' });
+    educationDialogForm.reset({ degree: {id: '', en: ''}, school: {id: '', en: ''}, period: '' });
     setEducationDialogOpen(true);
   };
 
@@ -252,7 +309,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   // --- Certificate Handlers ---
   const openAddCertificateDialog = () => {
     setEditingCertificateIndex(null);
-    certificateDialogForm.reset({ name: '', description: '', imageUrl: '', imageHint: '', issuer: '', date: '', url: '' });
+    certificateDialogForm.reset({ name: {id: '', en: ''}, description: {id: '', en: ''}, imageUrl: '', imageHint: '', issuer: '', date: '', url: '' });
     setCertificateDialogOpen(true);
   };
   const openEditCertificateDialog = (index: number) => {
@@ -260,7 +317,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
     const cert = initialData.certificates[index];
     certificateDialogForm.reset({
         ...cert,
-        description: cert.description || '',
+        description: cert.description || {id: '', en: ''},
         imageUrl: cert.imageUrl || '',
         imageHint: cert.imageHint || ''
     });
@@ -440,7 +497,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                           <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground h-24">No projects yet.</TableCell></TableRow>
                         ) : initialData.projects.map((project, index) => (
                           <TableRow key={project._id || index}>
-                            <TableCell className="font-medium">{project.title}</TableCell>
+                            <TableCell className="font-medium">{project.title.id}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditProjectDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveProject(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -467,8 +524,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                           <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No education history yet.</TableCell></TableRow>
                         ) : initialData.education.map((edu, index) => (
                           <TableRow key={edu._id || index}>
-                            <TableCell className="font-medium">{edu.degree}</TableCell>
-                            <TableCell>{edu.school}</TableCell>
+                            <TableCell className="font-medium">{edu.degree.id}</TableCell>
+                            <TableCell>{edu.school.id}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditEducationDialog(index)}><Edit className="h-4 w-4" /></Button>
                               <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveEducation(index)} disabled={isPending}><Trash2 className="h-4 w-4" /></Button>
@@ -495,7 +552,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                           <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground h-24">No certificates yet.</TableCell></TableRow>
                         ) : initialData.certificates.map((cert, index) => (
                           <TableRow key={cert._id || index}>
-                            <TableCell className="font-medium">{cert.name}</TableCell>
+                            <TableCell className="font-medium">{cert.name.id}</TableCell>
                             <TableCell>{cert.issuer}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Button type="button" variant="outline" size="icon" onClick={() => openEditCertificateDialog(index)}><Edit className="h-4 w-4" /></Button>
@@ -610,8 +667,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                     <CardContent className="space-y-4">
                       <FormField control={form.control} name="profilePictureUrl" render={({ field }) => (<FormItem><FormLabel>Profile Photo</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending}/></FormControl><FormMessage /></FormItem>)}/>
                       <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                      <FormField control={form.control} name="about" render={({ field }) => (<FormItem><FormLabel>About</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                      <MultilingualFormField form={form} name="title" label="Title" placeholders={{id: "Jabatan Anda", en: "Your Title"}} />
+                      <MultilingualFormField form={form} name="about" label="About" placeholders={{id: "Tentang Anda", en: "About You"}} isTextarea />
                       <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
@@ -644,10 +701,10 @@ export default function AdminForm({ initialData }: AdminFormProps) {
           <DialogHeader><DialogTitle>{editingProjectIndex !== null ? 'Edit Project' : 'Add New Project'}</DialogTitle></DialogHeader>
           <Form {...projectDialogForm}>
             <form onSubmit={projectDialogForm.handleSubmit(handleProjectDialogSubmit)} className="space-y-4 py-4">
-                <FormField control={projectDialogForm.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <MultilingualFormField form={projectDialogForm} name="title" label="Title" placeholders={{id: "Judul Proyek", en: "Project Title"}} />
                 <FormField control={projectDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
                 <FormField control={projectDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'project abstract'" {...field} /></FormControl><FormDescription>One or two keywords for AI to find a relevant image.</FormDescription><FormMessage /></FormItem>)} />
-                <FormField control={projectDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <MultilingualFormField form={projectDialogForm} name="description" label="Description" placeholders={{id: "Deskripsi Proyek", en: "Project Description"}} isTextarea />
                 <FormField control={projectDialogForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={projectDialogForm.control} name="link" render={({ field }) => (<FormItem><FormLabel>Project Link</FormLabel><FormControl><Input placeholder="https://example.com" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
@@ -667,8 +724,8 @@ export default function AdminForm({ initialData }: AdminFormProps) {
           <DialogHeader><DialogTitle>{editingEducationIndex !== null ? 'Edit Education' : 'Add Education'}</DialogTitle></DialogHeader>
           <Form {...educationDialogForm}>
             <form onSubmit={educationDialogForm.handleSubmit(handleEducationDialogSubmit)} className="space-y-4 py-4">
-              <FormField control={educationDialogForm.control} name="degree" render={({ field }) => (<FormItem><FormLabel>Degree & Major</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={educationDialogForm.control} name="school" render={({ field }) => (<FormItem><FormLabel>School/University Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <MultilingualFormField form={educationDialogForm} name="degree" label="Degree & Major" placeholders={{id: "Gelar & Jurusan", en: "Degree & Major"}} />
+              <MultilingualFormField form={educationDialogForm} name="school" label="School/University Name" placeholders={{id: "Nama Sekolah/Universitas", en: "School/University Name"}} />
               <FormField control={educationDialogForm.control} name="period" render={({ field }) => (<FormItem><FormLabel>Period</FormLabel><FormControl><Input placeholder="e.g., 2018 - 2022" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
@@ -687,10 +744,10 @@ export default function AdminForm({ initialData }: AdminFormProps) {
           <DialogHeader><DialogTitle>{editingCertificateIndex !== null ? 'Edit Certificate' : 'Add Certificate'}</DialogTitle></DialogHeader>
           <Form {...certificateDialogForm}>
             <form onSubmit={certificateDialogForm.handleSubmit(handleCertificateDialogSubmit)} className="space-y-4 py-4">
-              <FormField control={certificateDialogForm.control} name="name" render={({ field }) => (<FormItem><FormLabel>Certificate Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <MultilingualFormField form={certificateDialogForm} name="name" label="Certificate Name" placeholders={{id: "Nama Sertifikat", en: "Certificate Name"}} />
               <FormField control={certificateDialogForm.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>Image</FormLabel><FormControl><ImageUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
               <FormField control={certificateDialogForm.control} name="imageHint" render={({ field }) => (<FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. 'certificate design'" {...field} /></FormControl><FormDescription>One or two keywords for AI to find a relevant image.</FormDescription><FormMessage /></FormItem>)} />
-              <FormField control={certificateDialogForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <MultilingualFormField form={certificateDialogForm} name="description" label="Description" placeholders={{id: "Deskripsi Sertifikat", en: "Certificate Description"}} isTextarea />
               <FormField control={certificateDialogForm.control} name="issuer" render={({ field }) => (<FormItem><FormLabel>Issuer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="date" render={({ field }) => (<FormItem><FormLabel>Date Issued</FormLabel><FormControl><Input placeholder="e.g., Jan 2023" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={certificateDialogForm.control} name="url" render={({ field }) => (<FormItem><FormLabel>Verification URL (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
