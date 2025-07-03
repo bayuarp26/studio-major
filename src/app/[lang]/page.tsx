@@ -35,10 +35,10 @@ export default async function ProfilePage({ params: { lang } }: { params: { lang
         softwareSkills={portfolioData.softwareSkills}
         dictionary={dictionary} 
       />
-      <Services dictionary={dictionary} />
       <Projects projects={portfolioData.projects} dictionary={dictionary} />
       <Education education={portfolioData.education} dictionary={dictionary} />
       <Certificates certificates={portfolioData.certificates} dictionary={dictionary} />
+      <Services dictionary={dictionary} />
       <Contact contact={portfolioData.contact} dictionary={dictionary} />
     </>
   );
