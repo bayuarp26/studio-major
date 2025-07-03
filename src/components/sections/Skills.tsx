@@ -68,7 +68,7 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
                         src={skill.iconUrl}
                         alt={skill.name}
                         fill
-                        className="object-contain"
+                        className="object-contain rounded-md"
                       />
                     </div>
                     <p className="text-sm font-medium text-center">{skill.name}</p>
