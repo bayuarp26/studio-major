@@ -16,13 +16,15 @@ import type { Certificate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
+import type { Locale } from '../../../i18n.config';
 
 interface CertificatesProps {
   certificates: Certificate[];
   dictionary: any;
+  lang: Locale;
 }
 
-export default function Certificates({ certificates, dictionary }: CertificatesProps) {
+export default function Certificates({ certificates, dictionary, lang }: CertificatesProps) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
@@ -73,7 +75,7 @@ export default function Certificates({ certificates, dictionary }: CertificatesP
                       <div className="relative aspect-[16/9] w-full rounded-lg bg-muted/40">
                         <Image
                           src={cert.imageUrl || 'https://placehold.co/800x600.png'}
-                          alt={cert.name}
+                          alt={cert.name[lang]}
                           fill
                           sizes="(min-width: 1024px) 768px, 100vw"
                           className="object-contain"
@@ -96,8 +98,8 @@ export default function Certificates({ certificates, dictionary }: CertificatesP
                 <div className="flex justify-center items-center gap-4">
                     <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollPrev()}><ArrowLeft className="h-5 w-5"/></Button>
                     <div className="flex-grow">
-                        <h3 className="text-2xl font-semibold text-primary">{selectedCert.name}</h3>
-                        <p className="mt-2 text-foreground/70 max-w-2xl mx-auto">{selectedCert.description}</p>
+                        <h3 className="text-2xl font-semibold text-primary">{selectedCert.name[lang]}</h3>
+                        <p className="mt-2 text-foreground/70 max-w-2xl mx-auto">{selectedCert.description[lang]}</p>
                     </div>
                      <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollNext()}><ArrowRight className="h-5 w-5"/></Button>
                 </div>

@@ -23,11 +23,13 @@ export default async function ProfilePage({ params: { lang } }: { params: { lang
         cvUrl={portfolioData.cvUrl} 
         profilePictureUrl={portfolioData.profilePictureUrl} 
         dictionary={dictionary}
+        lang={lang}
       />
       <About 
         about={portfolioData.about} 
         profilePictureUrl={portfolioData.profilePictureUrl} 
         dictionary={dictionary}
+        lang={lang}
       />
       <Skills 
         softSkills={portfolioData.softSkills}
@@ -35,9 +37,9 @@ export default async function ProfilePage({ params: { lang } }: { params: { lang
         softwareSkills={portfolioData.softwareSkills}
         dictionary={dictionary} 
       />
-      <Projects projects={portfolioData.projects} dictionary={dictionary} />
-      <Education education={portfolioData.education} dictionary={dictionary} />
-      <Certificates certificates={portfolioData.certificates} dictionary={dictionary} />
+      <Projects projects={portfolioData.projects} dictionary={dictionary} lang={lang} />
+      <Education education={portfolioData.education} dictionary={dictionary} lang={lang} />
+      <Certificates certificates={portfolioData.certificates} dictionary={dictionary} lang={lang} />
       <Services dictionary={dictionary} />
       <Contact contact={portfolioData.contact} dictionary={dictionary} />
     </>

@@ -33,9 +33,9 @@ export default async function CertificatesPage({ params: { lang } }: { params: {
                       <GraduationCap className="h-4 w-4" />
                     </div>
                   <div>
-                    <h3 className="text-lg font-semibold">{edu.degree}</h3>
+                    <h3 className="text-lg font-semibold">{edu.degree[lang]}</h3>
                     <p className="mt-1 text-base font-medium text-primary">
-                      {edu.school}
+                      {edu.school[lang]}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {edu.period}
@@ -49,7 +49,7 @@ export default async function CertificatesPage({ params: { lang } }: { params: {
       </section>
 
       {/* Certificates Section */}
-      <Certificates certificates={certificates} dictionary={dictionary} />
+      <Certificates certificates={certificates} dictionary={dictionary} lang={lang} />
     </>
   );
 }

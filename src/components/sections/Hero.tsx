@@ -3,16 +3,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Download, Send } from "lucide-react";
+import type { MultilingualString } from "@/lib/types";
+import type { Locale } from "../../../i18n.config";
 
 interface HeroProps {
   name: string;
-  title: string;
+  title: MultilingualString;
   cvUrl: string;
   profilePictureUrl: string;
   dictionary: any;
+  lang: Locale;
 }
 
-export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary }: HeroProps) {
+export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary, lang }: HeroProps) {
   return (
     <section id="hero" className="bg-background">
       <div className="container grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-2 lg:gap-20">
@@ -21,7 +24,7 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary
             {name}
           </h1>
           <p className="mt-6 font-body text-lg leading-8 text-foreground/80 md:text-xl">
-            {title}
+            {title[lang]}
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button asChild size="lg">

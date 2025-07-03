@@ -1,18 +1,15 @@
 
 import { GraduationCap } from "lucide-react";
-
-interface EducationItem {
-  degree: string;
-  school: string;
-  period: string;
-}
+import type { EducationItem } from "@/lib/types";
+import type { Locale } from "../../../i18n.config";
 
 interface EducationProps {
   education: EducationItem[];
   dictionary: any;
+  lang: Locale;
 }
 
-export default function Education({ education, dictionary }: EducationProps) {
+export default function Education({ education, dictionary, lang }: EducationProps) {
   if (!education || education.length === 0) return null;
 
   return (
@@ -31,14 +28,14 @@ export default function Education({ education, dictionary }: EducationProps) {
           
           <div className="space-y-12">
             {education.map((edu, index) => (
-              <div key={`${edu.school}-${index}`} className="relative pl-12">
+              <div key={`${edu.school[lang]}-${index}`} className="relative pl-12">
                  <div className="absolute left-6 top-1 h-6 w-6 -translate-x-1/2 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-8 ring-background">
                     <GraduationCap className="h-4 w-4" />
                   </div>
                 <div>
-                  <h3 className="text-lg font-semibold">{edu.degree}</h3>
+                  <h3 className="text-lg font-semibold">{edu.degree[lang]}</h3>
                   <p className="mt-1 text-base font-medium text-primary">
-                    {edu.school}
+                    {edu.school[lang]}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {edu.period}

@@ -1,13 +1,16 @@
 
 import Image from 'next/image';
+import type { MultilingualString } from '@/lib/types';
+import type { Locale } from '../../../i18n.config';
 
 interface AboutProps {
-  about: string;
+  about: MultilingualString;
   profilePictureUrl: string;
   dictionary: any;
+  lang: Locale;
 }
 
-export default function About({ about, profilePictureUrl, dictionary }: AboutProps) {
+export default function About({ about, profilePictureUrl, dictionary, lang }: AboutProps) {
   return (
     <section id="about" className="py-24 sm:py-32 bg-secondary">
       <div className="container">
@@ -28,7 +31,7 @@ export default function About({ about, profilePictureUrl, dictionary }: AboutPro
               {dictionary.about.title}
             </h2>
             <p className="mt-6 text-center text-lg leading-relaxed text-foreground/70 lg:text-left">
-              {about}
+              {about[lang]}
             </p>
           </div>
         </div>
