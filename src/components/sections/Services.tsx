@@ -26,13 +26,13 @@ export default function Services({ dictionary }: ServicesProps) {
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 max-w-4xl mx-auto">
           {servicesData.map((service, index) => (
-            <Card key={index} className="bg-foreground text-background shadow-lg rounded-xl overflow-hidden group transform transition-all duration-300 hover:-translate-y-2">
+            <Card key={index} className="bg-card shadow-lg rounded-xl overflow-hidden group transform transition-all duration-300 hover:-translate-y-2 hover:shadow-primary/20">
               <CardContent className="p-8 flex flex-col items-center text-center gap-6">
-                <div className="rounded-full border-2 border-primary/50 p-4 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110">
+                <div className="rounded-full border-2 border-primary/50 bg-primary/10 p-4 text-primary transition-all duration-300 group-hover:scale-110">
                   <Star className="h-8 w-8" />
                 </div>
-                <h3 className="text-2xl font-bold text-background">{service.title}</h3>
-                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8">
+                <h3 className="text-2xl font-bold text-primary">{service.title}</h3>
+                <Button asChild size="lg" className="rounded-full px-8">
                   <Link href={userProvidedLink} target="_blank" rel="noopener noreferrer">
                     {dictionary.services.buttonText}
                   </Link>
