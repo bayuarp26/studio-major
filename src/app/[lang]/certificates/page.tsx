@@ -4,8 +4,19 @@ import { GraduationCap } from "lucide-react";
 import Certificates from "@/components/sections/Certificates";
 import { getDictionary } from '@/lib/dictionaries';
 import type { Locale } from '../../../i18n.config';
+import type { MultilingualString } from "@/lib/types";
 
 export const dynamic = 'force-dynamic'; // Dynamic fetching
+
+const getText = (field: MultilingualString | string | undefined, lang: Locale, fallback: string = ''): string => {
+  if (typeof field === 'string') {
+    return field;
+  }
+  if (field && typeof field === 'object' && !Array.isArray(field)) {
+    return field[lang] || field.id || fallback;
+  }
+  return fallback;
+}
 
 export default async function CertificatesPage({ params: { lang } }: { params: { lang: Locale } }) {
   const { certificates, education } = await getPortfolioData();
@@ -28,14 +39,14 @@ export default async function CertificatesPage({ params: { lang } }: { params: {
             <div className="absolute left-6 top-0 h-full w-0.5 bg-border -translate-x-1/2"></div>
             <div className="space-y-12">
               {education.map((edu, index) => (
-                <div key={`${edu.school}-${index}`} className="relative pl-12">
+                <div key={edu._id || index} className="relative pl-12">
                    <div className="absolute left-6 top-1 h-6 w-6 -translate-x-1/2 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-8 ring-background">
                       <GraduationCap className="h-4 w-4" />
                     </div>
                   <div>
-                    <h3 className="text-lg font-semibold">{edu.degree[lang]}</h3>
+                    <h3 className="text-lg font-semibold">{getText(edu.degree, lang)}</h3>
                     <p className="mt-1 text-base font-medium text-primary">
-                      {edu.school[lang]}
+                      {getText(edu.school, lang)}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {edu.period}

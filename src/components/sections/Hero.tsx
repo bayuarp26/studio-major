@@ -8,11 +8,21 @@ import type { Locale } from "../../../i18n.config";
 
 interface HeroProps {
   name: string;
-  title: MultilingualString;
+  title: MultilingualString | string;
   cvUrl: string;
   profilePictureUrl: string;
   dictionary: any;
   lang: Locale;
+}
+
+const getText = (field: MultilingualString | string | undefined, lang: Locale, fallback: string = ''): string => {
+  if (typeof field === 'string') {
+    return field;
+  }
+  if (field && typeof field === 'object' && !Array.isArray(field)) {
+    return field[lang] || field.id || fallback;
+  }
+  return fallback;
 }
 
 export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary, lang }: HeroProps) {
@@ -24,7 +34,7 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary
             {name}
           </h1>
           <p className="mt-6 font-body text-lg leading-8 text-foreground/80 md:text-xl">
-            {title[lang]}
+            {getText(title, lang)}
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button asChild size="lg">

@@ -4,10 +4,20 @@ import type { MultilingualString } from '@/lib/types';
 import type { Locale } from '../../../i18n.config';
 
 interface AboutProps {
-  about: MultilingualString;
+  about: MultilingualString | string;
   profilePictureUrl: string;
   dictionary: any;
   lang: Locale;
+}
+
+const getText = (field: MultilingualString | string | undefined, lang: Locale, fallback: string = ''): string => {
+  if (typeof field === 'string') {
+    return field;
+  }
+  if (field && typeof field === 'object' && !Array.isArray(field)) {
+    return field[lang] || field.id || fallback;
+  }
+  return fallback;
 }
 
 export default function About({ about, profilePictureUrl, dictionary, lang }: AboutProps) {
@@ -31,7 +41,7 @@ export default function About({ about, profilePictureUrl, dictionary, lang }: Ab
               {dictionary.about.title}
             </h2>
             <p className="mt-6 text-center text-lg leading-relaxed text-foreground/70 lg:text-left">
-              {about[lang]}
+              {getText(about, lang)}
             </p>
           </div>
         </div>
