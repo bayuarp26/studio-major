@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { SoftwareSkill } from '@/lib/types';
@@ -60,6 +59,11 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
     };
   }, []);
 
+  const animationClass = (isInView: boolean) => 
+    `transition-all duration-1000 [transform-style:preserve-3d] ${
+      isInView ? 'opacity-100 [transform:rotateX(0deg)]' : 'opacity-0 [transform:rotateX(-90deg)]'
+    }`;
+
   return (
     <section id="skills" className="bg-background py-24 sm:py-32">
       <div className="container mx-auto max-w-6xl">
@@ -71,65 +75,71 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
 
         <div
           ref={sectionRef as React.RefObject<HTMLDivElement>}
-          className="mt-16 [perspective:2000px]"
+          className="mt-16"
         >
-          <div
-            className={`transition-all duration-1000 [transform-style:preserve-3d] ${
-              isInView ? 'opacity-100 [transform:rotateY(0deg)]' : 'opacity-0 [transform:rotateY(-90deg)]'
-            }`}
-          >
-            {/* Soft Skills */}
-            <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-semibold">{dictionary.skills.softSkills}</h3>
-              </div>
-              <div className="md:col-span-9">
-                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {softSkills.map((skill, index) => (
-                    <SkillItem key={`soft-${index}`} skill={skill} />
-                  ))}
-                </ul>
+          {/* Soft Skills */}
+          <div className="[perspective:2000px]">
+            <div className={`${animationClass(isInView)}`}>
+              <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
+                <div className="md:col-span-3">
+                  <h3 className="text-2xl font-semibold text-left">{dictionary.skills.softSkills}</h3>
+                </div>
+                <div className="md:col-span-9">
+                  <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {softSkills.map((skill, index) => (
+                      <SkillItem key={`soft-${index}`} skill={skill} />
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
+          </div>
 
-            <Separator className="my-4 bg-border/50" />
+          <Separator className="my-4 bg-border/50" />
 
-            {/* Hard Skills */}
-            <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-semibold">{dictionary.skills.hardSkills}</h3>
-              </div>
-              <div className="md:col-span-9">
-                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {hardSkills.map((skill, index) => (
-                    <SkillItem key={`hard-${index}`} skill={skill} />
-                  ))}
-                </ul>
+          {/* Hard Skills */}
+          <div className="[perspective:2000px]">
+            <div className={`${animationClass(isInView)} delay-200`}>
+              <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
+                <div className="md:col-span-3">
+                  <h3 className="text-2xl font-semibold text-left">{dictionary.skills.hardSkills}</h3>
+                </div>
+                <div className="md:col-span-9">
+                  <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {hardSkills.map((skill, index) => (
+                      <SkillItem key={`hard-${index}`} skill={skill} />
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
+          </div>
 
-            <Separator className="my-4 bg-border/50" />
+          <Separator className="my-4 bg-border/50" />
 
-            {/* Software Skills */}
-            <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-semibold">{dictionary.skills.softwareSkills}</h3>
-              </div>
-              <div className="md:col-span-9">
-                <div className="grid grid-cols-3 place-items-start gap-x-6 gap-y-10 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-                  {softwareSkills.map((skill) => (
-                    <div key={skill._id} className="flex flex-col items-center gap-2">
-                      <div className="relative h-16 w-16">
-                        <Image
-                          src={skill.iconUrl}
-                          alt={skill.name}
-                          fill
-                          className="object-contain rounded-md"
-                        />
+          {/* Software Skills */}
+          <div className="[perspective:2000px]">
+            <div className={`${animationClass(isInView)} delay-400`}>
+              <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
+                <div className="md:col-span-3">
+                  <h3 className="text-2xl font-semibold text-left">{dictionary.skills.softwareSkills}</h3>
+                </div>
+                <div className="md:col-span-9">
+                  <div className="grid grid-cols-3 place-items-start gap-x-6 gap-y-10 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                    {softwareSkills.map((skill) => (
+                      <div key={skill._id} className="flex flex-col items-center gap-2">
+                        <div className="relative h-16 w-16">
+                          <Image
+                            src={skill.iconUrl}
+                            alt={skill.name}
+                            fill
+                            className="object-contain rounded-md"
+                          />
+                        </div>
+                        <p className="text-sm font-medium text-center text-foreground/80">{skill.name}</p>
                       </div>
-                      <p className="text-sm font-medium text-center text-foreground/80">{skill.name}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
