@@ -3,20 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Belleza, Alegreya } from "next/font/google";
+import { Inter } from "next/font/google";
 import { i18n, type Locale } from '../../i18n.config';
 
-const belleza = Belleza({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-belleza",
-});
-
-const alegreya = Alegreya({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "500", "700", "800", "900"],
-  variable: "--font-alegreya",
+  variable: "--font-sans",
 });
 
 export default function RootLayout({
@@ -27,8 +19,8 @@ export default function RootLayout({
   params: { lang?: Locale };
 }>) {
   return (
-    <html lang={params.lang || i18n.defaultLocale} suppressHydrationWarning className={`${belleza.variable} ${alegreya.variable}`}>
-      <body className={cn("font-body antialiased")}>
+    <html lang={params.lang || i18n.defaultLocale} suppressHydrationWarning className={inter.variable}>
+      <body className={cn("font-sans antialiased")}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
