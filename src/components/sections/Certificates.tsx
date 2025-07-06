@@ -111,7 +111,7 @@ export default function Certificates({ certificates, dictionary, lang }: Certifi
                 <div className="flex justify-center items-center gap-4">
                     <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollPrev()}><ArrowLeft className="h-5 w-5"/></Button>
                     <div className="flex-grow">
-                        <h3 className="text-2xl font-semibold text-primary">{getText(selectedCert.name, lang, 'Untitled Certificate')}</h3>
+                        <h3 className="font-headline text-2xl font-semibold text-primary">{getText(selectedCert.name, lang, 'Untitled Certificate')}</h3>
                         <p className="mt-2 text-foreground/70 max-w-2xl mx-auto">{getText(selectedCert.description, lang)}</p>
                     </div>
                      <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollNext()}><ArrowRight className="h-5 w-5"/></Button>

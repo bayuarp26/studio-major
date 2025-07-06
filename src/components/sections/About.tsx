@@ -37,7 +37,7 @@ export default function About({ about, profilePictureUrl, dictionary, lang }: Ab
              </div>
           </div>
           <div className="lg:col-span-3">
-            <h2 className="text-center font-headline text-4xl font-semibold text-primary sm:text-5xl lg:text-left">
+            <h2 className="font-headline text-center text-4xl font-semibold text-primary sm:text-5xl lg:text-left">
               {dictionary.about.title}
             </h2>
             <p className="mt-6 text-center text-lg leading-relaxed text-foreground/70 lg:text-left">
