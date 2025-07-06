@@ -37,9 +37,9 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button asChild size="lg" className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg transition-transform hover:scale-105 hover:shadow-xl">
-              <Link href="#projects">
+              <a href={cvUrl} download={`CV-${name}.pdf`}>
                 {dictionary.hero.viewPortfolio}
-              </Link>
+              </a>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="#contact">
