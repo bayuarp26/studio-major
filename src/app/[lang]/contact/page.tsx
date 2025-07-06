@@ -29,7 +29,7 @@ export default async function ContactPage({ params: { lang } }: { params: { lang
             </a>
           </Button>
           {contact.linkedin && (
-            <Button asChild size="lg" className="bg-[#0A66C2] text-primary-foreground hover:bg-[#0A66C2]/90">
+            <Button asChild size="lg" className="bg-gradient-to-r from-[#0A66C2] to-[#2082d7] text-white hover:shadow-lg">
               <Link href={contact.linkedin} target="_blank" rel="noopener noreferrer">
                 <Linkedin className="mr-2 h-5 w-5" />
                 LinkedIn
