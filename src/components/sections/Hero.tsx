@@ -1,8 +1,7 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Download, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import type { MultilingualString } from "@/lib/types";
 import type { Locale } from "../../../i18n.config";
 
@@ -37,11 +36,10 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary
             {getText(title, lang)}
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Button asChild size="lg">
-              <a href={cvUrl} download="CV-Wahyu-Pratomo.pdf">
-                <Download className="mr-2 h-5 w-5" />
-                {dictionary.hero.downloadCv}
-              </a>
+            <Button asChild size="lg" className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg transition-transform hover:scale-105 hover:shadow-xl">
+              <Link href="#projects">
+                {dictionary.hero.viewPortfolio}
+              </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="#contact">
