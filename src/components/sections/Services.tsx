@@ -34,7 +34,7 @@ export default function Services({ dictionary }: ServicesProps) {
                 <div className="rounded-full border-2 border-primary/50 bg-primary/10 p-4 text-primary transition-all duration-300 group-hover:scale-110">
                   <Star className="h-8 w-8" />
                 </div>
-                <h3 className="text-2xl font-bold text-primary">{service.title}</h3>
+                <h3 className="font-headline text-2xl font-bold text-primary">{service.title}</h3>
                 <Button asChild size="lg" className="rounded-full px-8">
                   <Link href={service.link} target="_blank" rel="noopener noreferrer">
                     {dictionary.services.buttonText}

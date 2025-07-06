@@ -59,8 +59,8 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
     };
   }, []);
 
-  const animationClass = (isInView: boolean) => 
-    `transition-all duration-1000 [transform-style:preserve-3d] ${
+  const animationClass = (isInView: boolean, delay: string = 'delay-0') => 
+    `transition-all duration-1000 ${delay} [transform-style:preserve-3d] ${
       isInView ? 'opacity-100 [transform:rotateX(0deg)]' : 'opacity-0 [transform:rotateX(-90deg)]'
     }`;
 
@@ -82,7 +82,7 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
             <div className={`${animationClass(isInView)}`}>
               <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
                 <div className="md:col-span-3">
-                  <h3 className="text-2xl font-semibold text-left">{dictionary.skills.softSkills}</h3>
+                  <h3 className="font-headline text-2xl font-semibold text-left">{dictionary.skills.softSkills}</h3>
                 </div>
                 <div className="md:col-span-9">
                   <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -99,10 +99,10 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
 
           {/* Hard Skills */}
           <div className="[perspective:2000px]">
-            <div className={`${animationClass(isInView)} delay-200`}>
+            <div className={`${animationClass(isInView, 'delay-200')}`}>
               <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
                 <div className="md:col-span-3">
-                  <h3 className="text-2xl font-semibold text-left">{dictionary.skills.hardSkills}</h3>
+                  <h3 className="font-headline text-2xl font-semibold text-left">{dictionary.skills.hardSkills}</h3>
                 </div>
                 <div className="md:col-span-9">
                   <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -119,10 +119,10 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
 
           {/* Software Skills */}
           <div className="[perspective:2000px]">
-            <div className={`${animationClass(isInView)} delay-400`}>
+            <div className={`${animationClass(isInView, 'delay-400')}`}>
               <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
                 <div className="md:col-span-3">
-                  <h3 className="text-2xl font-semibold text-left">{dictionary.skills.softwareSkills}</h3>
+                  <h3 className="font-headline text-2xl font-semibold text-left">{dictionary.skills.softwareSkills}</h3>
                 </div>
                 <div className="md:col-span-9">
                   <div className="grid grid-cols-3 place-items-start gap-x-6 gap-y-10 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
