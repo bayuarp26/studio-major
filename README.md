@@ -232,7 +232,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Bayu Arp**
 - GitHub: [@bayuarp26](https://github.com/bayuarp26)
-- Portfolio: [Your Portfolio URL]
+- Portfolio: [https://www.wahyupratomo.my.id](https://www.wahyupratomo.my.id)
 
 ---
 
