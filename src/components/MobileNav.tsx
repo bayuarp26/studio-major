@@ -14,7 +14,11 @@ import { usePathname } from "next/navigation";
 interface MobileNavProps {
   navLinks: { name: string; href: string }[];
   name: string;
-  dictionary: any;
+  dictionary: {
+    nav: {
+      contactMe: string;
+    };
+  };
 }
 
 export function MobileNav({ navLinks, name, dictionary }: MobileNavProps) {

@@ -15,7 +15,17 @@ const sectionIds = ["hero", "about", "skills", "services", "projects", "educatio
 
 interface HeaderProps {
   name: string;
-  dictionary: any;
+  dictionary: {
+    nav: {
+      profile: string;
+      about: string;
+      skills: string;
+      services: string;
+      projects: string;
+      certificates: string;
+      contactMe: string;
+    };
+  };
 }
 
 export default function Header({ name, dictionary }: HeaderProps) {

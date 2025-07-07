@@ -16,7 +16,7 @@ function getLocale(request: NextRequest): string | undefined {
   try {
     const locale = matchLocale(languages, locales, i18n.defaultLocale);
     return locale;
-  } catch (e) {
+  } catch {
     // Fallback to default locale if matching fails for any reason
     return i18n.defaultLocale;
   }

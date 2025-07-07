@@ -2,11 +2,12 @@
 import Image from 'next/image';
 import type { MultilingualString } from '@/lib/types';
 import type { Locale } from '../../../i18n.config';
+import type { Dictionary } from '@/lib/dictionary-types';
 
 interface AboutProps {
   about: MultilingualString | string;
   profilePictureUrl: string;
-  dictionary: any;
+  dictionary: Dictionary;
   lang: Locale;
 }
 
@@ -38,7 +39,7 @@ export default function About({ about, profilePictureUrl, dictionary, lang }: Ab
           </div>
           <div className="lg:col-span-3">
             <h2 className="font-headline text-center text-4xl font-semibold text-primary sm:text-5xl lg:text-left">
-              {dictionary.about.title}
+              {dictionary.about?.title || 'About Me'}
             </h2>
             <p className="mt-6 text-center text-lg leading-relaxed text-foreground/70 lg:text-left">
               {getText(about, lang)}

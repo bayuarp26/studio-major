@@ -1,8 +1,9 @@
 
 import Link from "next/link";
 import { Settings } from "lucide-react";
+import { Dictionary } from "@/lib/dictionary-types";
 
-export default function Footer({ dictionary, name }: { dictionary: any, name: string }) {
+export default function Footer({ dictionary, name }: { dictionary: Dictionary, name: string }) {
   const currentYear = new Date().getFullYear();
 
   return (

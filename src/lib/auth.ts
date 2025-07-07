@@ -9,7 +9,7 @@ import { getUser } from '@/lib/data';
 import type { SessionPayload } from '@/lib/types';
 import { redirect } from 'next/navigation';
 
-const SECRET_KEY = process.env.JWT_SECRET_KEY || 'your-super-secret-key-that-is-long-and-secure';
+const SECRET_KEY = process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-and-secure';
 const COOKIE_NAME = 'session';
 
 const loginSchema = z.object({
@@ -49,7 +49,7 @@ export async function getSession(): Promise<SessionPayload | null> {
       return null;
     }
     return payload;
-  } catch (error) {
+  } catch {
     return null; // Invalid token
   }
 }

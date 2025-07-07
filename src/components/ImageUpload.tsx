@@ -30,7 +30,7 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     if (acceptedFiles.length > 0) {
       convertFileToBase64(acceptedFiles[0]);
     }
-  }, [onChange]);
+  }, [onChange, convertFileToBase64]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

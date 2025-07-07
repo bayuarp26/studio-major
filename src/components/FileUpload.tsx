@@ -56,7 +56,7 @@ export function FileUpload({ value, onChange, disabled }: FileUploadProps) {
         <div className="flex flex-col items-center justify-center">
             <FileText className="h-12 w-12 text-primary" />
             <p className="mt-2 text-sm font-semibold text-foreground">CV telah diunggah.</p>
-            <p className="mt-1 text-xs text-muted-foreground">Klik "Save All Changes" untuk menerapkan.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Klik &quot;Save All Changes&quot; untuk menerapkan.</p>
             <Button
                 type="button"
                 variant="link"

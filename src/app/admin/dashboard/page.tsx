@@ -1,7 +1,6 @@
 
 import AdminForm from '@/components/AdminForm';
 import { getPortfolioData } from '@/lib/data';
-import type { PortfolioData } from '@/lib/types';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 

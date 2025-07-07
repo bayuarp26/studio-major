@@ -3,7 +3,7 @@
 
 import clientPromise from './mongodb';
 import type { PortfolioData, Project, EducationItem, Certificate, User, SoftwareSkill } from '@/lib/types';
-import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
+import { Db, MongoClient, WithId, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import { unstable_noStore as noStore } from 'next/cache';
 
@@ -98,7 +98,7 @@ export const getPortfolioData = async (): Promise<PortfolioData> => {
 
         if (!mainContent) {
             console.warn("Main content not found. Seeding and re-fetching.");
-            const { projects, education, certificates, softSkills, hardSkills, softwareSkills, ...emptyMainContent } = EMPTY_DATA;
+            const { ...emptyMainContent } = EMPTY_DATA;
             await mainContentCollection.insertOne({ _id: MAIN_DOC_ID, ...emptyMainContent });
             mainContent = await mainContentCollection.findOne({ _id: MAIN_DOC_ID });
             
@@ -181,7 +181,8 @@ export async function addDocument<T extends { _id?: string | ObjectId }>(collect
 
 export async function updateDocument<T extends { _id?: string | ObjectId }>(collectionName: string, id: string, doc: T): Promise<void> {
     const db = await getDb();
-    const { _id, ...dataToUpdate } = doc;
+    const { ...dataToUpdate } = doc;
+    delete dataToUpdate._id;
     await db.collection(collectionName).updateOne(
         { _id: new ObjectId(id) },
         { $set: dataToUpdate }

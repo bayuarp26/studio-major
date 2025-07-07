@@ -28,7 +28,7 @@ function revalidatePublicPaths() {
 }
 
 // --- Generic Success/Error Response ---
-type ActionResponse<T = any> = {
+type ActionResponse<T = unknown> = {
     success: boolean;
     message: string;
     data?: T;
