@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Project, MultilingualString } from '@/lib/types';
 import { getDictionary } from '@/lib/dictionaries';
-import type { Locale } from '../../../i18n.config';
+import type { Locale } from '@/../i18n.config';
 
 export const revalidate = 86400; // Revalidate every 24 hours
 
@@ -16,7 +16,7 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
     return field;
   }
   if (field && typeof field === 'object' && !Array.isArray(field)) {
-    return field[lang] || field.id || fallback;
+    return field[lang as keyof MultilingualString] || field.id || fallback;
   }
   return fallback;
 }

@@ -27,7 +27,8 @@ export async function createSession(username: string) {
     expiresIn: '7d',
   });
 
-  cookies().set(COOKIE_NAME, token, {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     expires: expiresAt,
@@ -37,7 +38,7 @@ export async function createSession(username: string) {
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
 
@@ -54,7 +55,8 @@ export async function getSession(): Promise<SessionPayload | null> {
 }
 
 export async function logout() {
-  cookies().set(COOKIE_NAME, '', { expires: new Date(0) });
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, '', { expires: new Date(0) });
 }
 
 // --- SERVER ACTIONS ---
@@ -85,7 +87,7 @@ export async function login(formData: FormData) {
 
   } catch (error) {
     // This is the important part. If the error is a redirect error, re-throw it.
-    if (error.type === 'NEXT_REDIRECT') {
+    if (error && typeof error === 'object' && 'type' in error && error.type === 'NEXT_REDIRECT') {
       throw error;
     }
     

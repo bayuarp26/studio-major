@@ -114,6 +114,7 @@ const projectSchema = z.object({
   imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
   description: multilingualStringSchema,
+  details: z.string().optional(),
   tags: z.union([z.string(), z.array(z.string())]).optional(),
   link: z.string().url('Invalid URL format').optional().or(z.literal('')),
 });
@@ -255,6 +256,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
         ...data,
         imageUrl: data.imageUrl || 'https://placehold.co/600x400.png',
         imageHint: data.imageHint || '',
+        details: data.details || '',
         tags: typeof data.tags === 'string' ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : (data.tags || []),
         link: data.link || '#'
     };

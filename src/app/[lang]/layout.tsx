@@ -15,7 +15,7 @@ export async function generateMetadata({ params: { lang } }: { params: { lang: L
   const dictionary = await getDictionary(lang);
   return {
     title: `${dictionary.metadata.portfolio} ${portfolioData.name}`,
-    description: portfolioData.title,
+    description: portfolioData.title[lang],
   };
 }
 
