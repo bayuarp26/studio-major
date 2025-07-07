@@ -11,15 +11,16 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { lang?: Locale };
+  params: Promise<{ lang?: Locale }>;
 }>) {
+  const { lang } = await params;
   return (
-    <html lang={params.lang || i18n.defaultLocale} suppressHydrationWarning className={inter.variable}>
+    <html lang={lang || i18n.defaultLocale} suppressHydrationWarning className={inter.variable}>
       <body className={cn("font-sans antialiased")}>
         <ThemeProvider
           attribute="class"
