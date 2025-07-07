@@ -226,6 +226,10 @@ This project is licensed under the MIT License.
 - **Radix UI** for accessible component primitives
 - **Tailwind CSS** for utility-first styling
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ---
 
 <div align="center">
