@@ -190,7 +190,25 @@ export async function createSession(username: string) {
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+### Cloudflare Pages (Recommended)
+1. Go to [Cloudflare Pages Dashboard](https://dash.cloudflare.com/pages)
+2. Click "Create a project" → "Connect to Git"
+3. Select your `bayuarp26/studio-major` repository
+4. Configure build settings:
+   - **Framework preset**: Next.js
+   - **Build command**: `npm run build`
+   - **Build output directory**: `.next`
+   - **Root directory**: (leave empty)
+5. Add environment variables:
+   ```
+   NODE_ENV=production
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret_key
+   GOOGLE_GENAI_API_KEY=your_google_ai_key
+   ```
+6. Deploy from `production` branch
+
+### Vercel (Alternative)
 1. Connect your GitHub repository to Vercel
 2. Configure environment variables
 3. Deploy automatically on every push to `production` branch
