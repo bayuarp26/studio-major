@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Mail, Linkedin } from "lucide-react";
 import { getDictionary } from '@/lib/dictionaries';
-import type { Locale } from '../../../i18n.config';
+import type { Locale } from '@/../i18n.config';
 
 export const revalidate = 86400; // Revalidate every 24 hours
 

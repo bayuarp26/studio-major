@@ -1,7 +1,7 @@
 
 import { getPortfolioData } from "@/lib/data";
 import { getDictionary } from '@/lib/dictionaries';
-import type { Locale } from '../../../i18n.config';
+import type { Locale } from '@/../i18n.config';
 import Skills from "@/components/sections/Skills";
 
 export default async function SkillsPage({ params: { lang } }: { params: { lang: Locale } }) {

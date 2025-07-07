@@ -3,7 +3,7 @@ import { getPortfolioData } from "@/lib/data";
 import { GraduationCap } from "lucide-react";
 import Certificates from "@/components/sections/Certificates";
 import { getDictionary } from '@/lib/dictionaries';
-import type { Locale } from '../../../i18n.config';
+import type { Locale } from '@/../i18n.config';
 import type { MultilingualString } from "@/lib/types";
 
 export const revalidate = 86400; // Revalidate every 24 hours
@@ -13,7 +13,7 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
     return field;
   }
   if (field && typeof field === 'object' && !Array.isArray(field)) {
-    return field[lang] || field.id || fallback;
+    return field[lang as keyof MultilingualString] || field.id || fallback;
   }
   return fallback;
 }

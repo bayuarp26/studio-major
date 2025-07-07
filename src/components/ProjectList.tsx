@@ -6,13 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { Project } from '@/lib/types';
+import type { Project, MultilingualString } from '@/lib/types';
+import type { Locale } from '@/../i18n.config';
 
 interface ProjectListProps {
   projects: Project[];
+  lang: Locale;
 }
 
-export default function ProjectList({ projects }: ProjectListProps) {
+const getText = (field: MultilingualString | string | undefined, lang: Locale, fallback: string = ''): string => {
+  if (typeof field === 'string') {
+    return field;
+  }
+  if (field && typeof field === 'object' && !Array.isArray(field)) {
+    return field[lang as keyof MultilingualString] || field.id || fallback;
+  }
+  return fallback;
+}
+
+export default function ProjectList({ projects, lang }: ProjectListProps) {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
@@ -24,12 +36,16 @@ export default function ProjectList({ projects }: ProjectListProps) {
   return (
     <>
       <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project, index) => (
-          <Card key={`${project.title}-${index}`} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
+        {projects.map((project, index) => {
+          const projectTitle = getText(project.title, lang, 'Untitled Project');
+          const projectDescription = getText(project.description, lang);
+          
+          return (
+          <Card key={`${projectTitle}-${index}`} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
             <div className="aspect-video overflow-hidden">
                <Image
                 src={project.imageUrl || 'https://placehold.co/600x400.png'}
-                alt={project.title}
+                alt={projectTitle}
                 width={600}
                 height={400}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -37,8 +53,8 @@ export default function ProjectList({ projects }: ProjectListProps) {
               />
             </div>
             <CardContent className="flex flex-grow flex-col p-6">
-              <CardTitle className="text-xl font-bold text-primary">{project.title}</CardTitle>
-              <p className="mt-3 flex-grow text-base text-foreground/80">{project.description}</p>
+              <CardTitle className="text-xl font-bold text-primary">{projectTitle}</CardTitle>
+              <p className="mt-3 flex-grow text-base text-foreground/80">{projectDescription}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {project.tags.map((tag) => (
                   <Badge key={tag} variant="secondary">
@@ -59,7 +75,8 @@ export default function ProjectList({ projects }: ProjectListProps) {
               )}
             </CardFooter>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
@@ -67,12 +84,12 @@ export default function ProjectList({ projects }: ProjectListProps) {
             {selectedProject && (
                 <>
                     <DialogHeader className="p-4 border-b">
-                        <DialogTitle>{selectedProject.title}</DialogTitle>
+                        <DialogTitle>{getText(selectedProject.title, lang, 'Project Details')}</DialogTitle>
                     </DialogHeader>
                     <div className="w-full h-full">
                         <iframe
                             src={selectedProject.link}
-                            title={selectedProject.title}
+                            title={getText(selectedProject.title, lang, 'Project Details')}
                             className="w-full h-full border-0"
                             allowFullScreen
                         />

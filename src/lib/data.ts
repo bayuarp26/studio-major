@@ -20,7 +20,7 @@ const SOFTWARE_SKILLS_COLLECTION_NAME = 'software_skills';
 
 
 // --- DOCUMENT ID FOR SINGLETONS ---
-const MAIN_DOC_ID = 'main_content';
+const MAIN_DOC_ID = new ObjectId('507f1f77bcf86cd799439011'); // Fixed ObjectId for main content
 
 const EMPTY_DATA: PortfolioData = {
     name: "",
