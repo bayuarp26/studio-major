@@ -130,19 +130,148 @@ npm run typecheck    # Run TypeScript type checking
 src/
 ├── app/                    # Next.js App Router
 │   ├── [lang]/            # Internationalized routes
+│   │   ├── page.tsx       # Home page
+│   │   ├── layout.tsx     # Language layout
+│   │   ├── certificates/  # Certificates page
+│   │   ├── contact/       # Contact page
+│   │   ├── projects/      # Projects page
+│   │   └── skills/        # Skills page
 │   └── admin/             # Admin dashboard
+│       ├── page.tsx       # Admin redirect page
+│       ├── login/         # Admin authentication
+│       │   └── page.tsx   # Login form
+│       └── dashboard/     # Admin dashboard
+│           └── page.tsx   # Dashboard interface
 ├── components/            
+│   ├── AdminForm.tsx      # Admin content management
+│   ├── FileUpload.tsx     # File upload component
+│   ├── ImageUpload.tsx    # Image upload component
+│   ├── LoginForm.tsx      # Authentication form
 │   ├── sections/          # Page sections
-│   ├── ui/               # UI components
+│   │   ├── About.tsx      # About section
+│   │   ├── Certificates.tsx # Certificates display
+│   │   ├── Contact.tsx    # Contact section
+│   │   ├── Education.tsx  # Education section
+│   │   ├── Hero.tsx       # Hero section
+│   │   ├── Projects.tsx   # Projects showcase
+│   │   ├── Services.tsx   # Services section
+│   │   └── Skills.tsx     # Skills section
+│   ├── ui/               # UI components (Radix UI)
 │   └── ...               # Feature components
 ├── lib/                   # Utilities
-│   ├── auth.ts           # Authentication
+│   ├── auth.ts           # JWT authentication
+│   ├── actions.ts        # Server actions
 │   ├── data.ts           # Data fetching
 │   ├── mongodb.ts        # Database connection
-│   └── types.ts          # TypeScript types
+│   ├── types.ts          # TypeScript types
+│   ├── utils.ts          # Utility functions
+│   └── dictionary-types.ts # i18n types
 ├── dictionaries/          # Translation files
+│   ├── en.json           # English translations
+│   └── id.json           # Indonesian translations
 └── hooks/                # Custom React hooks
+    ├── use-toast.ts      # Toast notifications
+    └── use-mobile.tsx    # Mobile detection
 ```
+
+### 🔐 Admin System Architecture
+
+```
+Admin Dashboard System:
+├── Authentication Layer
+│   ├── JWT Token Management      # lib/auth.ts
+│   ├── Login Form               # components/LoginForm.tsx
+│   ├── Session Middleware       # middleware.ts
+│   └── Protected Routes         # app/admin/*
+│
+├── Content Management
+│   ├── Profile Management       # Edit personal info
+│   ├── Projects CRUD           # Add/Edit/Delete projects
+│   ├── Education CRUD          # Manage education history
+│   ├── Certificates CRUD       # Manage certifications
+│   ├── Skills Management       # Update skills
+│   └── File Upload System      # Image uploads
+│
+├── Database Operations
+│   ├── MongoDB Connection       # lib/mongodb.ts
+│   ├── Data Models             # lib/types.ts
+│   ├── Server Actions          # lib/actions.ts
+│   └── Data Fetching           # lib/data.ts
+│
+└── Security Features
+    ├── Route Protection        # middleware.ts
+    ├── Form Validation         # Zod schemas
+    ├── CSRF Protection         # Built-in Next.js
+    └── Secure Headers          # next.config.ts
+```
+
+### 📋 Admin Dashboard Features
+
+| Feature | Component | Description |
+|---------|-----------|-------------|
+| **Authentication** | `LoginForm.tsx` | JWT-based login system |
+| **Profile Management** | `AdminForm.tsx` | Edit personal information |
+| **Projects Management** | `AdminForm.tsx` | CRUD operations for portfolio projects |
+| **Education Management** | `AdminForm.tsx` | Add/edit education history |
+| **Certificates Management** | `AdminForm.tsx` | Manage certifications and licenses |
+| **Skills Management** | `AdminForm.tsx` | Update technical and soft skills |
+| **File Uploads** | `FileUpload.tsx`, `ImageUpload.tsx` | Handle image and document uploads |
+| **Content Preview** | `sections/*.tsx` | Real-time preview of changes |
+| **Multilingual Support** | `dictionary-types.ts` | Manage content in multiple languages |
+
+### 🔄 Admin Workflow
+
+```mermaid
+graph TD
+    A[Visit /admin] --> B{Authenticated?}
+    B -->|No| C[Redirect to /admin/login]
+    B -->|Yes| D[Access Dashboard]
+    
+    C --> E[Enter Credentials]
+    E --> F{Valid Login?}
+    F -->|No| G[Show Error]
+    F -->|Yes| H[Generate JWT Token]
+    
+    H --> D
+    D --> I[Choose Content Type]
+    
+    I --> J[Profile Management]
+    I --> K[Projects CRUD]
+    I --> L[Education CRUD]
+    I --> M[Certificates CRUD]
+    I --> N[Skills Management]
+    
+    J --> O[Form Validation]
+    K --> O
+    L --> O
+    M --> O
+    N --> O
+    
+    O --> P{Valid Data?}
+    P -->|No| Q[Show Validation Errors]
+    P -->|Yes| R[Save to MongoDB]
+    
+    R --> S[Update UI]
+    S --> T[Success Notification]
+```
+
+### 🛡️ Admin Security Features
+
+- **🔐 JWT Authentication**: Secure token-based authentication
+- **🛡️ Route Protection**: Middleware-based route guarding
+- **✅ Input Validation**: Zod schema validation for all forms
+- **🔒 CSRF Protection**: Built-in Next.js CSRF protection
+- **📝 Audit Logging**: Track admin actions and changes
+- **⏱️ Session Management**: Automatic token expiration
+- **🚫 Unauthorized Access**: Automatic redirects for protected routes
+
+### 📱 Admin Dashboard Pages
+
+| Page | Route | Purpose | Features |
+|------|-------|---------|----------|
+| **Login** | `/admin/login` | Authentication | JWT login, remember me, error handling |
+| **Dashboard** | `/admin/dashboard` | Content management | Full CRUD operations, file uploads |
+| **Admin Home** | `/admin` | Redirect handler | Automatically redirects to dashboard if authenticated |
 
 ## 🌍 Internationalization
 
