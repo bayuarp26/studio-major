@@ -343,7 +343,7 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-**Bayu Ardi Putra**
+**Wahyu Pratomo**
 - 🌐 **Portfolio**: [https://studio-major.vercel.app](https://studio-major.vercel.app)
 - 🐙 **GitHub**: [@bayuarp26](https://github.com/bayuarp26)
 
