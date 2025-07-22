@@ -8,7 +8,11 @@ import type { Locale } from '@/../i18n.config';
 
 export const revalidate = 86400; // Revalidate every 24 hours
 
+<<<<<<< Updated upstream
 export default async function ContactPage({ params }: { params: { lang: Locale } }) {
+=======
+export default async function ContactPage({ params }: { params: Promise<{ lang: Locale }> }) {
+>>>>>>> Stashed changes
   const { lang } = await params;
   const { contact } = await getPortfolioData();
   const dictionary = await getDictionary(lang);

@@ -4,7 +4,7 @@ import { getDictionary } from '@/lib/dictionaries';
 import type { Locale } from '@/../i18n.config';
 import Skills from "@/components/sections/Skills";
 
-export default async function SkillsPage({ params }: { params: { lang: Locale } }) {
+export default async function SkillsPage({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
   const { softSkills, hardSkills, softwareSkills } = await getPortfolioData();
   const dictionary = await getDictionary(lang);

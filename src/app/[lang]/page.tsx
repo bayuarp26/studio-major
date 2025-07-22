@@ -14,7 +14,7 @@ import ContactProject from "@/components/sections/ContactProject";
 import { getDictionary } from '@/lib/dictionaries';
 import type { Locale } from '../../../i18n.config';
 
-export default async function ProfilePage({ params }: { params: { lang: Locale } }) {
+export default async function ProfilePage({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
   const portfolioData = await getPortfolioData();
   const dictionary = await getDictionary(lang);
