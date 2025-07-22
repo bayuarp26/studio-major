@@ -12,13 +12,13 @@ const SkillItem = ({ skill }: { skill: string }) => {
       <div className="relative h-full w-full transition-all duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
         {/* Front Face */}
         <div className="flex items-center gap-2 [backface-visibility:hidden]">
-          <CheckCircle2 className="h-5 w-5 text-primary" />
-          <span className="text-foreground/80">{skill}</span>
+          <CheckCircle2 className="h-5 w-5 text-purple-600" />
+          <span className="text-portfolio-medium">{skill}</span>
         </div>
         {/* Back Face */}
         <div className="absolute inset-0 flex items-center gap-2 [transform:rotateY(180deg)] [backface-visibility:hidden]">
-          <CheckCircle2 className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-primary">{skill}</span>
+          <CheckCircle2 className="h-5 w-5 text-purple-600" />
+          <span className="font-semibold text-purple-600">{skill}</span>
         </div>
       </div>
     </li>
@@ -65,81 +65,70 @@ export default function Skills({ softSkills, hardSkills, softwareSkills, diction
     }`;
 
   return (
-    <section id="skills" className="bg-background py-24 sm:py-32">
+    <section id="skills" className="bg-white py-24 sm:py-32">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center">
-          <h2 className="font-headline text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+        <div className="text-center mb-16">
+          <div className="mb-6">
+            <span className="inline-block px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+              My Skills
+            </span>
+          </div>
+          <h2 className="font-headline text-4xl font-bold tracking-tight text-portfolio-dark sm:text-5xl">
             {dictionary.skills.title}
           </h2>
         </div>
 
         <div
           ref={sectionRef as React.RefObject<HTMLDivElement>}
-          className="mt-16"
+          className="space-y-12"
         >
           {/* Soft Skills */}
           <div className="[perspective:2000px]">
             <div className={`${animationClass(isInView)}`}>
-              <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
-                <div className="md:col-span-3">
-                  <h3 className="font-headline text-2xl font-semibold text-left">{dictionary.skills.softSkills}</h3>
-                </div>
-                <div className="md:col-span-9">
-                  <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {softSkills.map((skill, index) => (
-                      <SkillItem key={`soft-${index}`} skill={skill} />
-                    ))}
-                  </ul>
-                </div>
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8">
+                <h3 className="font-headline text-2xl font-semibold text-portfolio-dark mb-6">{dictionary.skills.softSkills}</h3>
+                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {softSkills.map((skill, index) => (
+                    <SkillItem key={`soft-${index}`} skill={skill} />
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
-
-          <Separator className="my-4 bg-border/50" />
 
           {/* Hard Skills */}
           <div className="[perspective:2000px]">
             <div className={`${animationClass(isInView, 'delay-200')}`}>
-              <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
-                <div className="md:col-span-3">
-                  <h3 className="font-headline text-2xl font-semibold text-left">{dictionary.skills.hardSkills}</h3>
-                </div>
-                <div className="md:col-span-9">
-                  <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {hardSkills.map((skill, index) => (
-                      <SkillItem key={`hard-${index}`} skill={skill} />
-                    ))}
-                  </ul>
-                </div>
+              <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-8">
+                <h3 className="font-headline text-2xl font-semibold text-portfolio-dark mb-6">{dictionary.skills.hardSkills}</h3>
+                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {hardSkills.map((skill, index) => (
+                    <SkillItem key={`hard-${index}`} skill={skill} />
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
 
-          <Separator className="my-4 bg-border/50" />
-
           {/* Software Skills */}
           <div className="[perspective:2000px]">
             <div className={`${animationClass(isInView, 'delay-400')}`}>
-              <div className="grid grid-cols-1 gap-8 py-8 md:grid-cols-12">
-                <div className="md:col-span-3">
-                  <h3 className="font-headline text-2xl font-semibold text-left">{dictionary.skills.softwareSkills}</h3>
-                </div>
-                <div className="md:col-span-9">
-                  <div className="grid grid-cols-3 place-items-start gap-x-6 gap-y-10 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-                    {softwareSkills.map((skill) => (
-                      <div key={skill._id} className="flex flex-col items-center gap-2">
-                        <div className="relative h-16 w-16">
-                          <Image
-                            src={skill.iconUrl}
-                            alt={skill.name}
-                            fill
-                            className="object-contain rounded-md"
-                          />
-                        </div>
-                        <p className="text-sm font-medium text-center text-foreground/80">{skill.name}</p>
+              <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-8">
+                <h3 className="font-headline text-2xl font-semibold text-portfolio-dark mb-6">{dictionary.skills.softwareSkills}</h3>
+                <div className="grid grid-cols-3 place-items-start gap-x-6 gap-y-10 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                  {softwareSkills.map((skill) => (
+                    <div key={skill._id} className="flex flex-col items-center gap-2">
+                      <div className="relative h-16 w-16 bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
+                        <Image
+                          src={skill.iconUrl}
+                          alt={skill.name}
+                          fill
+                          className="object-contain rounded-md"
+                        />
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-sm font-medium text-center text-portfolio-dark">{skill.name}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

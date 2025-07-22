@@ -10,7 +10,8 @@ export async function generateStaticParams() {
   return i18n.locales.map(locale => ({ lang: locale }))
 }
 
-export async function generateMetadata({ params: { lang } }: { params: { lang: Locale } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
+  const { lang } = await params;
   const portfolioData = await getPortfolioData();
   const dictionary = await getDictionary(lang);
   return {
@@ -27,8 +28,9 @@ export default async function LangLayout({
   children: React.ReactNode;
   params: { lang: Locale };
 }>) {
+  const { lang } = await params;
   const portfolioData = await getPortfolioData();
-  const dictionary = await getDictionary(params.lang);
+  const dictionary = await getDictionary(lang);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

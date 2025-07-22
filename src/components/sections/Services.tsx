@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { Code, Palette, Globe } from "lucide-react";
 import Link from "next/link";
 
 interface ServicesProps {
@@ -8,41 +8,77 @@ interface ServicesProps {
 }
 
 export default function Services({ dictionary }: ServicesProps) {
-  const servicesData = [
+  const services = [
     {
-      title: dictionary.services.socialMediaSpecialist,
-      link: "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%20Kak%2C%20aku%20mau%20kerja%20sama%20nihh%20dengan%20kakak%20untuk%20Jadi%20Tim%20Sosial%20Media%20Spesialist%20kami%2C%20Apa%20aku%20Boleh%20berdiskusi%20sama%20kakak%20?%20&type=phone_number&app_absent=0",
+      icon: Globe,
+      title: "User Experience (UX)",
+      description: "Creating intuitive and user-friendly interfaces that enhance user satisfaction and drive engagement.",
+      color: "bg-purple-600"
     },
     {
-      title: dictionary.services.digitalMarketing,
-      link: "https://api.whatsapp.com/send/?phone=6282286514244&text=Halo%20kak%2C%20aku%20mau%20kerja%20sama%20dengan%20kakak%20untuk%20jadi%20bagian%20Tim%20digital%20marketing%20kami%20nih%2C%20apa%20aku%20boleh%20berdiskusi%20dengan%20kakak%20%3F&type=phone_number&app_absent=0",
+      icon: Palette,
+      title: "User Interface (UI)", 
+      description: "Designing beautiful, modern, and responsive interfaces that captivate users and reflect your brand.",
+      color: "bg-purple-400"
     },
+    {
+      icon: Code,
+      title: "Web Development",
+      description: "Building fast, secure, and scalable web applications using modern technologies and best practices.",
+      color: "bg-purple-500"
+    }
   ];
 
   return (
-    <section id="services" className="bg-secondary py-24 sm:py-32">
+    <section className="py-24 sm:py-32 bg-gray-50">
       <div className="container">
-        <div className="text-center">
-          <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            {dictionary.services.title}
-          </h2>
-        </div>
-        <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-          {servicesData.map((service, index) => (
-            <Card key={index} className="bg-card shadow-lg rounded-xl overflow-hidden group transform transition-all duration-300 hover:-translate-y-2 hover:shadow-primary/20">
-              <CardContent className="p-8 flex flex-col items-center text-center gap-6">
-                <div className="rounded-full border-2 border-primary/50 bg-primary/10 p-4 text-primary transition-all duration-300 group-hover:scale-110">
-                  <Star className="h-8 w-8" />
-                </div>
-                <h3 className="font-headline text-2xl font-bold text-primary">{service.title}</h3>
-                <Button asChild size="lg" className="rounded-full px-8">
-                  <Link href={service.link} target="_blank" rel="noopener noreferrer">
-                    {dictionary.services.buttonText}
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          {/* Left Side - Content */}
+          <div>
+            <h2 className="font-headline text-4xl font-bold text-gray-900 sm:text-5xl mb-6">
+              What I do?
+            </h2>
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla purus arcu, varius eget velit non, laoreet imperdiet orci. Mauris ultrices eget lorem ac vestibulum. Suspendis imperdiet,
+            </p>
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla purus arcu, varius eget velit non.
+            </p>
+            <Button 
+              asChild 
+              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-8 py-3"
+            >
+              <Link href="#contact">
+                Hire Me
+              </Link>
+            </Button>
+          </div>
+
+          {/* Right Side - Services with Cards */}
+          <div className="space-y-6">
+            {services.map((service, index) => {
+              const IconComponent = service.icon;
+              return (
+                <Card key={index} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 p-6">
+                  <CardContent className="p-0">
+                    <div className="flex items-start gap-4">
+                      <div className={`w-12 h-12 ${service.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {service.title}
+                        </h3>
+                        <p className="text-gray-600 leading-relaxed text-sm">
+                          {service.description}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

@@ -21,6 +21,14 @@ export default {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       colors: {
+        // Custom Portfolio Colors
+        'portfolio-orange': '#FFA500',
+        'portfolio-dark': '#2D2D2D',
+        'portfolio-medium': '#808080',
+        'portfolio-light': '#F5F5F5',
+        'portfolio-border': '#C0C0C0',
+        
+        // Shadcn UI Colors
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -94,11 +102,27 @@ export default {
             opacity: '1',
           },
         },
+        'float': {
+          '0%, 100%': {
+            transform: 'translateY(0px)',
+          },
+          '50%': {
+            transform: 'translateY(-10px)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip-in-x': 'flip-in-x 0.6s ease-out',
+        'float': 'float 3s ease-in-out infinite',
+      },
+      perspective: {
+        '1000': '1000px',
+        '1500': '1500px',
+      },
+      transformStyle: {
+        'preserve-3d': 'preserve-3d',
       },
     },
   },

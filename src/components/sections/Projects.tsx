@@ -25,54 +25,54 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
 
 export default function Projects({ projects, dictionary, lang }: ProjectsProps) {
   return (
-    <section id="projects" className="bg-secondary py-24 sm:py-32">
+    <section id="projects" className="bg-white py-24 sm:py-32">
       <div className="container">
-        <div className="text-center">
-          <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            {dictionary.projects.title}
+        <div className="text-center mb-16">
+          <h2 className="font-headline text-4xl font-bold text-gray-900 sm:text-5xl mb-4">
+            Portfolio
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/70">
-            {dictionary.projects.description}
+          <p className="mx-auto max-w-2xl text-lg text-gray-600">
+            Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.
           </p>
         </div>
-        <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project, index) => {
+        
+        {/* Portfolio Grid - 3x2 layout like in the design */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.slice(0, 6).map((project, index) => {
             const projectTitle = getText(project.title, lang, 'Untitled Project');
             const projectDescription = getText(project.description, lang);
 
             return (
-              <Card key={`${projectTitle}-${index}`} className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1">
-                <div className="aspect-video overflow-hidden">
+              <Card key={`${projectTitle}-${index}`} className="group flex flex-col overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200">
+                <div className="aspect-[4/3] overflow-hidden">
                   <Image
-                    src={project.imageUrl || 'https://placehold.co/600x400.png'}
+                    src={project.imageUrl || 'https://placehold.co/400x300.png'}
                     alt={projectTitle}
-                    width={600}
-                    height={400}
+                    width={400}
+                    height={300}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint={project.imageHint}
                   />
                 </div>
-                <CardContent className="flex flex-grow flex-col p-6">
-                  <CardTitle className="text-xl font-bold text-primary">{projectTitle}</CardTitle>
-                  <p className="mt-3 flex-grow text-base text-foreground/80">{projectDescription}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                <CardContent className="p-6">
+                  <CardTitle className="text-lg font-semibold text-gray-900 mb-2">{projectTitle}</CardTitle>
+                  <p className="text-sm text-gray-600 leading-relaxed">{projectDescription}</p>
                 </CardContent>
-                <CardFooter className="justify-end p-6 pt-0">
-                  <Button asChild variant="outline" disabled={!project.link || project.link === '#'}>
-                      <Link href={project.link || '#'} target="_blank" rel="noopener noreferrer">
-                          {dictionary.projects.viewDetails}
-                      </Link>
-                  </Button>
-                </CardFooter>
               </Card>
             );
           })}
+        </div>
+        
+        {/* View All Button */}
+        <div className="text-center mt-12">
+          <Button 
+            asChild 
+            className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-8 py-3"
+          >
+            <Link href="/projects">
+              View All
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

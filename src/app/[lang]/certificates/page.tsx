@@ -18,7 +18,8 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
   return fallback;
 }
 
-export default async function CertificatesPage({ params: { lang } }: { params: { lang: Locale } }) {
+export default async function CertificatesPage({ params }: { params: { lang: Locale } }) {
+  const { lang } = await params;
   const { certificates, education } = await getPortfolioData();
   const dictionary = await getDictionary(lang);
 

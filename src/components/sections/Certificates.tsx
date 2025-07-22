@@ -61,12 +61,15 @@ export default function Certificates({ certificates, dictionary, lang }: Certifi
   const selectedCert = certificates[current - 1];
 
   return (
-    <section id="certificates" className="bg-secondary py-24 sm:py-32">
+    <section id="certificates" className="py-24 sm:py-32 bg-white">
       <div className="container">
-        <div className="text-center">
-          <h2 className="font-headline text-4xl font-semibold text-primary sm:text-5xl">
-            {dictionary.certificates.title}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 sm:text-5xl mb-4">
+            My Certificates
           </h2>
+          <p className="max-w-2xl mx-auto text-lg text-gray-600">
+            Professional certifications and achievements that showcase my expertise and commitment to continuous learning.
+          </p>
         </div>
         <div className="mt-16 mx-auto max-w-4xl">
           <Carousel
@@ -82,17 +85,21 @@ export default function Certificates({ certificates, dictionary, lang }: Certifi
                 const certName = getText(cert.name, lang, 'Untitled Certificate');
                 return (
                   <CarouselItem key={cert._id || index}>
-                    <Card className="overflow-hidden border-none shadow-none bg-transparent">
-                      <CardContent className="p-0">
-                        <div className="relative aspect-[16/9] w-full rounded-lg bg-muted/40">
+                    <Card className="overflow-hidden border border-gray-200 shadow-lg bg-white rounded-2xl">
+                      <CardContent className="p-6">
+                        <div className="relative aspect-[16/9] w-full rounded-lg bg-gray-50 mb-4">
                           <Image
                             src={cert.imageUrl || 'https://placehold.co/800x600.png'}
                             alt={certName}
                             fill
                             sizes="(min-width: 1024px) 768px, 100vw"
-                            className="object-contain"
+                            className="object-contain rounded-lg"
                             data-ai-hint={cert.imageHint || 'certificate document'}
                           />
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">{certName}</h3>
+                          <p className="text-gray-600 text-sm">{getText(cert.description, lang)}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -101,30 +108,17 @@ export default function Certificates({ certificates, dictionary, lang }: Certifi
               })}
             </CarouselContent>
             <div className="hidden sm:block">
-              <CarouselPrevious className="absolute left-[-80px] top-1/2 -translate-y-1/2 h-12 w-12 bg-primary/80 hover:bg-primary text-primary-foreground" />
-              <CarouselNext className="absolute right-[-80px] top-1/2 -translate-y-1/2 h-12 w-12 bg-primary/80 hover:bg-primary text-primary-foreground" />
+              <CarouselPrevious className="absolute left-[-80px] top-1/2 -translate-y-1/2 h-12 w-12 bg-purple-600 hover:bg-purple-700 text-white border-0" />
+              <CarouselNext className="absolute right-[-80px] top-1/2 -translate-y-1/2 h-12 w-12 bg-purple-600 hover:bg-purple-700 text-white border-0" />
             </div>
           </Carousel>
 
-          {selectedCert && (
-            <div className="mt-8 text-center">
-                <div className="flex justify-center items-center gap-4">
-                    <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollPrev()}><ArrowLeft className="h-5 w-5"/></Button>
-                    <div className="flex-grow">
-                        <h3 className="font-headline text-2xl font-semibold text-primary">{getText(selectedCert.name, lang, 'Untitled Certificate')}</h3>
-                        <p className="mt-2 text-foreground/70 max-w-2xl mx-auto">{getText(selectedCert.description, lang)}</p>
-                    </div>
-                     <Button variant="ghost" size="icon" className="sm:hidden rounded-full bg-primary/80 hover:bg-primary text-primary-foreground" onClick={() => api?.scrollNext()}><ArrowRight className="h-5 w-5"/></Button>
-                </div>
-            </div>
-          )}
-          
-          <div className="py-4 text-center text-sm text-muted-foreground flex justify-center items-center gap-2 mt-4">
+          <div className="py-4 text-center text-sm text-gray-400 flex justify-center items-center gap-2 mt-6">
             {Array.from({ length: count }).map((_, index) => (
                 <button
                     key={index}
                     onClick={() => api?.scrollTo(index)}
-                    className={`h-2 rounded-full transition-all duration-300 ${current === index + 1 ? 'w-6 bg-primary' : 'w-2 bg-primary/50'}`}
+                    className={`h-2 rounded-full transition-all duration-300 ${current === index + 1 ? 'w-6 bg-purple-600' : 'w-2 bg-gray-300'}`}
                     aria-label={`Go to slide ${index + 1}`}
                 />
             ))}

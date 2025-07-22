@@ -1,4 +1,3 @@
-
 import { getPortfolioData } from "@/lib/data";
 import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
@@ -8,10 +7,15 @@ import Projects from "@/components/sections/Projects";
 import Education from "@/components/sections/Education";
 import Certificates from "@/components/sections/Certificates";
 import Contact from "@/components/sections/Contact";
+import WorkProcess from "@/components/sections/WorkProcess";
+import CTA from "@/components/sections/CTA";
+import Blog from "@/components/sections/Blog";
+import ContactProject from "@/components/sections/ContactProject";
 import { getDictionary } from '@/lib/dictionaries';
 import type { Locale } from '../../../i18n.config';
 
-export default async function ProfilePage({ params: { lang } }: { params: { lang: Locale } }) {
+export default async function ProfilePage({ params }: { params: { lang: Locale } }) {
+  const { lang } = await params;
   const portfolioData = await getPortfolioData();
   const dictionary = await getDictionary(lang);
 
@@ -31,17 +35,21 @@ export default async function ProfilePage({ params: { lang } }: { params: { lang
         dictionary={dictionary}
         lang={lang}
       />
-      <Skills 
-        softSkills={portfolioData.softSkills}
-        hardSkills={portfolioData.hardSkills}
-        softwareSkills={portfolioData.softwareSkills}
-        dictionary={dictionary} 
-      />
+      <WorkProcess dictionary={dictionary} />
       <Projects projects={portfolioData.projects} dictionary={dictionary} lang={lang} />
-      <Education education={portfolioData.education} dictionary={dictionary} lang={lang} />
-      <Certificates certificates={portfolioData.certificates} dictionary={dictionary} lang={lang} />
+      <CTA dictionary={dictionary} />
+      <Blog dictionary={dictionary} />
+      <Certificates 
+        certificates={portfolioData.certificates} 
+        dictionary={dictionary} 
+        lang={lang} 
+      />
       <Services dictionary={dictionary} />
-      <Contact contact={portfolioData.contact} dictionary={dictionary} />
+      <ContactProject 
+        dictionary={dictionary} 
+        contact={portfolioData.contact}
+        name={portfolioData.name}
+      />
     </>
   );
 }
