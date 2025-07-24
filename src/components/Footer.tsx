@@ -87,10 +87,15 @@ export default function Footer({ dictionary, name, lang = 'id' }: { dictionary: 
           <p className="text-gray-400 text-sm">
             &copy; {currentYear} {name}. {dictionary?.footer?.rights || (lang === 'id' ? 'Hak cipta dilindungi.' : 'All rights reserved.')}
           </p>
-          <div className="flex items-center text-gray-400 text-sm mt-4 md:mt-0">
-            <span>{dictionary?.footer?.madeWith || (lang === 'id' ? 'Dibuat dengan' : 'Made with')}</span>
-            <span className="mx-1">Nextjs</span>
-            <span>{dictionary?.footer?.by || (lang === 'id' ? 'oleh' : 'by')} {name}</span>
+          <div className="flex items-center text-gray-400 text-sm mt-4 md:mt-0 space-x-3">
+            <span>{dictionary?.footer?.madeWith || (lang === 'id' ? 'Dibuat dengan' : 'Made with')} Nextjs {dictionary?.footer?.by || (lang === 'id' ? 'oleh' : 'by')} {name}</span>
+            <Link 
+              href="/admin" 
+              className="p-1 text-gray-500 hover:text-purple-400 transition-colors duration-200"
+              title={lang === 'id' ? 'Login Admin' : 'Admin Login'}
+            >
+              <Settings size={14} />
+            </Link>
           </div>
         </div>
       </div>
