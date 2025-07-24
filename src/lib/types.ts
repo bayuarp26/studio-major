@@ -52,6 +52,7 @@ export interface PortfolioData {
   cvUrl: string;
   profilePictureUrl: string;
   contact: Contact;
+  workProcessVariant?: 'digital-marketing' | 'programming';
   softSkills: string[];
   hardSkills: string[];
   softwareSkills: SoftwareSkill[];

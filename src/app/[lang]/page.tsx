@@ -35,9 +35,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ lang: 
         dictionary={dictionary}
         lang={lang}
       />
-      <WorkProcess dictionary={dictionary} />
+      <WorkProcess 
+        dictionary={dictionary} 
+      />
       <Projects projects={portfolioData.projects} dictionary={dictionary} lang={lang} />
-      <CTA dictionary={dictionary} />
+      <CTA dictionary={dictionary} lang={lang} />
       <Blog dictionary={dictionary} />
       <Certificates 
         certificates={portfolioData.certificates} 
@@ -49,6 +51,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ lang: 
         dictionary={dictionary} 
         contact={portfolioData.contact}
         name={portfolioData.name}
+        lang={lang}
       />
     </>
   );

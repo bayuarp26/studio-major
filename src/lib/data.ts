@@ -32,6 +32,7 @@ const EMPTY_DATA: PortfolioData = {
         email: "",
         linkedin: ""
     },
+    workProcessVariant: "digital-marketing",
     softSkills: [],
     hardSkills: [],
     softwareSkills: [],

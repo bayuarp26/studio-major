@@ -1,13 +1,21 @@
+'use client';
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Calendar, User } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-interface LinkedInPost {
+interface BlogPost {
   id: string;
-  embedUrl: string;
-  title?: string;
-  description?: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  linkedinUrl?: string;
+  category: string;
+  author: string;
+  createdAt: string;
+  published: boolean;
 }
 
 interface BlogProps {
@@ -15,87 +23,185 @@ interface BlogProps {
 }
 
 export default function Blog({ dictionary }: BlogProps) {
-  // LinkedIn embed posts - add your LinkedIn post embed URLs here
-  const linkedInPosts: LinkedInPost[] = [
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch blog posts from API
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const response = await fetch('/api/blog');
+      if (response.ok) {
+        const posts = await response.json();
+        setBlogPosts(posts.filter((post: BlogPost) => post.published));
+      }
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Default posts if no data from API
+  const defaultPosts: BlogPost[] = [
     {
       id: "1",
-      embedUrl: "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7350376062809239552",
       title: "AEO Bukan Cuma SEO, Ini era Jawaban Instan",
-      description: "Halo teman-teman! 👋 Sadar nggak sih, sekarang ini semua orang pengen jawaban instan? Nah, di dunia digital yang makin canggih, kuncinya ada di Answer Engine Optimization (AEO). Ini bukan cuma soal SEO biasa, tapi gimana caranya konten kita bisa langsung menjawab pertanyaan orang di Google. Penting banget lho buat strategi digital marketing kita di 2025 ke depan, biar bisnis kita makin kelihatan, dapet traffic yang niat banget, dan jadi sumber info yang bisa dipercaya! Yuk, ngobrol santai soal AEO!"
+      excerpt: "Sadar nggak sih, sekarang ini semua orang pengen jawaban instan? Nah, di dunia digital yang makin canggih, kuncinya ada di Answer Engine Optimization (AEO).",
+      content: "",
+      linkedinUrl: "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7350376062809239552",
+      category: "Digital Marketing",
+      author: "Wahyu Pratomo",
+      createdAt: new Date().toISOString(),
+      published: true
     },
+    {
+      id: "2", 
+      title: "SEO Tips untuk Website Modern",
+      excerpt: "Tips dan trik terbaru untuk optimasi SEO di era modern dengan fokus pada user experience dan Core Web Vitals.",
+      content: "",
+      linkedinUrl: "",
+      category: "SEO",
+      author: "Wahyu Pratomo", 
+      createdAt: new Date().toISOString(),
+      published: true
+    },
+    {
+      id: "3",
+      title: "Social Media Marketing Strategy 2025",
+      excerpt: "Strategi marketing media sosial yang efektif untuk meningkatkan engagement dan konversi di tahun 2025.",
+      content: "",
+      linkedinUrl: "",
+      category: "Social Media",
+      author: "Wahyu Pratomo",
+      createdAt: new Date().toISOString(),
+      published: true
+    }
   ];
 
+  const postsToShow = blogPosts.length > 0 ? blogPosts : defaultPosts;
+  
+  // Determine layout based on number of posts
+  const getFlexLayout = (postCount: number) => {
+    if (postCount === 1) {
+      return "justify-center"; // Single post centered
+    } else if (postCount === 2) {
+      return "justify-center lg:justify-center"; // Two posts centered
+    } else if (postCount === 3) {
+      return "justify-center"; // Three posts, center alignment
+    } else {
+      return "justify-center"; // Multiple posts, responsive center
+    }
+  };
+
   return (
-    <section className="py-24 sm:py-32 bg-gradient-to-br from-purple-50 to-blue-50">
-      <div className="container">
+    <section id="blog" className="py-24 sm:py-32 bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="font-headline text-4xl font-bold text-gray-900 sm:text-5xl mb-4">
-            Blog
+            {dictionary?.blog?.title || 'Blog & Insights'}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.
+            {dictionary?.blog?.description || 'Sharing knowledge about digital marketing, SEO, and web development trends.'}
           </p>
         </div>
 
-        {/* LinkedIn Posts Section */}
-        {linkedInPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {Array.from({ length: 4 }, (_, index) => {
-              const post = linkedInPosts[0]; // Use first post as template
-              return (
-                <Card key={index} className="bg-white shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 overflow-hidden">
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-purple-200 via-pink-100 to-blue-200 flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <h3 className="font-semibold text-gray-800 text-sm mb-2">
-                          {index === 0 ? post.title : `Blog Post ${index + 1}`}
-                        </h3>
-                        <p className="text-xs text-gray-600">
-                          {index === 0 ? "Latest article" : "Coming soon"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 text-sm">
-                      {index === 0 ? post.title : `Article Title ${index + 1}`}
-                    </h3>
-                    <p className="text-xs text-gray-600 line-clamp-2">
-                      {index === 0 ? 
-                        "Insight about modern digital marketing strategies..." : 
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+        {/* Blog Posts Grid */}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Loading blog posts...</p>
           </div>
         ) : (
-          /* Empty State - When no LinkedIn posts are added yet */
-          <div className="text-center py-16">
-            <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ExternalLink className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                LinkedIn Posts Coming Soon
-              </h3>
-              <p className="text-gray-600 mb-6">
-                This section is prepared for LinkedIn embedded posts. Add your LinkedIn post embed URLs to display them here.
-              </p>
-              <div className="bg-gray-50 rounded-lg p-4 text-left">
-                <p className="text-sm text-gray-600 mb-2">
-                  <strong>To add LinkedIn posts:</strong>
-                </p>
-                <ol className="text-sm text-gray-600 space-y-1">
-                  <li>1. Get embed URL from LinkedIn post</li>
-                  <li>2. Add to linkedInPosts array</li>
-                  <li>3. Posts will appear automatically</li>
-                </ol>
-              </div>
-            </div>
+          <div className="max-w-7xl mx-auto">
+            {/* Responsive container with adaptive layout */}
+            <div className={`
+              flex flex-wrap gap-6 lg:gap-8 
+              ${getFlexLayout(postsToShow.length)}
+              ${postsToShow.length === 1 ? 'max-w-md mx-auto' : ''}
+              ${postsToShow.length === 2 ? 'max-w-4xl mx-auto' : ''}
+            `}>
+              {postsToShow.slice(0, 6).map((post) => (
+                <Card key={post.id} className="w-full sm:w-80 lg:w-96 bg-white shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden group flex-shrink-0">
+                <div className="aspect-[16/9] overflow-hidden bg-gradient-to-br from-purple-100 to-blue-100">
+                  {post.linkedinUrl ? (
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <ExternalLink className="w-8 h-8 text-white" />
+                        </div>
+                        <p className="text-sm text-gray-600">LinkedIn Post</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center p-4">
+                        <h3 className="font-semibold text-gray-800 text-lg">
+                          {post.title}
+                        </h3>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                      {post.category}
+                    </span>
+                  </div>
+                  
+                  <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                    {post.title}
+                  </h3>
+                  
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                    <div className="flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      <span>{post.author}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {post.linkedinUrl ? (
+                      <Button 
+                        asChild 
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                      >
+                        <a href={post.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View on LinkedIn
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button 
+                        asChild 
+                        variant="outline" 
+                        className="flex-1"
+                        size="sm"
+                      >
+                        <Link href={`/blog/${post.id}`}>
+                          Read More
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+        </div>
         )}
       </div>
     </section>

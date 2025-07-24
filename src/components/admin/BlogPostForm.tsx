@@ -33,6 +33,8 @@ export function BlogPostForm({ post, onSubmit, onCancel }: BlogPostFormProps) {
   
   const [newTag, setNewTag] = useState('');
   const [loading, setLoading] = useState(false);
+  const [linkedinPreview, setLinkedinPreview] = useState<any>(null);
+  const [extractingLinkedin, setExtractingLinkedin] = useState(false);
 
   useEffect(() => {
     if (post) {
@@ -110,6 +112,54 @@ export function BlogPostForm({ post, onSubmit, onCancel }: BlogPostFormProps) {
     'Tips & Tricks',
   ];
 
+  // Function to extract LinkedIn post data
+  const extractLinkedInData = async (url: string) => {
+    if (!url) return;
+    
+    setExtractingLinkedin(true);
+    try {
+      const response = await fetch('/api/linkedin-extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setLinkedinPreview(data);
+        
+        // Auto-populate form fields
+        if (data.title && !formData.title) {
+          setFormData(prev => ({ ...prev, title: data.title }));
+        }
+        if (data.excerpt && !formData.excerpt) {
+          setFormData(prev => ({ ...prev, excerpt: data.excerpt }));
+        }
+        if (data.content && !formData.content) {
+          setFormData(prev => ({ ...prev, content: data.content }));
+        }
+        if (data.image && !formData.image) {
+          setFormData(prev => ({ ...prev, image: data.image }));
+        }
+      }
+    } catch (error) {
+      console.error('Error extracting LinkedIn data:', error);
+    } finally {
+      setExtractingLinkedin(false);
+    }
+  };
+
+  // Auto-extract when LinkedIn URL changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (formData.linkedinUrl && formData.linkedinUrl.includes('linkedin.com')) {
+        extractLinkedInData(formData.linkedinUrl);
+      }
+    }, 1000); // Wait 1 second after user stops typing
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.linkedinUrl]);
+
   return (
     <Card>
       <CardHeader>
@@ -181,14 +231,39 @@ export function BlogPostForm({ post, onSubmit, onCancel }: BlogPostFormProps) {
               />
             </div>
             <div>
-              <Label htmlFor="linkedinUrl">URL LinkedIn</Label>
+              <Label htmlFor="linkedinUrl">URL LinkedIn Embed</Label>
               <Input
                 id="linkedinUrl"
                 value={formData.linkedinUrl}
                 onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
-                placeholder="https://linkedin.com/posts/..."
+                placeholder="Paste LinkedIn post URL here..."
                 type="url"
               />
+              {extractingLinkedin && (
+                <p className="text-sm text-blue-600 mt-1">🔄 Extracting LinkedIn data...</p>
+              )}
+              
+              {/* LinkedIn Preview */}
+              {linkedinPreview && (
+                <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-sm mb-2">📱 LinkedIn Preview:</h4>
+                  <div className="space-y-2">
+                    <p className="text-sm"><strong>Title:</strong> {linkedinPreview.title}</p>
+                    <p className="text-sm"><strong>Excerpt:</strong> {linkedinPreview.excerpt}</p>
+                    {linkedinPreview.image && (
+                      <img src={linkedinPreview.image} alt="Preview" className="w-20 h-20 object-cover rounded" />
+                    )}
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      onClick={() => formData.linkedinUrl && extractLinkedInData(formData.linkedinUrl)}
+                      className="mt-2"
+                    >
+                      🔄 Re-extract Data
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,53 +1,174 @@
 
 {
   "nav": {
+    "home": "Beranda",
     "profile": "Profil",
     "about": "Tentang",
     "skills": "Keahlian",
+    "workProcess": "Proses Kerja",
     "services": "Layanan",
     "projects": "Proyek",
     "certificates": "Sertifikat",
-    "contactMe": "Hubungi Saya"
+    "contact": "Kontak",
+    "contactMe": "Hubungi Saya",
+    "hireMeNow": "Rekrut Saya",
+    "blog": "Blog"
   },
   "hero": {
-    "downloadCV": "Unduh CV"
+    "downloadCV": "Unduh CV",
+    "greeting": "Halo, Saya",
+    "tagline": "Full Stack Developer & Digital Marketing Specialist",
+    "description": "Saya membantu menciptakan solusi digital yang inovatif dan strategi pemasaran yang efektif untuk membantu bisnis berkembang di era digital."
   },
   "about": {
-    "title": "Tentang Saya"
+    "title": "Tentang Saya",
+    "description": "Saya adalah seorang developer yang berpengalaman dalam pengembangan web modern dan strategi digital marketing. Dengan keahlian dalam berbagai teknologi dan pemahaman mendalam tentang pemasaran digital, saya membantu bisnis mencapai tujuan mereka di era digital."
   },
   "skills": {
     "title": "Keahlian",
+    "description": "Keahlian teknis dan non-teknis yang saya miliki untuk memberikan solusi terbaik.",
     "softSkills": "Soft Skills",
-    "hardSkills": "Hard Skills",
+    "hardSkills": "Hard Skills", 
     "softwareSkills": "Keahlian Perangkat Lunak"
   },
   "services": {
-    "title": "Layanan",
+    "title": "Layanan Saya",
+    "description": "Saya menyediakan layanan profesional yang komprehensif untuk membantu bisnis Anda berkembang. Dari pengembangan web modern hingga strategi digital yang efektif, saya berkomitmen memberikan solusi berkualitas tinggi.",
     "socialMediaSpecialist": "Sosial Media Specialist",
     "digitalMarketing": "Digital Marketing",
+    "webDevelopment": "Pengembangan Web",
+    "uiuxDesign": "Desain UI/UX",
     "buttonText": "Selengkapnya"
   },
   "projects": {
-    "title": "Proyek Portofolio",
-    "description": "Berikut adalah beberapa proyek yang telah saya kerjakan untuk menunjukkan keahlian saya.",
-    "viewDetails": "Lihat Detail"
+    "title": "Proyek Portfolio",
+    "description": "Berikut adalah beberapa proyek yang telah saya kerjakan.",
+    "viewDetails": "Lihat Detail",
+    "viewProject": "Lihat Proyek",
+    "viewAll": "Lihat Semua",
+    "technologies": "Teknologi"
   },
   "education": {
     "title": "Pendidikan",
-    "description": "Perjalanan akademis saya."
+    "description": "Perjalanan akademis dan pembelajaran formal yang membentuk dasar pengetahuan saya."
   },
   "certificates": {
-    "title": "Sertifikasi/Lisensi"
+    "title": "Sertifikat Saya",
+    "description": "Sertifikasi dan pencapaian profesional yang menunjukkan keahlian dan komitmen saya terhadap pembelajaran berkelanjutan."
   },
   "contact": {
-    "title": "Contact Me",
+    "title": "Hubungi Saya",
     "description": "Saya terbuka untuk peluang dan kolaborasi baru. Jangan ragu untuk menghubungi saya!",
-    "sendEmail": "Kirim Email"
+    "sendEmail": "Kirim Email",
+    "name": "Nama",
+    "email": "Email",
+    "message": "Pesan",
+    "send": "Kirim",
+    "sending": "Mengirim...",
+    "success": "Pesan berhasil dikirim!",
+    "error": "Gagal mengirim pesan. Silakan coba lagi."
+  },
+  "blog": {
+    "title": "Blog Saya",
+    "description": "Artikel dan insight tentang teknologi, pengembangan web, dan digital marketing.",
+    "readMore": "Baca Selengkapnya",
+    "noBlogs": "Belum ada artikel blog tersedia."
+  },
+  "workProcess": {
+    "title": "Proses Kerja",
+    "description": "Proses kerja yang terstruktur dan sistematis untuk memastikan setiap proyek berjalan lancar dan menghasilkan output berkualitas tinggi sesuai dengan kebutuhan klien.",
+    "digitalMarketing": [
+      {
+        "step": "1",
+        "title": "Perencanaan dan Strategi", 
+        "description": "Menyusun rencana pemasaran digital, termasuk target audiens, tujuan, dan anggaran.",
+        "color": "bg-purple-600"
+      },
+      {
+        "step": "2",
+        "title": "Pembuatan Konten",
+        "description": "Membuat konten yang menarik dan relevan untuk berbagai platform digital (website, blog, media sosial, dll.).",
+        "color": "bg-purple-500"
+      },
+      {
+        "step": "3", 
+        "title": "Optimasi SEO",
+        "description": "Meningkatkan peringkat website di hasil pencarian mesin pencari.",
+        "color": "bg-purple-400"
+      },
+      {
+        "step": "4",
+        "title": "Pemasaran Media Sosial",
+        "description": "Mengelola akun media sosial, membuat konten, dan berinteraksi dengan audiens.",
+        "color": "bg-purple-300"
+      }
+    ],
+    "juniorProgramming": [
+      {
+        "step": "1",
+        "title": "Perencanaan",
+        "description": "Perencanaan arsitektur sistem dan teknologi yang akan digunakan dalam pengembangan.",
+        "color": "bg-blue-600"
+      },
+      {
+        "step": "2", 
+        "title": "Pengkodean",
+        "description": "Implementasi fitur dengan clean code dan best practices untuk maintainability.",
+        "color": "bg-blue-500"
+      },
+      {
+        "step": "3",
+        "title": "Pengujian", 
+        "description": "Pengujian menyeluruh untuk memastikan aplikasi berfungsi optimal dan bebas bug.",
+        "color": "bg-blue-400"
+      },
+      {
+        "step": "4",
+        "title": "Deployment",
+        "description": "Deployment ke production dengan monitoring dan documentation yang lengkap.",
+        "color": "bg-blue-300"
+      }
+    ]
+  },
+  "cta": {
+    "title": "Siap Untuk Memulai?",
+    "description": "Mari wujudkan ide digital Anda menjadi kenyataan. Hubungi saya untuk konsultasi gratis!",
+    "button": "Mulai Proyek"
   },
   "footer": {
-    "rights": "Hak cipta dilindungi."
+    "rights": "Hak cipta dilindungi.",
+    "madeWith": "Dibuat dengan",
+    "by": "oleh"
   },
   "metadata": {
-    "portfolio": "Portofolio"
+    "portfolio": "Portfolio",
+    "title": "Wahyu Pratomo - Full Stack Developer & Digital Marketing",
+    "description": "Portfolio profesional Wahyu Pratomo - Full Stack Developer dan Digital Marketing Specialist. Layanan pengembangan web, aplikasi, dan strategi pemasaran digital."
+  },
+  "email": {
+    "subject": "Pesan Baru dari Website Portfolio",
+    "greeting": "Halo Wahyu!",
+    "newMessage": "Anda mendapat pesan baru dari website portfolio:",
+    "from": "Dari",
+    "message": "Pesan",
+    "footer": "Pesan ini dikirim dari formulir kontak di website portfolio Anda.",
+    "autoReply": {
+      "subject": "Terima kasih atas pesan Anda",
+      "greeting": "Halo",
+      "thanks": "Terima kasih telah menghubungi saya melalui website portfolio. Saya telah menerima pesan Anda dan akan segera merespons dalam 1-2 hari kerja.",
+      "received": "Pesan yang saya terima:",
+      "contact": "Jika ada yang mendesak, Anda juga bisa menghubungi saya melalui:",
+      "best": "Salam terbaik,",
+      "signature": "Wahyu Pratomo"
+    }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "blogManager": "Kelola Blog",
+    "addNew": "Tambah Baru",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "save": "Simpan",
+    "cancel": "Batal"
   }
 }

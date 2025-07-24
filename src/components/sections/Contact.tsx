@@ -15,7 +15,7 @@ interface ContactProps {
 
 export default function Contact({ contact, dictionary }: ContactProps) {
   return (
-    <section id="contact" className="py-24 sm:py-32 bg-gradient-to-br from-purple-50 to-blue-50">
+    <section id="contact-info" className="py-24 sm:py-32 bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="container text-center">
         <div className="mb-6">
           <span className="inline-block px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">

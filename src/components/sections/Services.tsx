@@ -1,84 +1,84 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Code, Palette, Globe } from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, Share2, BarChart3, Target } from 'lucide-react';
 
 interface ServicesProps {
   dictionary: any;
 }
 
 export default function Services({ dictionary }: ServicesProps) {
-  const services = [
+  // Fallback services data focused on Social Media & SEO
+  const defaultServices = [
     {
-      icon: Globe,
-      title: "User Experience (UX)",
-      description: "Creating intuitive and user-friendly interfaces that enhance user satisfaction and drive engagement.",
-      color: "bg-purple-600"
+      icon: Share2,
+      title: 'Social Media Management',
+      description: 'Creating engaging content, managing social media accounts, and building strong online communities across all platforms.',
+      color: 'bg-blue-600'
     },
     {
-      icon: Palette,
-      title: "User Interface (UI)", 
-      description: "Designing beautiful, modern, and responsive interfaces that captivate users and reflect your brand.",
-      color: "bg-purple-400"
+      icon: Target,
+      title: 'Social Media Advertising',
+      description: 'Developing targeted ad campaigns on Facebook, Instagram, TikTok, and LinkedIn to maximize ROI and reach.',
+      color: 'bg-purple-600'
     },
     {
-      icon: Code,
-      title: "Web Development",
-      description: "Building fast, secure, and scalable web applications using modern technologies and best practices.",
-      color: "bg-purple-500"
+      icon: Search,
+      title: 'SEO Optimization',
+      description: 'Improving website visibility and ranking in search engines through proven SEO strategies and keyword optimization.',
+      color: 'bg-green-600'
+    },
+    {
+      icon: BarChart3,
+      title: 'Analytics & Reporting',
+      description: 'Comprehensive analysis of social media performance and SEO metrics to optimize strategy and drive results.',
+      color: 'bg-orange-600'
     }
   ];
 
-  return (
-    <section className="py-24 sm:py-32 bg-gray-50">
-      <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          {/* Left Side - Content */}
-          <div>
-            <h2 className="font-headline text-4xl font-bold text-gray-900 sm:text-5xl mb-6">
-              What I do?
-            </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla purus arcu, varius eget velit non, laoreet imperdiet orci. Mauris ultrices eget lorem ac vestibulum. Suspendis imperdiet,
-            </p>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla purus arcu, varius eget velit non.
-            </p>
-            <Button 
-              asChild 
-              className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-8 py-3"
-            >
-              <Link href="#contact">
-                Hire Me
-              </Link>
-            </Button>
-          </div>
+  const services = dictionary?.services?.items || defaultServices;
 
-          {/* Right Side - Services with Cards */}
-          <div className="space-y-6">
-            {services.map((service, index) => {
-              const IconComponent = service.icon;
-              return (
-                <Card key={index} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 p-6">
-                  <CardContent className="p-0">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 ${service.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {service.title}
-                        </h3>
-                        <p className="text-gray-600 leading-relaxed text-sm">
-                          {service.description}
-                        </p>
-                      </div>
+  return (
+    <section id="services" className="py-16 sm:py-20 lg:py-24 xl:py-32 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+        {/* Section Header */}
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <h2 className="font-headline text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+            {dictionary?.services?.title || 'What I do?'}
+          </h2>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
+            {dictionary?.services?.description || 'Saya menyediakan layanan profesional yang komprehensif untuk membantu bisnis Anda berkembang. Dari pengembangan web modern hingga strategi digital yang efektif, saya berkomitmen memberikan solusi berkualitas tinggi.'}
+          </p>
+        </div>
+
+        {/* Services Grid - Responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
+          {services.map((service: any, index: number) => {
+            const IconComponent = service.icon || defaultServices[index % defaultServices.length].icon;
+            
+            return (
+              <div key={index} className="group hover:shadow-2xl transition-all duration-500 bg-white border-0 shadow-lg rounded-2xl overflow-hidden hover:scale-105 transform">
+                <div className="p-6 sm:p-8 lg:p-10">
+                  <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+                    {/* Icon */}
+                    <div 
+                      className={`w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 ${service.color || defaultServices[index % defaultServices.length].color} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-all duration-500 flex-shrink-0 group-hover:rotate-6`}
+                    >
+                      <IconComponent className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 text-white group-hover:scale-110 transition-transform duration-500" />
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 text-center sm:text-left">
+                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 group-hover:text-purple-600 transition-colors duration-500">
+                        {service.title}
+                      </h3>
+                      <p className="text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
+                        {service.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

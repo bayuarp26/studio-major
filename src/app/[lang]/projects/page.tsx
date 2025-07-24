@@ -21,11 +21,7 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
   return fallback;
 }
 
-<<<<<<< Updated upstream
-export default async function ProjectsPage({ params }: { params: { lang: Locale } }) {
-=======
 export default async function ProjectsPage({ params }: { params: Promise<{ lang: Locale }> }) {
->>>>>>> Stashed changes
   const { lang } = await params;
   const { projects } = await getPortfolioData();
   const dictionary = await getDictionary(lang);

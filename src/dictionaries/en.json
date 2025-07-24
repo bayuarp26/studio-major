@@ -1,53 +1,174 @@
 
 {
   "nav": {
+    "home": "Home",
     "profile": "Profile",
     "about": "About",
     "skills": "Skills",
+    "workProcess": "Work Process",
     "services": "Services",
     "projects": "Projects",
     "certificates": "Certificates",
-    "contactMe": "Contact Me"
+    "contact": "Contact",
+    "contactMe": "Contact Me",
+    "hireMeNow": "Hire Me Now",
+    "blog": "Blog"
   },
   "hero": {
-    "downloadCV": "Download CV"
+    "downloadCV": "Download CV",
+    "greeting": "Hello, I'm",
+    "tagline": "Full Stack Developer & Digital Marketing Specialist",
+    "description": "I help create innovative digital solutions and effective marketing strategies to help businesses thrive in the digital era."
   },
   "about": {
-    "title": "About Me"
+    "title": "About Me",
+    "description": "I am an experienced developer in modern web development and digital marketing strategies. With expertise in various technologies and deep understanding of digital marketing, I help businesses achieve their goals in the digital era."
   },
   "skills": {
-    "title": "Skill",
+    "title": "Skills",
+    "description": "Technical and non-technical skills I possess to provide the best solutions.",
     "softSkills": "Soft Skills",
     "hardSkills": "Hard Skills",
     "softwareSkills": "Software Skills"
   },
   "services": {
-    "title": "Services",
+    "title": "What I Do",
+    "description": "I provide comprehensive professional services to help your business grow. From modern web development to effective digital strategies, I am committed to delivering high-quality solutions.",
     "socialMediaSpecialist": "Social Media Specialist",
     "digitalMarketing": "Digital Marketing",
-    "buttonText": "Details"
+    "webDevelopment": "Web Development",
+    "uiuxDesign": "UI/UX Design",
+    "buttonText": "Learn More"
   },
   "projects": {
     "title": "Portfolio Projects",
-    "description": "Here are some projects I have worked on to demonstrate my skills.",
-    "viewDetails": "View Details"
+    "description": "Here are some of the projects I have worked on.",
+    "viewDetails": "View Details",
+    "viewProject": "View Project",
+    "viewAll": "View All",
+    "technologies": "Technologies"
   },
   "education": {
     "title": "Education",
-    "description": "My academic journey."
+    "description": "My academic journey and formal learning that shaped my knowledge foundation."
   },
   "certificates": {
-    "title": "Certifications/Licenses"
+    "title": "My Certificates",
+    "description": "Professional certifications and achievements that showcase my expertise and commitment to continuous learning."
   },
   "contact": {
     "title": "Contact Me",
     "description": "I am open to new opportunities and collaborations. Feel free to contact me!",
-    "sendEmail": "Send Email"
+    "sendEmail": "Send Email",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send",
+    "sending": "Sending...",
+    "success": "Message sent successfully!",
+    "error": "Failed to send message. Please try again."
+  },
+  "blog": {
+    "title": "My Blog",
+    "description": "Articles and insights about technology, web development, and digital marketing.",
+    "readMore": "Read More",
+    "noBlogs": "No blog articles available yet."
+  },
+  "workProcess": {
+    "title": "Work Process",
+    "description": "Structured and systematic work process to ensure every project runs smoothly and produces high-quality output according to client needs.",
+    "digitalMarketing": [
+      {
+        "step": "1",
+        "title": "Planning and Strategy",
+        "description": "Developing digital marketing plans, including target audience, goals, and budget.",
+        "color": "bg-purple-600"
+      },
+      {
+        "step": "2",
+        "title": "Content Creation",
+        "description": "Creating engaging and relevant content for various digital platforms (website, blog, social media, etc.).",
+        "color": "bg-purple-500"
+      },
+      {
+        "step": "3",
+        "title": "SEO Optimization",
+        "description": "Improving website ranking in search engine results.",
+        "color": "bg-purple-400"
+      },
+      {
+        "step": "4",
+        "title": "Social Media Marketing",
+        "description": "Managing social media accounts, creating content, and engaging with audience.",
+        "color": "bg-purple-300"
+      }
+    ],
+    "juniorProgramming": [
+      {
+        "step": "1",
+        "title": "Planning",
+        "description": "Planning system architecture and technologies to be used in development.",
+        "color": "bg-blue-600"
+      },
+      {
+        "step": "2",
+        "title": "Coding",
+        "description": "Feature implementation with clean code and best practices for maintainability.",
+        "color": "bg-blue-500"
+      },
+      {
+        "step": "3",
+        "title": "Testing",
+        "description": "Comprehensive testing to ensure optimal application performance and bug-free.",
+        "color": "bg-blue-400"
+      },
+      {
+        "step": "4",
+        "title": "Deployment",
+        "description": "Production deployment with monitoring and complete documentation.",
+        "color": "bg-blue-300"
+      }
+    ]
+  },
+  "cta": {
+    "title": "Ready to Get Started?",
+    "description": "Let's turn your digital ideas into reality. Contact me for a free consultation!",
+    "button": "Start Project"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "madeWith": "Made with",
+    "by": "by"
   },
   "metadata": {
-    "portfolio": "Portfolio"
+    "portfolio": "Portfolio",
+    "title": "Wahyu Pratomo - Full Stack Developer & Digital Marketing",
+    "description": "Professional portfolio of Wahyu Pratomo - Full Stack Developer and Digital Marketing Specialist. Web development, application, and digital marketing strategy services."
+  },
+  "email": {
+    "subject": "New Message from Portfolio Website",
+    "greeting": "Hello Wahyu!",
+    "newMessage": "You have received a new message from your portfolio website:",
+    "from": "From",
+    "message": "Message",
+    "footer": "This message was sent from the contact form on your portfolio website.",
+    "autoReply": {
+      "subject": "Thank you for your message",
+      "greeting": "Hello",
+      "thanks": "Thank you for contacting me through my portfolio website. I have received your message and will respond within 1-2 business days.",
+      "received": "Your message that I received:",
+      "contact": "If it's urgent, you can also contact me through:",
+      "best": "Best regards,",
+      "signature": "Wahyu Pratomo"
+    }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "blogManager": "Blog Manager",
+    "addNew": "Add New",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel"
   }
 }

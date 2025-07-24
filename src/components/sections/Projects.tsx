@@ -29,10 +29,10 @@ export default function Projects({ projects, dictionary, lang }: ProjectsProps) 
       <div className="container">
         <div className="text-center mb-16">
           <h2 className="font-headline text-4xl font-bold text-gray-900 sm:text-5xl mb-4">
-            Portfolio
+            {dictionary?.projects?.title || 'Portfolio Projects'}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.
+            {dictionary?.projects?.description || 'Kumpulan proyek-proyek terbaik yang telah saya kerjakan, mulai dari pengembangan web hingga strategi digital marketing yang memberikan hasil nyata bagi klien.'}
           </p>
         </div>
         
@@ -70,7 +70,7 @@ export default function Projects({ projects, dictionary, lang }: ProjectsProps) 
             className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-8 py-3"
           >
             <Link href="/projects">
-              View All
+              {dictionary?.projects?.viewAll || 'View All'}
             </Link>
           </Button>
         </div>

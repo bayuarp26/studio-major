@@ -1,8 +1,9 @@
 
 import Link from "next/link";
 import { Settings } from "lucide-react";
+import type { Locale } from "../../i18n.config";
 
-export default function Footer({ dictionary, name }: { dictionary: any, name: string }) {
+export default function Footer({ dictionary, name, lang = 'id' }: { dictionary: any, name: string, lang?: Locale }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -11,55 +12,86 @@ export default function Footer({ dictionary, name }: { dictionary: any, name: st
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center mb-4">
+            <Link href={`/${lang}`} className="flex items-center mb-4">
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-lg">B</span>
+                <span className="text-white font-bold text-lg">
+                  {name ? name.split(' ').map(n => n[0]).join('').substring(0, 2) : 'WP'}
+                </span>
               </div>
-              <span className="font-bold text-white text-lg">Brooklyn</span>
+              <span className="font-bold text-white text-lg">{name || 'Wahyu Pratomo'}</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
-              I design and develop services for customers specializing creating stylish, modern websites.
+              {lang === 'id' 
+                ? 'Saya merancang dan mengembangkan layanan untuk klien yang mengkhususkan diri dalam menciptakan website modern dan stylish.'
+                : 'I design and develop services for customers specializing creating stylish, modern websites.'
+              }
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-white mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-white mb-4">
+              {lang === 'id' ? 'Tautan Cepat' : 'Quick Links'}
+            </h3>
             <ul className="space-y-2">
-              <li><Link href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">About</Link></li>
-              <li><Link href="#services" className="text-gray-400 hover:text-white transition-colors text-sm">Services</Link></li>
-              <li><Link href="#projects" className="text-gray-400 hover:text-white transition-colors text-sm">Portfolio</Link></li>
-              <li><Link href="#contact" className="text-gray-400 hover:text-white transition-colors text-sm">Contact</Link></li>
+              <li><Link href={`/${lang}#about`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                {dictionary?.nav?.about || (lang === 'id' ? 'Tentang' : 'About')}
+              </Link></li>
+              <li><Link href={`/${lang}#services`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                {dictionary?.nav?.services || (lang === 'id' ? 'Layanan' : 'Services')}
+              </Link></li>
+              <li><Link href={`/${lang}#projects`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                {dictionary?.nav?.projects || (lang === 'id' ? 'Portfolio' : 'Portfolio')}
+              </Link></li>
+              <li><Link href={`/${lang}#contact`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                {dictionary?.nav?.contact || (lang === 'id' ? 'Kontak' : 'Contact')}
+              </Link></li>
             </ul>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="font-semibold text-white mb-4">Services</h3>
+            <h3 className="font-semibold text-white mb-4">
+              {dictionary?.services?.title || (lang === 'id' ? 'Layanan' : 'Services')}
+            </h3>
             <ul className="space-y-2">
-              <li><span className="text-gray-400 text-sm">Web Design</span></li>
-              <li><span className="text-gray-400 text-sm">UI/UX Design</span></li>
-              <li><span className="text-gray-400 text-sm">Web Development</span></li>
-              <li><span className="text-gray-400 text-sm">SEO</span></li>
+              <li><span className="text-gray-400 text-sm">
+                {lang === 'id' ? 'Desain Web' : 'Web Design'}
+              </span></li>
+              <li><span className="text-gray-400 text-sm">
+                {lang === 'id' ? 'Marketing Digital' : 'Digital Marketing'}
+              </span></li>
+              <li><span className="text-gray-400 text-sm">
+                {lang === 'id' ? 'Spesialis Media Sosial' : 'Social Media Specialist'}
+              </span></li>
+              <li><span className="text-gray-400 text-sm">
+                {lang === 'id' ? 'Spesialis SEO' : 'SEO Specialist'}
+              </span></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-semibold text-white mb-4">Contact</h3>
+            <h3 className="font-semibold text-white mb-4">
+              {dictionary?.contact?.title || (lang === 'id' ? 'Kontak' : 'Contact')}
+            </h3>
             <ul className="space-y-2">
-              <li><span className="text-gray-400 text-sm">johndoe@gmail.com</span></li>
-              <li><span className="text-gray-400 text-sm">+1 (555) 000-0000</span></li>
-              <li><span className="text-gray-400 text-sm">Brooklyn, NY</span></li>
+              <li><span className="text-gray-400 text-sm">wahyupratomo187@gmail.com</span></li>
+              <li><span className="text-gray-400 text-sm">+62 822-8651-4244</span></li>
+              <li><span className="text-gray-400 text-sm">Tanjungpinang, Indonesia</span></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">&copy; {currentYear} {name}. All rights reserved.</p>
-          <Link href="/admin/login" className="text-gray-400 hover:text-white transition-colors mt-4 md:mt-0" aria-label="Admin Login">
-            <Settings className="h-4 w-4" />
-          </Link>
+          <p className="text-gray-400 text-sm">
+            &copy; {currentYear} {name}. {dictionary?.footer?.rights || (lang === 'id' ? 'Hak cipta dilindungi.' : 'All rights reserved.')}
+          </p>
+          <div className="flex items-center text-gray-400 text-sm mt-4 md:mt-0">
+            <span>{dictionary?.footer?.madeWith || (lang === 'id' ? 'Dibuat dengan' : 'Made with')}</span>
+            <span className="mx-1">Nextjs</span>
+            <span>{dictionary?.footer?.by || (lang === 'id' ? 'oleh' : 'by')} {name}</span>
+          </div>
         </div>
       </div>
     </footer>

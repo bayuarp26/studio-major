@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
@@ -145,6 +146,7 @@ const generalSettingsSchema = z.object({
   cvUrl: z.string().min(1, 'CV URL/File Path is required'),
   email: z.string().email('Invalid email address'),
   linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
+  workProcessVariant: z.enum(['digital-marketing', 'programming']).default('digital-marketing'),
 });
 
 type GeneralSettingsFormValues = z.infer<typeof generalSettingsSchema>;
@@ -191,6 +193,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
       cvUrl: initialData.cvUrl,
       email: initialData.contact.email.replace('mailto:', ''),
       linkedin: initialData.contact.linkedin || '',
+      workProcessVariant: initialData.workProcessVariant || 'digital-marketing',
     }
   });
 
@@ -216,6 +219,7 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                 email: `mailto:${data.email}`,
                 linkedin: data.linkedin || '',
             },
+            workProcessVariant: data.workProcessVariant,
         });
 
         if (result.success) {
@@ -699,6 +703,30 @@ export default function AdminForm({ initialData }: AdminFormProps) {
                       <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                       <FormField control={form.control} name="cvUrl" render={({ field }) => (<FormItem><FormLabel>CV</FormLabel><FormControl><FileUpload value={field.value || ''} onChange={field.onChange} disabled={isPending} /></FormControl><FormMessage /></FormItem>)}/>
+                      <FormField 
+                        control={form.control} 
+                        name="workProcessVariant" 
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Work Process Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select work process variant" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="digital-marketing">Digital Marketing</SelectItem>
+                                <SelectItem value="programming">Junior Programmer</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Choose which work process to display (4 steps each): Digital Marketing or Junior Programming workflow.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )} 
+                      />
                     </CardContent>
                   </Card>
 

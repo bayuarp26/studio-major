@@ -38,7 +38,7 @@ export default async function LangLayout({
       <main className="flex-grow">
         {children}
       </main>
-      <Footer dictionary={dictionary} name={portfolioData.name} />
+      <Footer dictionary={dictionary} name={portfolioData.name} lang={lang} />
     </div>
   );
 }
