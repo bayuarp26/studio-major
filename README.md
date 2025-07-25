@@ -41,10 +41,10 @@
 
 | Branch | Status | Purpose | Description |
 |--------|--------|---------|-------------|
-| **`main`** | 🟢 Stable | Production | Stable production-ready code |
+| **`master`** | 🟢 Stable | Main | Main stable branch (default) |
 | **`production`** | 🟢 Live | Deploy | Live deployment branch with latest features |
 | **`pre-build`** | 🔄 Active | Development | **Current active branch** - Performance optimizations & new features |
-| **`dev`** | 🔄 Testing | Development | Feature development and testing |
+| **`backup/production-20250724`** | � Archive | Backup | Production backup from July 24, 2025 |
 
 ---
 
@@ -71,15 +71,15 @@
   - 📱 **Mobile Performance** - Touch optimization and 60fps scrolling
   - 🧠 **Memory Optimization** - Proper cleanup and efficient hooks
 
-#### **`main` Branch** 🏠
-- **Purpose**: Default stable branch
-- **Status**: Production baseline
+#### **`master` Branch** 🏠
+- **Purpose**: Main repository branch
+- **Status**: Stable baseline
 - **Features**: Core functionality with proven stability
 
-#### **`dev` Branch** 🔬
-- **Purpose**: Feature development and experimentation
-- **Status**: Testing ground for new features
-- **Usage**: Integration testing before merging to production
+#### **`backup/production-20250724` Branch** �
+- **Purpose**: Production backup from July 24, 2025
+- **Status**: Archived backup
+- **Usage**: Disaster recovery and rollback purposes
 
 ---
 
@@ -167,6 +167,7 @@ cd studio-major
 # Switch to desired branch
 git checkout production    # For stable version
 git checkout pre-build     # For latest optimizations
+git checkout master        # For main stable branch
 ```
 
 #### **2. Install Dependencies**
@@ -551,10 +552,10 @@ Made with ❤️ by [Bayu Arp](https://github.com/bayuarp26)
 
 | Branch | Status | Tujuan | Deskripsi |
 |--------|--------|---------|-----------|
-| **`main`** | 🟢 Stabil | Produksi | Kode siap produksi yang stabil |
+| **`master`** | 🟢 Stabil | Main | Branch utama yang stabil (default) |
 | **`production`** | 🟢 Live | Deploy | Branch deployment live dengan fitur terbaru |
 | **`pre-build`** | 🔄 Aktif | Development | **Branch aktif saat ini** - Optimasi performa & fitur baru |
-| **`dev`** | 🔄 Testing | Development | Pengembangan fitur dan testing |
+| **`backup/production-20250724`** | � Arsip | Backup | Backup produksi dari 24 Juli 2025 |
 
 ---
 
@@ -581,15 +582,15 @@ Made with ❤️ by [Bayu Arp](https://github.com/bayuarp26)
   - 📱 **Performa Mobile** - Optimasi sentuh dan scroll 60fps
   - 🧠 **Optimasi Memori** - Pembersihan yang tepat dan hook efisien
 
-#### **Branch `main`** 🏠
-- **Tujuan**: Branch stabil default
-- **Status**: Baseline produksi
+#### **Branch `master`** 🏠
+- **Tujuan**: Branch utama repository
+- **Status**: Baseline stabil
 - **Fitur**: Fungsionalitas inti dengan stabilitas terbukti
 
-#### **Branch `dev`** 🔬
-- **Tujuan**: Pengembangan fitur dan eksperimen
-- **Status**: Area testing untuk fitur baru
-- **Penggunaan**: Testing integrasi sebelum merge ke produksi
+#### **Branch `backup/production-20250724`** �
+- **Tujuan**: Backup produksi dari 24 Juli 2025
+- **Status**: Backup terarsip
+- **Penggunaan**: Disaster recovery dan tujuan rollback
 
 ---
 
@@ -677,6 +678,7 @@ cd studio-major
 # Pindah ke branch yang diinginkan
 git checkout production    # Untuk versi stabil
 git checkout pre-build     # Untuk optimasi terbaru
+git checkout master        # Untuk branch utama stabil
 ```
 
 #### **2. Install Dependencies**
