@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Locale } from '../../../i18n.config';
+import { memo } from "react";
 
 interface ProjectsProps {
   projects: Project[];
@@ -23,7 +24,7 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
   return fallback;
 }
 
-export default function Projects({ projects, dictionary, lang }: ProjectsProps) {
+const Projects = memo(function Projects({ projects, dictionary, lang }: ProjectsProps) {
   return (
     <section id="projects" className="bg-white py-24 sm:py-32">
       <div className="container">
@@ -77,4 +78,6 @@ export default function Projects({ projects, dictionary, lang }: ProjectsProps) 
       </div>
     </section>
   );
-}
+});
+
+export default Projects;

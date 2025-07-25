@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { MultilingualString } from "@/lib/types";
 import type { Locale } from "../../../i18n.config";
+import { memo } from "react";
 
 interface HeroProps {
   name: string;
@@ -23,7 +24,7 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
   return fallback;
 }
 
-export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary, lang }: HeroProps) {
+const Hero = memo(function Hero({ name, title, cvUrl, profilePictureUrl, dictionary, lang }: HeroProps) {
   return (
     <section id="hero" className="relative min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid min-h-[calc(100vh-4rem)] items-center gap-8 sm:gap-12 py-12 sm:py-16 lg:py-20 lg:grid-cols-2 lg:gap-20">
@@ -76,4 +77,6 @@ export default function Hero({ name, title, cvUrl, profilePictureUrl, dictionary
       </div>
     </section>
   );
-}
+});
+
+export default Hero;

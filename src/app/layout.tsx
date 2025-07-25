@@ -7,9 +7,12 @@ import { Inter } from "next/font/google";
 import { i18n, type Locale } from '../../i18n.config';
 import { Metadata, Viewport } from 'next';
 
+// Optimize font loading
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: 'swap',
+  preload: true,
 });
 
 export const viewport: Viewport = {
@@ -37,6 +40,17 @@ export const metadata: Metadata = {
     title: 'Portfolio',
   },
   manifest: '/manifest.json',
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: '/',
+    languages: {
+      'id': '/id',
+      'en': '/en',
+    },
+  },
 }
 
 export default function RootLayout({

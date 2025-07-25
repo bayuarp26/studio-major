@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./MobileNav";
 import { cn } from "@/lib/utils";
@@ -15,24 +15,26 @@ interface HeaderProps {
 }
 
 export default function Header({ name, dictionary }: HeaderProps) {
-  const sectionIds = ["hero", "about", "workProcess", "projects", "blog", "certificates", "services", "contact"];
+  const sectionIds = useMemo(() => ["hero", "about", "workProcess", "projects", "blog", "certificates", "services", "contact"], []);
   const activeSection = useActiveSection(sectionIds);
   const [showNameInHeader, setShowNameInHeader] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
-  // Extract locale from pathname, e.g., /en/projects -> /en
-  const locale = `/${pathname.split('/')[1]}`;
+  // Memoize locale calculation
+  const locale = useMemo(() => `/${pathname.split('/')[1]}`, [pathname]);
 
-  const navLinks = [
+  // Memoize navigation links
+  const navLinks = useMemo(() => [
     { name: dictionary?.nav?.home || "Home", href: `${locale}#hero` },
     { name: dictionary?.nav?.about || "About", href: `${locale}#about` },
     { name: dictionary?.nav?.projects || "Projects", href: `${locale}#projects` },
     { name: dictionary?.nav?.blog || "Blog", href: `${locale}#blog` },
     { name: dictionary?.nav?.certificates || "Certificates", href: `${locale}#certificates` },
-  ];
+  ], [dictionary, locale]);
 
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  // Optimize smooth scroll function
+  const handleSmoothScroll = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     const targetId = href.split('#')[1];
     const targetElement = document.getElementById(targetId);
@@ -42,16 +44,25 @@ export default function Header({ name, dictionary }: HeaderProps) {
         block: 'start',
       });
     }
-  };
+  }, []);
 
+  // Optimize scroll handler with throttling
   useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
-      const heroElement = document.getElementById("hero-name");
-      if (heroElement) {
-        const rect = heroElement.getBoundingClientRect();
-        setShowNameInHeader(rect.bottom < 0);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const heroElement = document.getElementById("hero-name");
+          if (heroElement) {
+            const rect = heroElement.getBoundingClientRect();
+            setShowNameInHeader(rect.bottom < 0);
+          }
+          setIsScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
       }
-      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

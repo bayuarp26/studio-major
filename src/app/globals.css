@@ -58,7 +58,7 @@
     --chart-5: 340 75% 55%;
   }
 
-  /* Base styles for better mobile support */
+  /* Performance optimized base styles */
   * {
     @apply border-border;
   }
@@ -67,6 +67,9 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
   }
   
   body {
@@ -75,12 +78,14 @@
     min-height: 100vh;
     min-height: 100dvh;
     overscroll-behavior: none;
+    line-height: 1.5;
   }
 
-  /* Mobile-first responsive typography */
+  /* Optimized typography */
   h1, h2, h3, h4, h5, h6 {
     text-wrap: balance;
     line-height: 1.2;
+    font-weight: 700;
   }
 
   p {
@@ -88,14 +93,12 @@
     max-width: 65ch;
   }
 
-  /* Touch targets for mobile */
+  /* Performance optimized interactions */
   button, a, input, select, textarea {
     touch-action: manipulation;
-    min-height: 44px;
-    min-width: 44px;
   }
 
-  /* Focus styles for accessibility */
+  /* Efficient focus styles */
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;

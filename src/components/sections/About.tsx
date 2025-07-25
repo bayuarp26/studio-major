@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { MultilingualString } from '@/lib/types';
 import type { Locale } from '../../../i18n.config';
+import { memo } from "react";
 
 interface AboutProps {
   about: MultilingualString | string;
@@ -22,7 +23,7 @@ const getText = (field: MultilingualString | string | undefined, lang: Locale, f
   return fallback;
 }
 
-export default function About({ about, profilePictureUrl, dictionary, lang }: AboutProps) {
+const About = memo(function About({ about, profilePictureUrl, dictionary, lang }: AboutProps) {
   return (
     <section id="about" className="py-16 sm:py-20 lg:py-24 xl:py-32 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
@@ -63,4 +64,6 @@ export default function About({ about, profilePictureUrl, dictionary, lang }: Ab
       </div>
     </section>
   );
-}
+});
+
+export default About;
