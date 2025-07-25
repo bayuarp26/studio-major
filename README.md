@@ -521,7 +521,7 @@ Use the GitHub issue template and include:
 
 **⭐ Star this repository if you find it helpful!**
 
-Made with energy, effort, sleepless nights, and time by [Bayu Arp](https://github.com/bayuarp26)
+Made with energy, effort, sleepless nights, and time by [Wahyu Pratomo](https://github.com/bayuarp26)
 
 </div>
 
