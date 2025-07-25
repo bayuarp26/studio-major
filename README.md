@@ -502,9 +502,9 @@ Use the GitHub issue template and include:
 ## <a id="support--contact-en"></a>📞 Support & Contact
 
 ### **Developer**
-- **Name**: Bayu Arp
+- **Name**: Wahyu Pratomo
 - **GitHub**: [@bayuarp26](https://github.com/bayuarp26)
-- **Email**: [bayuarp26@gmail.com](mailto:bayuarp26@gmail.com)
+- **Email**: [wahyupratomo187@gmail.com](mailto:wahyupratomo187@gmail.com)
 
 ### **Repository**
 - **GitHub**: [studio-major](https://github.com/bayuarp26/studio-major)
@@ -1013,9 +1013,9 @@ Gunakan template GitHub issue dan sertakan:
 ## <a id="dukungan--kontak-id"></a>📞 Dukungan & Kontak
 
 ### **Developer**
-- **Nama**: Bayu Arp
+- **Nama**: Wahyu Pratomo
 - **GitHub**: [@bayuarp26](https://github.com/bayuarp26)
-- **Email**: [bayuarp26@gmail.com](mailto:bayuarp26@gmail.com)
+- **Email**: [wahyupratomo187@gmail.com](mailto:wahyupratomo187@gmail.com)
 
 ### **Repository**
 - **GitHub**: [studio-major](https://github.com/bayuarp26/studio-major)
