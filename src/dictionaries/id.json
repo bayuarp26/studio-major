@@ -38,7 +38,29 @@
     "digitalMarketing": "Digital Marketing",
     "webDevelopment": "Pengembangan Web",
     "uiuxDesign": "Desain UI/UX",
-    "buttonText": "Selengkapnya"
+    "buttonText": "Selengkapnya",
+    "items": [
+      {
+        "title": "Manajemen Media Sosial",
+        "description": "Membuat konten yang menarik, mengelola akun media sosial, dan membangun komunitas online yang kuat di semua platform.",
+        "color": "bg-blue-600"
+      },
+      {
+        "title": "Iklan Media Sosial",
+        "description": "Mengembangkan kampanye iklan yang tepat sasaran di Facebook, Instagram, TikTok, dan LinkedIn untuk memaksimalkan ROI dan jangkauan.",
+        "color": "bg-purple-600"
+      },
+      {
+        "title": "Optimasi SEO",
+        "description": "Meningkatkan visibilitas dan peringkat website di mesin pencari melalui strategi SEO yang terbukti dan optimasi kata kunci.",
+        "color": "bg-green-600"
+      },
+      {
+        "title": "Analitik & Pelaporan",
+        "description": "Analisis komprehensif performa media sosial dan metrik SEO untuk mengoptimalkan strategi dan mendorong hasil.",
+        "color": "bg-orange-600"
+      }
+    ]
   },
   "projects": {
     "title": "Proyek Portfolio",

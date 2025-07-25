@@ -109,13 +109,13 @@ export default function Header({ name, dictionary }: HeaderProps) {
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            {/* Language Switcher */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Language Switcher - Hidden on mobile, shown in mobile nav */}
             <div className="hidden sm:block">
               <LanguageSwitcher />
             </div>
 
-            {/* CTA Button - Hidden on mobile */}
+            {/* CTA Button - Hidden on mobile, shown in mobile nav */}
             <Button 
               asChild 
               size="sm"
@@ -130,9 +130,7 @@ export default function Header({ name, dictionary }: HeaderProps) {
             </Button>
 
             {/* Mobile Menu Button */}
-            <div className="lg:hidden">
-              <MobileNav navLinks={navLinks} name={name} dictionary={dictionary} />
-            </div>
+            <MobileNav navLinks={navLinks} name={name} dictionary={dictionary} />
           </div>
         </div>
       </nav>

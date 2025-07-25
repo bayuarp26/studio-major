@@ -217,4 +217,36 @@
   .grid-responsive {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
+
+  /* Mobile navigation fixes */
+  .mobile-nav-link {
+    @apply block w-full px-4 py-3 text-left text-lg font-medium rounded-lg transition-all duration-200;
+    @apply text-foreground/70 hover:text-primary hover:bg-purple-50;
+    @apply focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
+  }
+
+  /* Prevent zoom on mobile inputs */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Smooth scrolling for all browsers */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better touch targets on mobile */
+  @media (pointer: coarse) {
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
 }

@@ -8,10 +8,10 @@ export default function Footer({ dictionary, name, lang = 'id' }: { dictionary: 
 
   return (
     <footer className="bg-slate-900 text-white py-12">
-      <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Logo and Description */}
-          <div className="md:col-span-1">
+          <div className="sm:col-span-2 lg:col-span-1">
             <Link href={`/${lang}`} className="flex items-center mb-4">
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
                 <span className="text-white font-bold text-lg">
@@ -83,15 +83,18 @@ export default function Footer({ dictionary, name, lang = 'id' }: { dictionary: 
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
+        <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-gray-400 text-sm text-center sm:text-left">
             &copy; {currentYear} {name}. {dictionary?.footer?.rights || (lang === 'id' ? 'Hak cipta dilindungi.' : 'All rights reserved.')}
           </p>
-          <div className="flex items-center text-gray-400 text-sm mt-4 md:mt-0 space-x-3">
-            <span>{dictionary?.footer?.madeWith || (lang === 'id' ? 'Dibuat dengan' : 'Made with')} Nextjs {dictionary?.footer?.by || (lang === 'id' ? 'oleh' : 'by')} {name}</span>
+          <div className="flex items-center justify-center sm:justify-end text-gray-400 text-sm">
+            <span className="text-center sm:text-right">
+              {dictionary?.footer?.madeWith || (lang === 'id' ? 'Dibuat dengan' : 'Made with')} Nextjs {dictionary?.footer?.by || (lang === 'id' ? 'oleh' : 'by')} 
+              <span className="text-white font-medium">{name}</span>
+            </span>
             <Link 
               href="/admin" 
-              className="p-1 text-gray-500 hover:text-purple-400 transition-colors duration-200"
+              className="ml-2 inline-flex items-center text-gray-500 hover:text-purple-400 transition-colors duration-200 touch-target"
               title={lang === 'id' ? 'Login Admin' : 'Admin Login'}
             >
               <Settings size={14} />

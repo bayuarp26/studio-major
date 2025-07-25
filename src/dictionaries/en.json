@@ -38,7 +38,29 @@
     "digitalMarketing": "Digital Marketing",
     "webDevelopment": "Web Development",
     "uiuxDesign": "UI/UX Design",
-    "buttonText": "Learn More"
+    "buttonText": "Learn More",
+    "items": [
+      {
+        "title": "Social Media Management",
+        "description": "Creating engaging content, managing social media accounts, and building strong online communities across all platforms.",
+        "color": "bg-blue-600"
+      },
+      {
+        "title": "Social Media Advertising",
+        "description": "Developing targeted ad campaigns on Facebook, Instagram, TikTok, and LinkedIn to maximize ROI and reach.",
+        "color": "bg-purple-600"
+      },
+      {
+        "title": "SEO Optimization",
+        "description": "Improving website visibility and ranking in search engines through proven SEO strategies and keyword optimization.",
+        "color": "bg-green-600"
+      },
+      {
+        "title": "Analytics & Reporting",
+        "description": "Comprehensive analysis of social media performance and SEO metrics to optimize strategy and drive results.",
+        "color": "bg-orange-600"
+      }
+    ]
   },
   "projects": {
     "title": "Portfolio Projects",
