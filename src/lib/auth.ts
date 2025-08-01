@@ -5,7 +5,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { getUser } from '@/lib/data';
+import { getAdminUser, updateAdminUserLastLogin } from '@/lib/data';
 import type { SessionPayload } from '@/lib/types';
 import { redirect } from 'next/navigation';
 
@@ -71,16 +71,27 @@ export async function login(formData: FormData) {
     }
 
     const { username, password } = parsed.data;
-    const user = await getUser(username);
-
-    if (!user || !user.password) {
+    
+    // Get admin user from database
+    const adminUser = await getAdminUser(username);
+    
+    if (!adminUser || !adminUser.password) {
       redirect('/admin/login?error=Invalid username or password.');
     }
 
-    const passwordsMatch = await bcrypt.compare(password, user.password);
+    // Check if user is active
+    if (!adminUser.isActive) {
+      redirect('/admin/login?error=Account is deactivated. Please contact administrator.');
+    }
+
+    // Verify password
+    const passwordsMatch = await bcrypt.compare(password, adminUser.password);
     if (!passwordsMatch) {
       redirect('/admin/login?error=Invalid username or password.');
     }
+
+    // Update last login time
+    await updateAdminUserLastLogin(username);
 
     // Credentials are valid, create session
     await createSession(username);

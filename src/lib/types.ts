@@ -66,6 +66,18 @@ export interface User {
     password?: string; // Hashed password
 }
 
+export interface AdminUser {
+    _id?: string;
+    username: string;
+    password: string; // Hashed password
+    email?: string;
+    role: 'admin' | 'superadmin';
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt?: Date;
+    lastLoginAt?: Date;
+}
+
 export interface SessionPayload {
   username: string;
   expiresAt: Date;

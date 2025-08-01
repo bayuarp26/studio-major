@@ -2,7 +2,7 @@
 'use server';
 
 import clientPromise from './mongodb';
-import type { PortfolioData, Project, EducationItem, Certificate, User, SoftwareSkill } from '@/lib/types';
+import type { PortfolioData, Project, EducationItem, Certificate, User, AdminUser, SoftwareSkill } from '@/lib/types';
 import { Collection, Db, MongoClient, WithId, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -10,6 +10,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 // --- DATABASE & COLLECTION CONSTANTS ---
 const DB_NAME = 'portfolioDB';
 const USERS_COLLECTION_NAME = 'profil_settings';
+const ADMIN_USERS_COLLECTION_NAME = 'admin_users';
 const CONTENT_COLLECTION_NAME = 'content';
 const PROJECTS_COLLECTION_NAME = 'projects';
 const EDUCATION_COLLECTION_NAME = 'education';
@@ -32,7 +33,6 @@ const EMPTY_DATA: PortfolioData = {
         email: "",
         linkedin: ""
     },
-    workProcessVariant: "digital-marketing",
     softSkills: [],
     hardSkills: [],
     softwareSkills: [],
@@ -149,6 +149,44 @@ export const getUser = async (username: string): Promise<WithId<User> | null> =>
     await ensureDbInitialized();
     const db = await getDb();
     return db.collection<User>(USERS_COLLECTION_NAME).findOne({ username });
+};
+
+// --- ADMIN USER MANAGEMENT ---
+
+export const getAdminUser = async (username: string): Promise<WithId<AdminUser> | null> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    return db.collection<AdminUser>(ADMIN_USERS_COLLECTION_NAME).findOne({ 
+        username, 
+        isActive: true 
+    });
+};
+
+export const createAdminUser = async (userData: Omit<AdminUser, '_id' | 'createdAt' | 'updatedAt'>): Promise<void> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    
+    const adminUser: AdminUser = {
+        ...userData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+    
+    await db.collection<AdminUser>(ADMIN_USERS_COLLECTION_NAME).insertOne(adminUser);
+};
+
+export const updateAdminUserLastLogin = async (username: string): Promise<void> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    await db.collection<AdminUser>(ADMIN_USERS_COLLECTION_NAME).updateOne(
+        { username },
+        { 
+            $set: { 
+                lastLoginAt: new Date(),
+                updatedAt: new Date()
+            } 
+        }
+    );
 };
 
 
