@@ -73,6 +73,7 @@ export interface AdminUser {
     email?: string;
     role: 'admin' | 'superadmin';
     isActive: boolean;
+    activeSessionId?: string; // For single session management
     createdAt: Date;
     updatedAt?: Date;
     lastLoginAt?: Date;
@@ -80,5 +81,6 @@ export interface AdminUser {
 
 export interface SessionPayload {
   username: string;
+  sessionId: string; // Unique session identifier
   expiresAt: Date;
 }

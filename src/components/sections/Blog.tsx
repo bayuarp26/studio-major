@@ -11,6 +11,7 @@ interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
+  image?: string;
   linkedinUrl?: string;
   category: string;
   author: string;
@@ -126,24 +127,41 @@ export default function Blog({ dictionary }: BlogProps) {
               {postsToShow.slice(0, 6).map((post) => (
                 <Card key={post.id} className="w-full sm:w-80 lg:w-96 bg-white shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden group flex-shrink-0">
                 <div className="aspect-[16/9] overflow-hidden bg-gradient-to-br from-purple-100 to-blue-100">
-                  {post.linkedinUrl ? (
-                    <div className="w-full h-full flex items-center justify-center p-4">
+                  {post.image ? (
+                    <img 
+                      src={post.image} 
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        // Fallback to default placeholder if image fails
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallbackDiv = target.nextElementSibling as HTMLElement;
+                        if (fallbackDiv) fallbackDiv.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  
+                  {/* Fallback content for posts without images or when image fails */}
+                  <div 
+                    className={`w-full h-full flex items-center justify-center p-4 ${post.image ? 'hidden' : 'flex'}`}
+                    style={{ display: post.image ? 'none' : 'flex' }}
+                  >
+                    {post.linkedinUrl ? (
                       <div className="text-center">
                         <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
                           <ExternalLink className="w-8 h-8 text-white" />
                         </div>
                         <p className="text-sm text-gray-600">LinkedIn Post</p>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center p-4">
+                    ) : (
+                      <div className="text-center">
                         <h3 className="font-semibold text-gray-800 text-lg">
                           {post.title}
                         </h3>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
                 
                 <CardContent className="p-6">

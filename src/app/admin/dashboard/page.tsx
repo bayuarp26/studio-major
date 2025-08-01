@@ -1,24 +1,60 @@
 
-import AdminForm from '@/components/AdminForm';
-import BlogManager from '@/components/admin/BlogManager';
+'use client';
+
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { getSession } from '@/lib/auth';
 import { getPortfolioData } from '@/lib/data';
 import type { PortfolioData } from '@/lib/types';
-import { getSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import SessionChecker from '@/components/admin/SessionChecker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export const dynamic = 'force-dynamic';
+// Lazy load heavy components
+const AdminForm = lazy(() => import('@/components/AdminForm'));
+const BlogManager = lazy(() => import('@/components/admin/BlogManager'));
+const SessionTester = lazy(() => import('@/components/admin/SessionTester'));
 
-export default async function AdminDashboardPage() {
-  const session = await getSession();
-  if (!session) {
-    // Jika tidak ada sesi yang valid, paksa redirect ke halaman login.
-    // Ini adalah lapisan keamanan utama kita sekarang.
-    redirect('/admin/login');
+export default function AdminDashboardPage() {
+  const [session, setSession] = useState<any>(null);
+  const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const sessionData = await getSession();
+        if (!sessionData) {
+          router.push('/admin/login');
+          return;
+        }
+        setSession(sessionData);
+
+        // Load portfolio data after session is verified
+        const data = await getPortfolioData();
+        if (!data) {
+          throw new Error('Failed to fetch portfolio data');
+        }
+        setPortfolioData(data);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        router.push('/admin/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-background text-foreground">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <p className="mt-4 text-lg">Loading admin dashboard...</p>
+      </div>
+    );
   }
-  
-  // Pengambilan data sekarang menjadi satu-satunya tanggung jawab halaman ini.
-  const portfolioData = await getPortfolioData();
 
   if (!portfolioData) {
      return (
@@ -30,7 +66,18 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="bg-secondary/5 min-h-screen">
+      {/* Session checker component - runs in background */}
+      <SessionChecker />
+      
       <div className="container mx-auto py-10">
+        {/* Session testing component */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-2">Session Testing</h3>
+          <Suspense fallback={<div className="animate-pulse h-20 bg-muted rounded"></div>}>
+            <SessionTester />
+          </Suspense>
+        </div>
+
         <Tabs defaultValue="portfolio" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="portfolio">Portfolio Data</TabsTrigger>
@@ -38,12 +85,15 @@ export default async function AdminDashboardPage() {
           </TabsList>
           
           <TabsContent value="portfolio" className="mt-6">
-            {/* Meneruskan data yang diambil dari server ke komponen klien */}
-            <AdminForm initialData={portfolioData} />
+            <Suspense fallback={<div className="animate-pulse h-96 bg-muted rounded"></div>}>
+              <AdminForm initialData={portfolioData} />
+            </Suspense>
           </TabsContent>
           
           <TabsContent value="blog" className="mt-6">
-            <BlogManager />
+            <Suspense fallback={<div className="animate-pulse h-96 bg-muted rounded"></div>}>
+              <BlogManager />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

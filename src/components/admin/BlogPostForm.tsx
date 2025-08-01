@@ -221,14 +221,49 @@ export function BlogPostForm({ post, onSubmit, onCancel }: BlogPostFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="image">URL Gambar</Label>
+              <Label htmlFor="image">URL Gambar atau Base64</Label>
               <Input
                 id="image"
                 value={formData.image}
                 onChange={(e) => handleInputChange('image', e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                type="url"
+                placeholder="https://example.com/image.jpg atau data:image/jpeg;base64,..."
               />
+              {formData.image && (
+                <div className="mt-3">
+                  <Label className="text-sm text-gray-600">Preview:</Label>
+                  <div className="mt-1 border rounded-lg p-2 bg-gray-50">
+                    {formData.image.startsWith('data:image') ? (
+                      <img 
+                        src={formData.image} 
+                        alt="Image preview" 
+                        className="w-full max-w-xs h-32 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const nextEl = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextEl) nextEl.style.display = 'block';
+                        }}
+                      />
+                    ) : (
+                      <img 
+                        src={formData.image} 
+                        alt="Image preview" 
+                        className="w-full max-w-xs h-32 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const nextEl = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextEl) nextEl.style.display = 'block';
+                        }}
+                      />
+                    )}
+                    <div 
+                      className="text-sm text-red-500 hidden"
+                      style={{ display: 'none' }}
+                    >
+                      ❌ Invalid image URL or format
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <Label htmlFor="linkedinUrl">URL LinkedIn Embed</Label>

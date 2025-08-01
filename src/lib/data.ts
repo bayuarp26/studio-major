@@ -189,6 +189,65 @@ export const updateAdminUserLastLogin = async (username: string): Promise<void> 
     );
 };
 
+export const updateAdminUserActiveSession = async (username: string, sessionId: string): Promise<void> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    const result = await db.collection<AdminUser>(ADMIN_USERS_COLLECTION_NAME).updateOne(
+        { username },
+        { 
+            $set: { 
+                activeSessionId: sessionId,
+                lastLoginAt: new Date(),
+                updatedAt: new Date()
+            } 
+        }
+    );
+    
+    console.log(`Database update result for ${username}:`, {
+        acknowledged: result.acknowledged,
+        modifiedCount: result.modifiedCount,
+        matchedCount: result.matchedCount,
+        sessionId: sessionId
+    });
+    
+    if (result.matchedCount === 0) {
+        console.error(`No user found with username: ${username}`);
+        throw new Error(`Admin user not found: ${username}`);
+    }
+};
+
+export const clearAdminUserActiveSession = async (username: string): Promise<void> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    await db.collection<AdminUser>(ADMIN_USERS_COLLECTION_NAME).updateOne(
+        { username },
+        { 
+            $unset: { 
+                activeSessionId: ""
+            },
+            $set: {
+                updatedAt: new Date()
+            }
+        }
+    );
+};
+
+export const clearAllAdminActiveSessions = async (): Promise<void> => {
+    await ensureDbInitialized();
+    const db = await getDb();
+    await db.collection<AdminUser>(ADMIN_USERS_COLLECTION_NAME).updateMany(
+        {},
+        { 
+            $unset: { 
+                activeSessionId: ""
+            },
+            $set: {
+                updatedAt: new Date()
+            }
+        }
+    );
+};
+
 
 // --- GRANULAR UPDATE/CRUD FUNCTIONS (for Server Actions) ---
 

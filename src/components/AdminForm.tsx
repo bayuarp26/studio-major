@@ -14,7 +14,6 @@ import {
   addSoftwareSkill, updateSoftwareSkill, deleteSoftwareSkill
 } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
-import { logout } from '@/lib/auth';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
@@ -203,8 +202,17 @@ export default function AdminForm({ initialData }: AdminFormProps) {
   const softwareSkillDialogForm = useForm<SoftwareSkillDialogValues>({ resolver: zodResolver(softwareSkillSchema) });
 
   const handleLogout = async () => {
-    await logout();
-    router.refresh();
+    try {
+      await fetch('/api/admin/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Force redirect even if API call fails
+      router.push('/admin/login');
+    }
   };
 
   const onSettingsSubmit = (data: GeneralSettingsFormValues) => {
